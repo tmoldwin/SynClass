@@ -29,15 +29,14 @@ else:
 # Function to load a subset of synapse data
 
 def load_synapse_subset(num_samples=5):
-    # List all .npy files in the directory
-    all_files = [f for f in os.listdir(DATA_DIR) if f.endswith('.npy')]
+    # List only the main synapse files (not mask files)
+    all_files = [f for f in os.listdir(DATA_DIR) if f.endswith('syn.npy')]
     
     # Randomly select a subset of files
     selected_files = np.random.choice(all_files, num_samples, replace=False)
     
     # Load and visualize the selected files
     for file in selected_files:
-        if 'syn' in file:
             synapse_id = int(file.split('_')[0])
             synapse_type = synapse_type_map.get(synapse_id, 'Unknown')
             file_path = os.path.join(DATA_DIR, file)
@@ -47,6 +46,7 @@ def load_synapse_subset(num_samples=5):
             pre_mask_path = os.path.join(DATA_DIR, file.replace('syn.npy', 'pre_syn_n_mask.npy'))
             post_mask_path = os.path.join(DATA_DIR, file.replace('syn.npy', 'post_syn_n_mask.npy'))
             pre_mask = np.load(pre_mask_path)
+            
             post_mask = np.load(post_mask_path)
             
             # Debug: Print data shapes and contents
@@ -57,6 +57,16 @@ def load_synapse_subset(num_samples=5):
             print(f'Raw data slice 1 sum: {np.sum(data[:, :, 0])}')
             print(f'Pre-synaptic mask slice 1 sum: {np.sum(pre_mask[:, :, 0])}')
             print(f'Post-synaptic mask slice 1 sum: {np.sum(post_mask[:, :, 0])}')
+            
+            # Detailed logging for each synapse
+            print(f'--- Synapse {synapse_id} ---')
+            for z in range(data.shape[2]):
+                print(f'Slice {z+1}: Raw sum = {np.sum(data[:, :, z])}, Pre-synaptic sum = {np.sum(pre_mask[:, :, z])}, Post-synaptic sum = {np.sum(post_mask[:, :, z])}')
+            
+            # Check if raw data is all zeros
+            if np.all(data == 0):
+                print(f'Skipping synapse {synapse_id} due to all-zero raw data')
+                continue
             
             # Visualize all Z slices in a single row with the top row numbered
             num_slices = data.shape[2]

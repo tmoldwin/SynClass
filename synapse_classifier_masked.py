@@ -4,24 +4,39 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.utils.class_weight import compute_class_weight
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 import torch.nn.functional as F
 from tqdm import tqdm
 import warnings
+import random
+import argparse
 warnings.filterwarnings('ignore')
 
 # Configuration
 DATA_DIR = 'Data/synpase_raw_em/synpase_raw_em/'
 SYNAPSE_DATA_PATH = 'Data/synpase_raw_em/synpase_raw_em/synapse_data.csv'
 BATCH_SIZE = 16
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.0005  # Lower learning rate
 EPOCHS = 30
-INPUT_SIZE = 48  # Slightly larger for better detail
+INPUT_SIZE = 48
 RANDOM_SEED = 42
 NUM_WORKERS = 2
+
+# After imports and before configuration parsing, add argparse:
+parser = argparse.ArgumentParser(description='Masked Synapse Classifier')
+parser.add_argument('--resume', action='store_true', help='Resume training from checkpoint')
+parser.add_argument('--epochs', type=int, default=EPOCHS, help='Number of training epochs')
+parser.add_argument('--lr', type=float, default=LEARNING_RATE, help='Learning rate')
+args, _ = parser.parse_known_args()
+
+if args.epochs != EPOCHS:
+    EPOCHS = args.epochs
+if args.lr != LEARNING_RATE:
+    LEARNING_RATE = args.lr
 
 # Set device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -30,15 +45,48 @@ print(f"Using device: {device}")
 # Set random seeds
 torch.manual_seed(RANDOM_SEED)
 np.random.seed(RANDOM_SEED)
+random.seed(RANDOM_SEED)
 
 class MaskedSynapseDataset(Dataset):
-    def __init__(self, file_list, synapse_type_map, data_dir):
+    def __init__(self, file_list, synapse_type_map, data_dir, augment=True):
         self.file_list = file_list
         self.synapse_type_map = synapse_type_map
         self.data_dir = data_dir
+        self.augment = augment
         
     def __len__(self):
         return len(self.file_list)
+    
+    def augment_data(self, data, pre_slice, post_slice):
+        """Apply data augmentation"""
+        if not self.augment:
+            return data, pre_slice, post_slice
+            
+        # Random horizontal flip
+        if random.random() > 0.5:
+            data = np.fliplr(data)
+            pre_slice = np.fliplr(pre_slice)
+            post_slice = np.fliplr(post_slice)
+        
+        # Random vertical flip
+        if random.random() > 0.5:
+            data = np.flipud(data)
+            pre_slice = np.flipud(pre_slice)
+            post_slice = np.flipud(post_slice)
+        
+        # Random rotation (90, 180, 270 degrees)
+        if random.random() > 0.5:
+            k = random.choice([1, 2, 3])
+            data = np.rot90(data, k)
+            pre_slice = np.rot90(pre_slice, k)
+            post_slice = np.rot90(post_slice, k)
+        
+        # Random brightness adjustment
+        if random.random() > 0.5:
+            factor = random.uniform(0.8, 1.2)
+            data = np.clip(data * factor, 0, 1)
+        
+        return data, pre_slice, post_slice
     
     def __getitem__(self, idx):
         file = self.file_list[idx]
@@ -116,9 +164,28 @@ class MaskedSynapseDataset(Dataset):
             pre_slice = padded_pre
             post_slice = padded_post
         
-        # Normalize data
-        if data.max() > 0:
-            data = data / data.max()
+        # Apply data augmentation
+        data, pre_slice, post_slice = self.augment_data(data, pre_slice, post_slice)
+        
+        # Proper EM data normalization
+        # Use percentile-based normalization for EM data
+        if data.max() > data.min():
+            # Get non-zero pixels (synapse region)
+            non_zero_mask = (data > 0)
+            if np.sum(non_zero_mask) > 0:
+                # Use 5th and 95th percentiles for robust normalization
+                synapse_pixels = data[non_zero_mask]
+                p5 = np.percentile(synapse_pixels, 5)
+                p95 = np.percentile(synapse_pixels, 95)
+                
+                # Normalize using percentiles
+                data = np.clip((data - p5) / (p95 - p5 + 1e-8), 0, 1)
+            else:
+                # If no synapse pixels, normalize globally
+                data = (data - data.min()) / (data.max() - data.min() + 1e-8)
+        else:
+            # If all values are the same, set to 0
+            data = np.zeros_like(data)
         
         # Stack channels: [masked_data, pre_mask, post_mask]
         combined = np.stack([data, pre_slice, post_slice], axis=0)
@@ -146,7 +213,7 @@ class MaskedSynapseClassifier(nn.Module):
         self.bn4 = nn.BatchNorm2d(256)
         
         self.pool = nn.MaxPool2d(2, 2)
-        self.dropout = nn.Dropout(0.4)
+        self.dropout = nn.Dropout(0.5)  # Increased dropout
         
         # Input: 48x48 -> 24x24 -> 12x12 -> 6x6 -> 3x3
         self.fc1 = nn.Linear(256 * 3 * 3, 512)
@@ -158,15 +225,19 @@ class MaskedSynapseClassifier(nn.Module):
         
         x = F.relu(self.bn1(self.conv1(x)))
         x = self.pool(x)
+        x = self.dropout(x)  # Add dropout after pooling
         
         x = F.relu(self.bn2(self.conv2(x)))
         x = self.pool(x)
+        x = self.dropout(x)
         
         x = F.relu(self.bn3(self.conv3(x)))
         x = self.pool(x)
+        x = self.dropout(x)
         
         x = F.relu(self.bn4(self.conv4(x)))
         x = self.pool(x)
+        x = self.dropout(x)
         
         x = x.view(x.size(0), -1)
         
@@ -208,16 +279,34 @@ def load_and_prepare_data():
         print("No valid synapse files found!")
         return None, None, None
     
-    # Use more data but still manageable
-    if len(valid_files) > 15000:
-        print(f"Using subset of 15000 files for training")
-        valid_files = np.random.choice(valid_files, 15000, replace=False)
+    # Separate E and I files
+    e_files = [f for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'E']
+    i_files = [f for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'I']
     
-    train_files, test_files = train_test_split(valid_files, test_size=0.2, random_state=RANDOM_SEED, 
-                                              stratify=[synapse_type_map[int(f.split('_')[0])] for f in valid_files])
+    print(f"E files: {len(e_files)}, I files: {len(i_files)}")
     
-    train_dataset = MaskedSynapseDataset(train_files, synapse_type_map, DATA_DIR)
-    test_dataset = MaskedSynapseDataset(test_files, synapse_type_map, DATA_DIR)
+    # Balance the dataset by taking equal numbers of each class
+    min_class_size = min(len(e_files), len(i_files))
+    print(f"Balancing to {min_class_size} samples per class")
+    
+    # Randomly sample equal numbers from each class
+    e_files_balanced = np.random.choice(e_files, min_class_size, replace=False)
+    i_files_balanced = np.random.choice(i_files, min_class_size, replace=False)
+    
+    # Combine balanced files
+    balanced_files = np.concatenate([e_files_balanced, i_files_balanced])
+    np.random.shuffle(balanced_files)
+    
+    print(f"Final balanced dataset: {len(balanced_files)} files")
+    print(f"E synapses: {sum(1 for f in balanced_files if synapse_type_map[int(f.split('_')[0])] == 'E')}")
+    print(f"I synapses: {sum(1 for f in balanced_files if synapse_type_map[int(f.split('_')[0])] == 'I')}")
+    
+    # Split data
+    train_files, test_files = train_test_split(balanced_files, test_size=0.2, random_state=RANDOM_SEED, 
+                                              stratify=[synapse_type_map[int(f.split('_')[0])] for f in balanced_files])
+    
+    train_dataset = MaskedSynapseDataset(train_files, synapse_type_map, DATA_DIR, augment=True)
+    test_dataset = MaskedSynapseDataset(test_files, synapse_type_map, DATA_DIR, augment=False)
     
     return train_dataset, test_dataset, synapse_type_map
 
@@ -304,6 +393,20 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
         print(f'Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.2f}%')
         print(f'Learning Rate: {optimizer.param_groups[0]["lr"]:.6f}')
         
+        # Print confusion matrix
+        cm = confusion_matrix(all_labels, all_predictions)
+        print(f'\nConfusion Matrix (Epoch {epoch+1}):')
+        print('          Predicted')
+        print('          E     I')
+        print(f'Actual E  {cm[0,0]:4d}  {cm[0,1]:4d}')
+        print(f'      I  {cm[1,0]:4d}  {cm[1,1]:4d}')
+        
+        # Calculate per-class accuracy
+        e_accuracy = cm[0,0] / (cm[0,0] + cm[0,1]) * 100 if (cm[0,0] + cm[0,1]) > 0 else 0
+        i_accuracy = cm[1,1] / (cm[1,0] + cm[1,1]) * 100 if (cm[1,0] + cm[1,1]) > 0 else 0
+        print(f'E class accuracy: {e_accuracy:.1f}%')
+        print(f'I class accuracy: {i_accuracy:.1f}%')
+        
         if test_acc > best_test_acc:
             best_test_acc = test_acc
             torch.save(model.state_dict(), 'best_synapse_model_masked.pth')
@@ -343,12 +446,27 @@ def main():
     print(f"Train samples: {len(train_dataset)}")
     print(f"Test samples: {len(test_dataset)}")
     
+    # Calculate class weights for balanced loss
+    train_labels = []
+    for file in train_dataset.file_list:
+        synapse_id = int(file.split('_')[0])
+        synapse_type = synapse_type_map.get(synapse_id, 'Unknown')
+        label = 1 if synapse_type == 'I' else 0
+        train_labels.append(label)
+    
+    class_weights = compute_class_weight('balanced', classes=np.array([0, 1]), y=train_labels)
+    class_weights = torch.FloatTensor(class_weights).to(device)
+    print(f"Class weights: E={class_weights[0]:.3f}, I={class_weights[1]:.3f}")
+    
     # Initialize model
     model = MaskedSynapseClassifier(num_classes=2).to(device)
+    if args.resume and os.path.exists('best_synapse_model_masked.pth'):
+        print('Resuming from best_synapse_model_masked.pth')
+        model.load_state_dict(torch.load('best_synapse_model_masked.pth', map_location=device))
     print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
     
-    # Loss function and optimizer
-    criterion = nn.CrossEntropyLoss()
+    # Loss function and optimizer with class weights
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=3)
     

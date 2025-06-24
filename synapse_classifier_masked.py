@@ -13,7 +13,6 @@ import torch.nn.functional as F
 from tqdm import tqdm
 import warnings
 import random
-import argparse
 warnings.filterwarnings('ignore')
 
 # Configuration
@@ -25,18 +24,6 @@ EPOCHS = 30
 INPUT_SIZE = 48
 RANDOM_SEED = 42
 NUM_WORKERS = 2
-
-# After imports and before configuration parsing, add argparse:
-parser = argparse.ArgumentParser(description='Masked Synapse Classifier')
-parser.add_argument('--resume', action='store_true', help='Resume training from checkpoint')
-parser.add_argument('--epochs', type=int, default=EPOCHS, help='Number of training epochs')
-parser.add_argument('--lr', type=float, default=LEARNING_RATE, help='Learning rate')
-args, _ = parser.parse_known_args()
-
-if args.epochs != EPOCHS:
-    EPOCHS = args.epochs
-if args.lr != LEARNING_RATE:
-    LEARNING_RATE = args.lr
 
 # Set device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

@@ -13,7 +13,7 @@ import torch.nn.functional as F
 from tqdm import tqdm
 import warnings
 import random
-from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS
+from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS, setup_logging
 warnings.filterwarnings('ignore')
 
 # Configuration
@@ -238,10 +238,11 @@ class MaskedSynapseClassifier(nn.Module):
 
 def load_and_prepare_data():
     """Load and prepare the dataset"""
-    print("Loading synapse data...")
+    logger = setup_logging('masked')
+    logger.info("Loading synapse data...")
     
     if not os.path.exists(SYNAPSE_DATA_PATH):
-        print(f"Error: {SYNAPSE_DATA_PATH} not found!")
+        logger.error(f"Error: {SYNAPSE_DATA_PATH} not found!")
         return None, None, None
     
     synapse_data = pd.read_csv(SYNAPSE_DATA_PATH)
@@ -258,23 +259,23 @@ def load_and_prepare_data():
         except (ValueError, IndexError):
             continue
     
-    print(f"Found {len(valid_files)} valid synapse files")
-    print(f"E synapses: {sum(1 for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'E')}")
-    print(f"I synapses: {sum(1 for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'I')}")
+    logger.info(f"Found {len(valid_files)} valid synapse files")
+    logger.info(f"E synapses: {sum(1 for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'E')}")
+    logger.info(f"I synapses: {sum(1 for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'I')}")
     
     if len(valid_files) == 0:
-        print("No valid synapse files found!")
+        logger.error("No valid synapse files found!")
         return None, None, None
     
     # Separate E and I files
     e_files = [f for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'E']
     i_files = [f for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'I']
     
-    print(f"E files: {len(e_files)}, I files: {len(i_files)}")
+    logger.info(f"E files: {len(e_files)}, I files: {len(i_files)}")
     
     # Balance the dataset by taking equal numbers of each class
     min_class_size = min(len(e_files), len(i_files))
-    print(f"Balancing to {min_class_size} samples per class")
+    logger.info(f"Balancing to {min_class_size} samples per class")
     
     # Randomly sample equal numbers from each class
     e_files_balanced = np.random.choice(e_files, min_class_size, replace=False)
@@ -284,9 +285,9 @@ def load_and_prepare_data():
     balanced_files = np.concatenate([e_files_balanced, i_files_balanced])
     np.random.shuffle(balanced_files)
     
-    print(f"Final balanced dataset: {len(balanced_files)} files")
-    print(f"E synapses: {sum(1 for f in balanced_files if synapse_type_map[int(f.split('_')[0])] == 'E')}")
-    print(f"I synapses: {sum(1 for f in balanced_files if synapse_type_map[int(f.split('_')[0])] == 'I')}")
+    logger.info(f"Final balanced dataset: {len(balanced_files)} files")
+    logger.info(f"E synapses: {sum(1 for f in balanced_files if synapse_type_map[int(f.split('_')[0])] == 'E')}")
+    logger.info(f"I synapses: {sum(1 for f in balanced_files if synapse_type_map[int(f.split('_')[0])] == 'I')}")
     
     # Split data
     train_files, test_files = train_test_split(balanced_files, test_size=0.2, random_state=RANDOM_SEED, 
@@ -375,43 +376,44 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
         # Update learning rate
         scheduler.step(test_acc)
         
-        print(f'\nEpoch {epoch+1}/{num_epochs}:')
-        print(f'Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%')
-        print(f'Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.2f}%')
-        print(f'Learning Rate: {optimizer.param_groups[0]["lr"]:.6f}')
+        logger.info(f'Epoch {epoch+1}/{num_epochs}:')
+        logger.info(f'Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%')
+        logger.info(f'Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.2f}%')
+        logger.info(f'Learning Rate: {optimizer.param_groups[0]["lr"]:.6f}')
         
         # Print confusion matrix
         cm = confusion_matrix(all_labels, all_predictions)
-        print(f'\nConfusion Matrix (Epoch {epoch+1}):')
-        print('          Predicted')
-        print('          E     I')
-        print(f'Actual E  {cm[0,0]:4d}  {cm[0,1]:4d}')
-        print(f'      I  {cm[1,0]:4d}  {cm[1,1]:4d}')
+        logger.info(f'Confusion Matrix (Epoch {epoch+1}):')
+        logger.info('          Predicted')
+        logger.info('          E     I')
+        logger.info(f'Actual E  {cm[0,0]:4d}  {cm[0,1]:4d}')
+        logger.info(f'      I  {cm[1,0]:4d}  {cm[1,1]:4d}')
         
         # Calculate per-class accuracy
         e_accuracy = cm[0,0] / (cm[0,0] + cm[0,1]) * 100 if (cm[0,0] + cm[0,1]) > 0 else 0
         i_accuracy = cm[1,1] / (cm[1,0] + cm[1,1]) * 100 if (cm[1,0] + cm[1,1]) > 0 else 0
-        print(f'E class accuracy: {e_accuracy:.1f}%')
-        print(f'I class accuracy: {i_accuracy:.1f}%')
+        logger.info(f'E class accuracy: {e_accuracy:.1f}%')
+        logger.info(f'I class accuracy: {i_accuracy:.1f}%')
         
         if test_acc > best_test_acc:
             best_test_acc = test_acc
             torch.save(model.state_dict(), MODEL_SAVE_PATHS['masked'])
-            print(f'New best model saved! Test accuracy: {test_acc:.2f}%')
+            logger.info(f'New best model saved! Test accuracy: {test_acc:.2f}%')
         
-        print('-' * 50)
+        logger.info('-' * 50)
     
     return train_losses, test_losses, train_accuracies, test_accuracies, all_predictions, all_labels
 
 def main():
     """Main training function"""
-    print("Starting Masked Synapse Classification Training")
-    print("=" * 50)
+    logger = setup_logging('masked')
+    logger.info("Starting Masked Synapse Classification Training")
+    logger.info("=" * 50)
     
     train_dataset, test_dataset, synapse_type_map = load_and_prepare_data()
     
     if train_dataset is None:
-        print("Failed to load data. Exiting.")
+        logger.error("Failed to load data. Exiting.")
         return
     
     # Create data loaders
@@ -430,8 +432,8 @@ def main():
         pin_memory=True if torch.cuda.is_available() else False
     )
     
-    print(f"Train samples: {len(train_dataset)}")
-    print(f"Test samples: {len(test_dataset)}")
+    logger.info(f"Train samples: {len(train_dataset)}")
+    logger.info(f"Test samples: {len(test_dataset)}")
     
     # Calculate class weights for balanced loss
     train_labels = []
@@ -448,9 +450,9 @@ def main():
     # Initialize model
     model = MaskedSynapseClassifier(num_classes=2).to(device)
     if args.resume and os.path.exists(MODEL_SAVE_PATHS['masked']):
-        print(f'Resuming from {MODEL_SAVE_PATHS["masked"]}')
+        logger.info(f'Resuming from {MODEL_SAVE_PATHS["masked"]}')
         model.load_state_dict(torch.load(MODEL_SAVE_PATHS['masked'], map_location=device))
-    print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
+    logger.info(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
     
     # Loss function and optimizer with class weights
     criterion = nn.CrossEntropyLoss(weight=class_weights)

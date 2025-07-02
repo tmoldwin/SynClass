@@ -11,7 +11,7 @@ from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
 from tqdm import tqdm
 import warnings
-from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS
+from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS, setup_logging
 warnings.filterwarnings('ignore')
 
 # Configuration
@@ -126,10 +126,11 @@ class SimpleSynapseClassifier(nn.Module):
 
 def load_and_prepare_data():
     """Load and prepare the dataset"""
-    print("Loading synapse data...")
+    logger = setup_logging('fast')
+    logger.info("Loading synapse data...")
     
     if not os.path.exists(SYNAPSE_DATA_PATH):
-        print(f"Error: {SYNAPSE_DATA_PATH} not found!")
+        logger.error(f"Error: {SYNAPSE_DATA_PATH} not found!")
         return None, None, None
     
     synapse_data = pd.read_csv(SYNAPSE_DATA_PATH)
@@ -146,17 +147,17 @@ def load_and_prepare_data():
         except (ValueError, IndexError):
             continue
     
-    print(f"Found {len(valid_files)} valid synapse files")
-    print(f"E synapses: {sum(1 for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'E')}")
-    print(f"I synapses: {sum(1 for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'I')}")
+    logger.info(f"Found {len(valid_files)} valid synapse files")
+    logger.info(f"E synapses: {sum(1 for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'E')}")
+    logger.info(f"I synapses: {sum(1 for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'I')}")
     
     if len(valid_files) == 0:
-        print("No valid synapse files found!")
+        logger.error("No valid synapse files found!")
         return None, None, None
     
     # Use smaller subset for faster testing
     if len(valid_files) > 5000:
-        print(f"Using subset of 5000 files for faster training")
+        logger.info(f"Using subset of 5000 files for faster training")
         valid_files = np.random.choice(valid_files, 5000, replace=False)
     
     train_files, test_files = train_test_split(valid_files, test_size=0.2, random_state=RANDOM_SEED, 
@@ -249,7 +250,7 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, num_epoc
         if test_acc > best_test_acc:
             best_test_acc = test_acc
             torch.save(model.state_dict(), MODEL_SAVE_PATHS['fast'])
-            print(f'New best model saved! Test accuracy: {test_acc:.2f}%')
+            logger.info(f'New best model saved! Test accuracy: {test_acc:.2f}%')
         
         print('-' * 50)
     

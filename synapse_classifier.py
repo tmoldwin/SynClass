@@ -14,7 +14,7 @@ from tqdm import tqdm
 import warnings
 import multiprocessing as mp
 from functools import partial
-from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS
+from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS, setup_logging
 warnings.filterwarnings('ignore')
 
 # Set multiprocessing start method for Windows
@@ -160,11 +160,12 @@ class SynapseClassifier3D(nn.Module):
 
 def load_and_prepare_data():
     """Load and prepare the dataset"""
-    print("Loading synapse data...")
+    logger = setup_logging('default')
+    logger.info("Loading synapse data...")
     
     # Load CSV data
     if not os.path.exists(SYNAPSE_DATA_PATH):
-        print(f"Error: {SYNAPSE_DATA_PATH} not found!")
+        logger.error(f"Error: {SYNAPSE_DATA_PATH} not found!")
         return None, None, None
     
     synapse_data = pd.read_csv(SYNAPSE_DATA_PATH)
@@ -184,12 +185,12 @@ def load_and_prepare_data():
             # Skip files that don't match the expected naming pattern
             continue
     
-    print(f"Found {len(valid_files)} valid synapse files")
-    print(f"E synapses: {sum(1 for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'E')}")
-    print(f"I synapses: {sum(1 for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'I')}")
+    logger.info(f"Found {len(valid_files)} valid synapse files")
+    logger.info(f"E synapses: {sum(1 for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'E')}")
+    logger.info(f"I synapses: {sum(1 for f in valid_files if synapse_type_map[int(f.split('_')[0])] == 'I')}")
     
     if len(valid_files) == 0:
-        print("No valid synapse files found!")
+        logger.error("No valid synapse files found!")
         return None, None, None
     
     # Split data
@@ -288,7 +289,7 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, num_epoc
         if test_acc > best_test_acc:
             best_test_acc = test_acc
             torch.save(model.state_dict(), MODEL_SAVE_PATHS['default'])
-            print(f'New best model saved! Test accuracy: {test_acc:.2f}%')
+            logger.info(f'New best model saved! Test accuracy: {test_acc:.2f}%')
         
         print('-' * 50)
     

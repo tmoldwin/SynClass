@@ -16,7 +16,7 @@ from sklearn.utils.class_weight import compute_class_weight
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 import cv2
-from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS
+from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS, setup_logging
 
 warnings.filterwarnings("ignore")
 
@@ -178,8 +178,11 @@ class VGG2D(nn.Module):
         return self.classifier(x)
 
 def main():
+    # Setup logging
+    logger = setup_logging('vgg2d')
+    
     # ------------------------- data preparation ---------------------
-    print('Loading CSV...')
+    logger.info('Loading CSV...')
     if not os.path.exists(CSV_PATH):
         raise FileNotFoundError(CSV_PATH)
     data = pd.read_csv(CSV_PATH)
@@ -198,7 +201,7 @@ def main():
     I_files = [f for f in all_files if map_type[int(f.split('_')[0])] == 'I']
     size = min(len(E_files), len(I_files))
     if size == 0:
-        print("Not enough data for at least one class. Exiting.")
+        logger.error("Not enough data for at least one class. Exiting.")
         exit()
     random.shuffle(E_files); random.shuffle(I_files)
     files_bal = E_files[:size] + I_files[:size]
@@ -219,9 +222,9 @@ def main():
 
     model = VGG2D().to(device)
     if args.resume and os.path.exists(MODEL_SAVE_PATHS['vgg2d']):
-        print('Resuming from checkpoint')
+        logger.info('Resuming from checkpoint')
         model.load_state_dict(torch.load(MODEL_SAVE_PATHS['vgg2d'], map_location=device))
-    print('Total params:', f"{sum(p.numel() for p in model.parameters()):,}")
+    logger.info(f'Total params: {sum(p.numel() for p in model.parameters()):,}')
 
     criterion = nn.CrossEntropyLoss(weight=cls_w)
     optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=1e-4)
@@ -267,25 +270,25 @@ def main():
         val_acc = 100*v_corr/v_tot
         scheduler.step(val_acc)
         
-        print(f"\nEpoch {epoch}/{EPOCHS} | Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}% | Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}%")
+        logger.info(f"Epoch {epoch}/{EPOCHS} | Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}% | Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}%")
 
         cm = confusion_matrix(all_lbls, all_preds)
-        print('Confusion Matrix:')
-        print(cm)
+        logger.info('Confusion Matrix:')
+        logger.info(str(cm))
         if cm.shape == (2, 2):
             e_acc = cm[0,0]/cm[0].sum() if cm[0].sum() > 0 else 0
             i_acc = cm[1,1]/cm[1].sum() if cm[1].sum() > 0 else 0
-            print(f'E accuracy {e_acc*100:.1f}%  |  I accuracy {i_acc*100:.1f}%')
+            logger.info(f'E accuracy {e_acc*100:.1f}%  |  I accuracy {i_acc*100:.1f}%')
 
         if val_acc > best_acc:
             best_acc = val_acc
             torch.save(model.state_dict(), MODEL_SAVE_PATHS['vgg2d'])
-            print(f'New best saved ({best_acc:.2f}%)')
+            logger.info(f'New best saved ({best_acc:.2f}%)')
 
-    print(f'\nTraining complete. Best val acc: {best_acc:.2f}%')
+    logger.info(f'Training complete. Best val acc: {best_acc:.2f}%')
 
-    print('\nClassification report on validation:')
-    print(classification_report(all_lbls, all_preds, target_names=['E','I'], zero_division_report=0))
+    logger.info('Classification report on validation:')
+    logger.info(classification_report(all_lbls, all_preds, target_names=['E','I'], zero_division_report=0))
 
 if __name__ == '__main__':
     main() 

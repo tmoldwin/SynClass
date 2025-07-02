@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p gpu.q
+#SBATCH -p ss
 #SBATCH --gres=gpu:1
 #SBATCH --job-name=synclass
 #SBATCH --output=synclass_%j.out

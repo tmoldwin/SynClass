@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH -p ss.gpu
 #SBATCH --gres=gpu:1
+#SBATCH --time=24:00:00
 #SBATCH --job-name=synclass
 #SBATCH --output=synclass_%j.out
 

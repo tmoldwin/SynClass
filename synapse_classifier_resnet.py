@@ -22,10 +22,10 @@ from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS, setup_logging
 warnings.filterwarnings("ignore")
 
 # ------------------------- configuration -------------------------
-BATCH_SIZE = 16           # Increased batch size for GPU
+BATCH_SIZE = 32           # Larger batch size for better GPU utilization
 INPUT_XY = 224            # Standard ResNet input size
-EPOCHS = 30
-LR = 1e-4                 # Smaller LR for fine-tuning
+EPOCHS = 100              # More epochs for better convergence
+LR = 1e-4                 # Conservative LR for stable fine-tuning
 NUM_WORKERS = 4           # Increased workers for GPU
 RNG_SEED = 42
 
@@ -45,10 +45,48 @@ torch.manual_seed(RNG_SEED)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Using device: {device}')
+
+# GPU optimization based on hardware
 if torch.cuda.is_available():
-    print(f'GPU: {torch.cuda.get_device_name(0)}')
-    print(f'GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB')
+    gpu_name = torch.cuda.get_device_name(0)
+    gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3
+    gpu_memory_available = torch.cuda.memory_allocated(0) / 1024**3
+    gpu_memory_free = gpu_memory - gpu_memory_available
+    
+    print(f'GPU: {gpu_name}')
+    print(f'GPU Memory: {gpu_memory:.1f} GB')
+    print(f'GPU Memory Available: {gpu_memory_free:.1f} GB')
+    
+    # Optimize batch size based on GPU memory
+    if gpu_memory >= 24:  # High-end GPU (RTX 4090, A100, etc.)
+        BATCH_SIZE = 64
+        print(f'High-end GPU detected, using batch size: {BATCH_SIZE}')
+    elif gpu_memory >= 12:  # Mid-range GPU (RTX 3080, etc.)
+        BATCH_SIZE = 32
+        print(f'Mid-range GPU detected, using batch size: {BATCH_SIZE}')
+    elif gpu_memory >= 8:  # Lower-end GPU
+        BATCH_SIZE = 16
+        print(f'Lower-end GPU detected, using batch size: {BATCH_SIZE}')
+    else:  # Very limited GPU memory
+        BATCH_SIZE = 8
+        print(f'Limited GPU memory, using batch size: {BATCH_SIZE}')
+    
+    # Optimize number of workers based on GPU
+    if 'A100' in gpu_name or 'H100' in gpu_name:
+        NUM_WORKERS = 8
+        print(f'High-end GPU detected, using {NUM_WORKERS} workers')
+    elif 'RTX' in gpu_name or 'V100' in gpu_name:
+        NUM_WORKERS = 6
+        print(f'Mid-range GPU detected, using {NUM_WORKERS} workers')
+    else:
+        NUM_WORKERS = 4
+        print(f'Using {NUM_WORKERS} workers')
+    
     torch.cuda.empty_cache()
+else:
+    print('No GPU available, using CPU settings')
+    BATCH_SIZE = 8
+    NUM_WORKERS = 2
 
 # ------------------------- dataset ------------------------------
 class Synapse2DDataset(Dataset):
@@ -223,6 +261,8 @@ def main():
 
     # ------------------------- training loop ------------------------
     best_acc = 0
+    patience = 15  # Early stopping patience
+    patience_counter = 0
     for epoch in range(1, EPOCHS+1):
         model.train()
         tot_loss = tot_corr = tot = 0
@@ -261,7 +301,13 @@ def main():
         val_acc = 100*v_corr/v_tot
         scheduler.step(val_acc)
         
-        logger.info(f"Epoch {epoch}/{EPOCHS} | Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}% | Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}%")
+        # Log GPU memory usage
+        if torch.cuda.is_available():
+            gpu_memory_used = torch.cuda.memory_allocated(0) / 1024**3
+            gpu_memory_cached = torch.cuda.memory_reserved(0) / 1024**3
+            logger.info(f"Epoch {epoch}/{EPOCHS} | Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}% | Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}% | GPU Memory: {gpu_memory_used:.1f}GB used, {gpu_memory_cached:.1f}GB cached")
+        else:
+            logger.info(f"Epoch {epoch}/{EPOCHS} | Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}% | Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}%")
 
         cm = confusion_matrix(all_lbls, all_preds)
         logger.info('Confusion Matrix:')
@@ -273,8 +319,14 @@ def main():
 
         if val_acc > best_acc:
             best_acc = val_acc
+            patience_counter = 0
             torch.save(model.state_dict(), save_path)
             logger.info(f'New best saved ({best_acc:.2f}%)')
+        else:
+            patience_counter += 1
+            if patience_counter >= patience:
+                logger.info(f'Early stopping at epoch {epoch} (no improvement for {patience} epochs)')
+                break
 
     logger.info(f'Training complete. Best val acc: {best_acc:.2f}%')
 

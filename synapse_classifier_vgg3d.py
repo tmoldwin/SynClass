@@ -20,8 +20,8 @@ import cv2
 warnings.filterwarnings("ignore")
 
 # ------------------------- configuration -------------------------
-DATA_DIR = 'Data/synpase_raw_em/synpase_raw_em/'
-CSV_PATH = 'Data/synpase_raw_em/synpase_raw_em/synapse_data.csv'
+DATA_DIR = 'Data/synpase_raw_em/'
+CSV_PATH = 'Data/synpase_raw_em/synapse_data.csv'
 BATCH_SIZE = 16            # Can use a larger batch size for 2D
 INPUT_XY = 48             # keep same XY size
 EPOCHS = 30

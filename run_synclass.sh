@@ -9,4 +9,5 @@
 # source activate myenv
 
 cd $HOME/code/SynClass
+git pull origin main
 python synapse_classifier_resnet.py

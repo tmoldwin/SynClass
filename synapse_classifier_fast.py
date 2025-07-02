@@ -11,11 +11,11 @@ from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
 from tqdm import tqdm
 import warnings
+from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS
 warnings.filterwarnings('ignore')
 
 # Configuration
-DATA_DIR = 'Data/synpase_raw_em/synpase_raw_em/'
-SYNAPSE_DATA_PATH = 'Data/synpase_raw_em/synpase_raw_em/synapse_data.csv'
+SYNAPSE_DATA_PATH = CSV_PATH
 BATCH_SIZE = 32  # Much larger batch size
 LEARNING_RATE = 0.001
 EPOCHS = 20  # Fewer epochs to test faster
@@ -248,7 +248,7 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, num_epoc
         
         if test_acc > best_test_acc:
             best_test_acc = test_acc
-            torch.save(model.state_dict(), 'best_synapse_model_fast.pth')
+            torch.save(model.state_dict(), MODEL_SAVE_PATHS['fast'])
             print(f'New best model saved! Test accuracy: {test_acc:.2f}%')
         
         print('-' * 50)

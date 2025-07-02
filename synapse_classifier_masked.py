@@ -13,11 +13,11 @@ import torch.nn.functional as F
 from tqdm import tqdm
 import warnings
 import random
+from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS
 warnings.filterwarnings('ignore')
 
 # Configuration
-DATA_DIR = 'Data/synpase_raw_em/synpase_raw_em/'
-SYNAPSE_DATA_PATH = 'Data/synpase_raw_em/synpase_raw_em/synapse_data.csv'
+SYNAPSE_DATA_PATH = CSV_PATH
 BATCH_SIZE = 16
 LEARNING_RATE = 0.0005  # Lower learning rate
 EPOCHS = 30
@@ -396,7 +396,7 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
         
         if test_acc > best_test_acc:
             best_test_acc = test_acc
-            torch.save(model.state_dict(), 'best_synapse_model_masked.pth')
+            torch.save(model.state_dict(), MODEL_SAVE_PATHS['masked'])
             print(f'New best model saved! Test accuracy: {test_acc:.2f}%')
         
         print('-' * 50)
@@ -447,9 +447,9 @@ def main():
     
     # Initialize model
     model = MaskedSynapseClassifier(num_classes=2).to(device)
-    if args.resume and os.path.exists('best_synapse_model_masked.pth'):
-        print('Resuming from best_synapse_model_masked.pth')
-        model.load_state_dict(torch.load('best_synapse_model_masked.pth', map_location=device))
+    if args.resume and os.path.exists(MODEL_SAVE_PATHS['masked']):
+        print(f'Resuming from {MODEL_SAVE_PATHS["masked"]}')
+        model.load_state_dict(torch.load(MODEL_SAVE_PATHS['masked'], map_location=device))
     print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
     
     # Loss function and optimizer with class weights

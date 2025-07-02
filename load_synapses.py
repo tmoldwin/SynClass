@@ -2,12 +2,10 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-
-# Directory containing the synapse data
-DATA_DIR = 'Data/synpase_raw_em/synpase_raw_em/'
+from constants import DATA_DIR, CSV_PATH
 
 # Load synapse data from CSV
-synapse_data_path = 'Data/synpase_raw_em/synpase_raw_em/synapse_data.csv'
+synapse_data_path = CSV_PATH
 synapse_data = pd.read_csv(synapse_data_path)
 
 # Create a mapping from synapse ID to type

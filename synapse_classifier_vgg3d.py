@@ -16,12 +16,11 @@ from sklearn.utils.class_weight import compute_class_weight
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 import cv2
+from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS
 
 warnings.filterwarnings("ignore")
 
 # ------------------------- configuration -------------------------
-DATA_DIR = 'Data/synpase_raw_em/'
-CSV_PATH = 'Data/synpase_raw_em/synapse_data.csv'
 BATCH_SIZE = 16            # Can use a larger batch size for 2D
 INPUT_XY = 48             # keep same XY size
 EPOCHS = 30
@@ -219,9 +218,9 @@ def main():
     cls_w = torch.tensor(cls_w, dtype=torch.float32, device=device)
 
     model = VGG2D().to(device)
-    if args.resume and os.path.exists('best_synapse_model_vgg2d.pth'):
+    if args.resume and os.path.exists(MODEL_SAVE_PATHS['vgg2d']):
         print('Resuming from checkpoint')
-        model.load_state_dict(torch.load('best_synapse_model_vgg2d.pth', map_location=device))
+        model.load_state_dict(torch.load(MODEL_SAVE_PATHS['vgg2d'], map_location=device))
     print('Total params:', f"{sum(p.numel() for p in model.parameters()):,}")
 
     criterion = nn.CrossEntropyLoss(weight=cls_w)
@@ -280,7 +279,7 @@ def main():
 
         if val_acc > best_acc:
             best_acc = val_acc
-            torch.save(model.state_dict(), 'best_synapse_model_vgg2d.pth')
+            torch.save(model.state_dict(), MODEL_SAVE_PATHS['vgg2d'])
             print(f'New best saved ({best_acc:.2f}%)')
 
     print(f'\nTraining complete. Best val acc: {best_acc:.2f}%')

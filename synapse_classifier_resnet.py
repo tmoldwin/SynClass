@@ -17,12 +17,11 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 import cv2
 import torchvision.models as models
+from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS
 
 warnings.filterwarnings("ignore")
 
 # ------------------------- configuration -------------------------
-DATA_DIR = 'Data/synpase_raw_em/synpase_raw_em/'
-CSV_PATH = 'Data/synpase_raw_em/synpase_raw_em/synapse_data.csv'
 BATCH_SIZE = 8            # Smaller batch size for larger images
 INPUT_XY = 224            # Standard ResNet input size
 EPOCHS = 30
@@ -205,7 +204,7 @@ def main():
     cls_w = torch.tensor(cls_w, dtype=torch.float32, device=device)
 
     model = ResNetClassifier().to(device)
-    save_path = 'best_synapse_model_resnet.pth'
+    save_path = MODEL_SAVE_PATHS['resnet']
     if args.resume and os.path.exists(save_path):
         print(f'Resuming from checkpoint {save_path}')
         model.load_state_dict(torch.load(save_path, map_location=device))

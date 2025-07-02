@@ -14,6 +14,7 @@ from tqdm import tqdm
 import warnings
 import multiprocessing as mp
 from functools import partial
+from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS
 warnings.filterwarnings('ignore')
 
 # Set multiprocessing start method for Windows
@@ -25,8 +26,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
 
 # Configuration
-DATA_DIR = 'Data/synpase_raw_em/synpase_raw_em/'
-SYNAPSE_DATA_PATH = 'Data/synpase_raw_em/synpase_raw_em/synapse_data.csv'
+SYNAPSE_DATA_PATH = CSV_PATH
 BATCH_SIZE = 16  # Increased batch size for better GPU utilization
 LEARNING_RATE = 0.001
 EPOCHS = 50
@@ -287,7 +287,7 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, num_epoc
         # Save best model
         if test_acc > best_test_acc:
             best_test_acc = test_acc
-            torch.save(model.state_dict(), 'best_synapse_model.pth')
+            torch.save(model.state_dict(), MODEL_SAVE_PATHS['default'])
             print(f'New best model saved! Test accuracy: {test_acc:.2f}%')
         
         print('-' * 50)

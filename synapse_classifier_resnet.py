@@ -22,11 +22,11 @@ from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS, setup_logging
 warnings.filterwarnings("ignore")
 
 # ------------------------- configuration -------------------------
-BATCH_SIZE = 8            # Smaller batch size for larger images
+BATCH_SIZE = 16           # Increased batch size for GPU
 INPUT_XY = 224            # Standard ResNet input size
 EPOCHS = 30
 LR = 1e-4                 # Smaller LR for fine-tuning
-NUM_WORKERS = 2
+NUM_WORKERS = 4           # Increased workers for GPU
 RNG_SEED = 42
 
 # ------------------------- argparse ------------------------------
@@ -45,6 +45,10 @@ torch.manual_seed(RNG_SEED)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Using device: {device}')
+if torch.cuda.is_available():
+    print(f'GPU: {torch.cuda.get_device_name(0)}')
+    print(f'GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB')
+    torch.cuda.empty_cache()
 
 # ------------------------- dataset ------------------------------
 class Synapse2DDataset(Dataset):
@@ -198,8 +202,8 @@ def main():
     train_ds = Synapse2DDataset(train_f, map_type, DATA_DIR, augment=True)
     val_ds   = Synapse2DDataset(test_f,  map_type, DATA_DIR, augment=False)
 
-    train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=True)
-    val_loader   = DataLoader(val_ds,   batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=True)
+    train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=True, persistent_workers=True)
+    val_loader   = DataLoader(val_ds,   batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=True, persistent_workers=True)
 
     # ------------------------- training setup -----------------------
     labels_train = [1 if map_type[int(f.split('_')[0])] == 'I' else 0 for f in train_f]

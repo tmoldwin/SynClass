@@ -9,5 +9,5 @@
 # source activate myenv
 
 cd $HOME/code/SynClass
-git pull origin main
+git pull origin main || echo "Warning: git pull failed, continuing with current code"
 python synapse_classifier_resnet.py

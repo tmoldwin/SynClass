@@ -17,6 +17,8 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 import cv2
 import torchvision.models as models
+import matplotlib.pyplot as plt
+import seaborn as sns
 from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS, setup_logging
 
 warnings.filterwarnings("ignore")
@@ -25,9 +27,11 @@ warnings.filterwarnings("ignore")
 BATCH_SIZE = 32           # Larger batch size for better GPU utilization
 INPUT_XY = 224            # Standard ResNet input size
 EPOCHS = 100              # More epochs for better convergence
-LR = 1e-4                 # Conservative LR for stable fine-tuning
+LR = 5e-5                 # Lower LR to prevent overfitting
 NUM_WORKERS = 4           # Increased workers for GPU
 RNG_SEED = 42
+DROPOUT_RATE = 0.5        # Add dropout to prevent overfitting
+WEIGHT_DECAY = 1e-3       # Increased weight decay for regularization
 
 # ------------------------- argparse ------------------------------
 parser = argparse.ArgumentParser(description='ResNet-based synapse classifier')
@@ -197,12 +201,116 @@ class ResNetClassifier(nn.Module):
         # Load a pre-trained ResNet-18
         self.resnet = models.resnet18(pretrained=pretrained)
         
-        # Replace the final fully connected layer for our classification task
+        # Replace the final fully connected layer with dropout and regularization
         num_ftrs = self.resnet.fc.in_features
-        self.resnet.fc = nn.Linear(num_ftrs, num_classes)
+        self.resnet.fc = nn.Sequential(
+            nn.Dropout(DROPOUT_RATE),
+            nn.Linear(num_ftrs, 512),
+            nn.ReLU(),
+            nn.Dropout(DROPOUT_RATE),
+            nn.Linear(512, num_classes)
+        )
 
     def forward(self, x):
         return self.resnet(x)
+
+
+def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, save_path):
+    """Plot comprehensive learning curves and save to figures directory."""
+    epochs = range(1, len(train_losses) + 1)
+    
+    # Create figure with subplots - 3x2 layout for comprehensive view
+    fig = plt.figure(figsize=(20, 15))
+    
+    # Plot 1: Training and validation loss
+    ax1 = plt.subplot(3, 2, 1)
+    ax1.plot(epochs, train_losses, 'b-', label='Training Loss', linewidth=2, alpha=0.8)
+    ax1.plot(epochs, val_losses, 'r-', label='Validation Loss', linewidth=2, alpha=0.8)
+    ax1.set_title('Training and Validation Loss', fontsize=14, fontweight='bold')
+    ax1.set_xlabel('Epoch')
+    ax1.set_ylabel('Loss')
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+    
+    # Plot 2: Training and validation accuracy
+    ax2 = plt.subplot(3, 2, 2)
+    ax2.plot(epochs, train_accs, 'b-', label='Training Accuracy', linewidth=2, alpha=0.8)
+    ax2.plot(epochs, val_accs, 'r-', label='Validation Accuracy', linewidth=2, alpha=0.8)
+    ax2.set_title('Training and Validation Accuracy', fontsize=14, fontweight='bold')
+    ax2.set_xlabel('Epoch')
+    ax2.set_ylabel('Accuracy (%)')
+    ax2.legend()
+    ax2.grid(True, alpha=0.3)
+    
+    # Plot 3: E and I class accuracies
+    ax3 = plt.subplot(3, 2, 3)
+    if len(e_accs) > 0:
+        ax3.plot(epochs, e_accs, 'g-', label='E (Excitatory) Accuracy', linewidth=2, alpha=0.8)
+        ax3.plot(epochs, i_accs, 'm-', label='I (Inhibitory) Accuracy', linewidth=2, alpha=0.8)
+        ax3.set_title('Per-Class Validation Accuracy', fontsize=14, fontweight='bold')
+        ax3.set_xlabel('Epoch')
+        ax3.set_ylabel('Accuracy (%)')
+        ax3.legend()
+        ax3.grid(True, alpha=0.3)
+    
+    # Plot 4: Learning rate schedule
+    ax4 = plt.subplot(3, 2, 4)
+    ax4.plot(epochs, learning_rates, 'orange', linewidth=2, alpha=0.8)
+    ax4.set_title('Learning Rate Schedule', fontsize=14, fontweight='bold')
+    ax4.set_xlabel('Epoch')
+    ax4.set_ylabel('Learning Rate')
+    ax4.set_yscale('log')
+    ax4.grid(True, alpha=0.3)
+    
+    # Plot 5: Overfitting indicator
+    ax5 = plt.subplot(3, 2, 5)
+    overfitting_gap = [t - v for t, v in zip(train_accs, val_accs)]
+    ax5.plot(epochs, overfitting_gap, 'purple', linewidth=2, alpha=0.8)
+    ax5.axhline(y=0, color='black', linestyle='--', alpha=0.5)
+    ax5.axhline(y=10, color='red', linestyle='--', alpha=0.5, label='Overfitting Threshold')
+    ax5.axhline(y=-10, color='red', linestyle='--', alpha=0.5)
+    ax5.set_title('Overfitting Indicator (Train - Val Accuracy)', fontsize=14, fontweight='bold')
+    ax5.set_xlabel('Epoch')
+    ax5.set_ylabel('Accuracy Gap (%)')
+    ax5.legend()
+    ax5.grid(True, alpha=0.3)
+    
+    # Plot 6: Training progress summary
+    ax6 = plt.subplot(3, 2, 6)
+    # Create a summary table
+    current_epoch = len(epochs)
+    best_val_acc = max(val_accs) if val_accs else 0
+    best_epoch = val_accs.index(best_val_acc) + 1 if val_accs else 0
+    current_lr = learning_rates[-1] if learning_rates else 0
+    
+    summary_text = f"""
+    Training Progress Summary:
+    
+    Current Epoch: {current_epoch}
+    Best Validation Accuracy: {best_val_acc:.2f}% (Epoch {best_epoch})
+    Current Learning Rate: {current_lr:.2e}
+    Training Accuracy: {train_accs[-1]:.2f}% (Current)
+    Validation Accuracy: {val_accs[-1]:.2f}% (Current)
+    Overfitting Gap: {overfitting_gap[-1]:.2f}% (Current)
+    
+    E Accuracy: {e_accs[-1]:.2f}% (Current)
+    I Accuracy: {i_accs[-1]:.2f}% (Current)
+    """
+    
+    ax6.text(0.1, 0.9, summary_text, transform=ax6.transAxes, fontsize=12, 
+             verticalalignment='top', bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.8))
+    ax6.set_title('Training Summary', fontsize=14, fontweight='bold')
+    ax6.axis('off')
+    
+    plt.tight_layout()
+    
+    # Save to figures directory (overwrite each time)
+    os.makedirs('figures', exist_ok=True)
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    # Print progress update
+    print(f'Epoch {current_epoch}: Val Acc {val_accs[-1]:.2f}%, Best {best_val_acc:.2f}% (Epoch {best_epoch})')
 
 
 def main():
@@ -256,13 +364,23 @@ def main():
     logger.info(f'Total params: {sum(p.numel() for p in model.parameters()):,}')
 
     criterion = nn.CrossEntropyLoss(weight=cls_w)
-    optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=1e-4)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', patience=3, factor=0.5)
+    optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', patience=5, factor=0.7, min_lr=1e-6)
 
     # ------------------------- training loop ------------------------
     best_acc = 0
     patience = 15  # Early stopping patience
     patience_counter = 0
+    
+    # Track learning curves
+    train_losses = []
+    train_accs = []
+    val_losses = []
+    val_accs = []
+    learning_rates = []
+    e_accs = []
+    i_accs = []
+    
     for epoch in range(1, EPOCHS+1):
         model.train()
         tot_loss = tot_corr = tot = 0
@@ -300,6 +418,33 @@ def main():
         val_loss = v_tot_loss / v_tot
         val_acc = 100*v_corr/v_tot
         scheduler.step(val_acc)
+        
+        # Track metrics
+        train_losses.append(train_loss)
+        train_accs.append(train_acc)
+        val_losses.append(val_loss)
+        val_accs.append(val_acc)
+        learning_rates.append(optimizer.param_groups[0]['lr'])
+        
+        # Calculate E and I accuracies
+        cm = confusion_matrix(all_lbls, all_preds)
+        if cm.shape == (2, 2):
+            e_acc = cm[0,0]/cm[0].sum() * 100 if cm[0].sum() > 0 else 0
+            i_acc = cm[1,1]/cm[1].sum() * 100 if cm[1].sum() > 0 else 0
+        else:
+            e_acc = i_acc = 0
+        
+        # Track E/I accuracies
+        if epoch == 1:
+            e_accs = [e_acc]
+            i_accs = [i_acc]
+        else:
+            e_accs.append(e_acc)
+            i_accs.append(i_acc)
+        
+        # Update visualization every epoch
+        plot_learning_curves(train_losses, train_accs, val_losses, val_accs, 
+                           learning_rates, e_accs, i_accs, save_path.replace('.pth', '_curves.png'))
         
         # Log GPU memory usage
         if torch.cuda.is_available():

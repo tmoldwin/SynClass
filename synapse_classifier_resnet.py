@@ -27,11 +27,11 @@ warnings.filterwarnings("ignore")
 BATCH_SIZE = 32           # Larger batch size for better GPU utilization
 INPUT_XY = 224            # Standard ResNet input size
 EPOCHS = 100              # More epochs for better convergence
-LR = 5e-5                 # Lower LR to prevent overfitting
+LR = 1e-5                 # Much lower LR to prevent overfitting
 NUM_WORKERS = 4           # Increased workers for GPU
 RNG_SEED = 42
-DROPOUT_RATE = 0.5        # Add dropout to prevent overfitting
-WEIGHT_DECAY = 1e-3       # Increased weight decay for regularization
+DROPOUT_RATE = 0.7        # Higher dropout to prevent overfitting
+WEIGHT_DECAY = 5e-3       # Much stronger weight decay
 
 # ------------------------- argparse ------------------------------
 parser = argparse.ArgumentParser(description='ResNet-based synapse classifier')
@@ -201,21 +201,26 @@ class ResNetClassifier(nn.Module):
         # Load a pre-trained ResNet-18
         self.resnet = models.resnet18(pretrained=pretrained)
         
-        # Replace the final fully connected layer with dropout and regularization
+        # Replace the final fully connected layer with stronger regularization
         num_ftrs = self.resnet.fc.in_features
         self.resnet.fc = nn.Sequential(
             nn.Dropout(DROPOUT_RATE),
-            nn.Linear(num_ftrs, 512),
+            nn.Linear(num_ftrs, 256),
             nn.ReLU(),
+            nn.BatchNorm1d(256),
             nn.Dropout(DROPOUT_RATE),
-            nn.Linear(512, num_classes)
+            nn.Linear(256, 128),
+            nn.ReLU(),
+            nn.BatchNorm1d(128),
+            nn.Dropout(DROPOUT_RATE),
+            nn.Linear(128, num_classes)
         )
 
     def forward(self, x):
         return self.resnet(x)
 
 
-def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, save_path):
+def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, save_path=None):
     """Plot comprehensive learning curves and save to figures directory."""
     epochs = range(1, len(train_losses) + 1)
     
@@ -304,9 +309,22 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     
     plt.tight_layout()
     
-    # Save to figures directory (overwrite each time)
-    os.makedirs('figures', exist_ok=True)
-    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    # Ensure figures directory exists and save with proper error handling
+    try:
+        os.makedirs('figures', exist_ok=True)
+        # Create a proper filename for the plot
+        plot_filename = 'figures/resnet_training_curves.png'
+        plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
+        print(f'Plot saved successfully to: {plot_filename}')
+    except Exception as e:
+        print(f'Error saving plot: {e}')
+        # Try saving to current directory as fallback
+        try:
+            plt.savefig('resnet_training_curves.png', dpi=300, bbox_inches='tight')
+            print('Plot saved to current directory as fallback')
+        except Exception as e2:
+            print(f'Failed to save plot even to current directory: {e2}')
+    
     plt.close()
     
     # Print progress update
@@ -365,11 +383,11 @@ def main():
 
     criterion = nn.CrossEntropyLoss(weight=cls_w)
     optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', patience=5, factor=0.7, min_lr=1e-6)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', patience=3, factor=0.5, min_lr=1e-7)
 
     # ------------------------- training loop ------------------------
     best_acc = 0
-    patience = 15  # Early stopping patience
+    patience = 10  # Reduced patience for earlier stopping
     patience_counter = 0
     
     # Track learning curves
@@ -444,7 +462,7 @@ def main():
         
         # Update visualization every epoch
         plot_learning_curves(train_losses, train_accs, val_losses, val_accs, 
-                           learning_rates, e_accs, i_accs, save_path.replace('.pth', '_curves.png'))
+                           learning_rates, e_accs, i_accs, None)
         
         # Log GPU memory usage
         if torch.cuda.is_available():

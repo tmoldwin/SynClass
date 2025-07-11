@@ -1,0 +1,151 @@
+2025-07-06 14:30:53,708 - INFO - Loading CSV...
+2025-07-06 14:30:55,842 - INFO - Total params: 11,440,194
+2025-07-06 14:36:15,807 - INFO - Epoch 1/100 | Train Loss: 0.6664, Train Acc: 60.63% | Val Loss: 0.6031, Val Acc: 67.57% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 14:36:15,811 - INFO - Confusion Matrix:
+2025-07-06 14:36:15,811 - INFO - [[1988  490]
+ [1117 1361]]
+2025-07-06 14:36:15,811 - INFO - E accuracy 80.2%  |  I accuracy 54.9%
+2025-07-06 14:36:16,159 - INFO - New best saved (67.57%)
+2025-07-06 14:38:12,723 - INFO - Epoch 2/100 | Train Loss: 0.6215, Train Acc: 65.94% | Val Loss: 0.5979, Val Acc: 69.31% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 14:38:12,727 - INFO - Confusion Matrix:
+2025-07-06 14:38:12,727 - INFO - [[2020  458]
+ [1063 1415]]
+2025-07-06 14:38:12,727 - INFO - E accuracy 81.5%  |  I accuracy 57.1%
+2025-07-06 14:38:13,143 - INFO - New best saved (69.31%)
+2025-07-06 14:40:11,156 - INFO - Epoch 3/100 | Train Loss: 0.5985, Train Acc: 68.66% | Val Loss: 0.5804, Val Acc: 69.92% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 14:40:11,160 - INFO - Confusion Matrix:
+2025-07-06 14:40:11,161 - INFO - [[1788  690]
+ [ 801 1677]]
+2025-07-06 14:40:11,161 - INFO - E accuracy 72.2%  |  I accuracy 67.7%
+2025-07-06 14:40:11,565 - INFO - New best saved (69.92%)
+2025-07-06 14:42:09,403 - INFO - Epoch 4/100 | Train Loss: 0.5840, Train Acc: 69.90% | Val Loss: 0.5784, Val Acc: 70.58% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 14:42:09,407 - INFO - Confusion Matrix:
+2025-07-06 14:42:09,407 - INFO - [[1952  526]
+ [ 932 1546]]
+2025-07-06 14:42:09,407 - INFO - E accuracy 78.8%  |  I accuracy 62.4%
+2025-07-06 14:42:09,770 - INFO - New best saved (70.58%)
+2025-07-06 14:44:06,966 - INFO - Epoch 5/100 | Train Loss: 0.5760, Train Acc: 70.86% | Val Loss: 0.5707, Val Acc: 71.27% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 14:44:06,970 - INFO - Confusion Matrix:
+2025-07-06 14:44:06,970 - INFO - [[1944  534]
+ [ 890 1588]]
+2025-07-06 14:44:06,970 - INFO - E accuracy 78.5%  |  I accuracy 64.1%
+2025-07-06 14:44:07,340 - INFO - New best saved (71.27%)
+2025-07-06 14:46:03,727 - INFO - Epoch 6/100 | Train Loss: 0.5648, Train Acc: 71.84% | Val Loss: 0.5693, Val Acc: 71.33% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 14:46:03,731 - INFO - Confusion Matrix:
+2025-07-06 14:46:03,731 - INFO - [[1857  621]
+ [ 800 1678]]
+2025-07-06 14:46:03,731 - INFO - E accuracy 74.9%  |  I accuracy 67.7%
+2025-07-06 14:46:04,100 - INFO - New best saved (71.33%)
+2025-07-06 14:48:03,421 - INFO - Epoch 7/100 | Train Loss: 0.5599, Train Acc: 72.70% | Val Loss: 0.5663, Val Acc: 71.43% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 14:48:03,424 - INFO - Confusion Matrix:
+2025-07-06 14:48:03,425 - INFO - [[2036  442]
+ [ 974 1504]]
+2025-07-06 14:48:03,425 - INFO - E accuracy 82.2%  |  I accuracy 60.7%
+2025-07-06 14:48:03,775 - INFO - New best saved (71.43%)
+2025-07-06 14:50:04,318 - INFO - Epoch 8/100 | Train Loss: 0.5499, Train Acc: 73.16% | Val Loss: 0.5790, Val Acc: 71.59% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 14:50:04,323 - INFO - Confusion Matrix:
+2025-07-06 14:50:04,323 - INFO - [[1747  731]
+ [ 677 1801]]
+2025-07-06 14:50:04,323 - INFO - E accuracy 70.5%  |  I accuracy 72.7%
+2025-07-06 14:50:04,673 - INFO - New best saved (71.59%)
+2025-07-06 14:52:01,401 - INFO - Epoch 9/100 | Train Loss: 0.5459, Train Acc: 73.48% | Val Loss: 0.5675, Val Acc: 71.63% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 14:52:01,405 - INFO - Confusion Matrix:
+2025-07-06 14:52:01,405 - INFO - [[1981  497]
+ [ 909 1569]]
+2025-07-06 14:52:01,405 - INFO - E accuracy 79.9%  |  I accuracy 63.3%
+2025-07-06 14:52:01,778 - INFO - New best saved (71.63%)
+2025-07-06 14:53:59,288 - INFO - Epoch 10/100 | Train Loss: 0.5377, Train Acc: 73.81% | Val Loss: 0.5687, Val Acc: 71.65% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 14:53:59,292 - INFO - Confusion Matrix:
+2025-07-06 14:53:59,292 - INFO - [[2051  427]
+ [ 978 1500]]
+2025-07-06 14:53:59,292 - INFO - E accuracy 82.8%  |  I accuracy 60.5%
+2025-07-06 14:53:59,663 - INFO - New best saved (71.65%)
+2025-07-06 14:55:55,616 - INFO - Epoch 11/100 | Train Loss: 0.5298, Train Acc: 74.59% | Val Loss: 0.6119, Val Acc: 67.43% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 14:55:55,620 - INFO - Confusion Matrix:
+2025-07-06 14:55:55,620 - INFO - [[2252  226]
+ [1388 1090]]
+2025-07-06 14:55:55,620 - INFO - E accuracy 90.9%  |  I accuracy 44.0%
+2025-07-06 14:57:52,024 - INFO - Epoch 12/100 | Train Loss: 0.5240, Train Acc: 75.29% | Val Loss: 0.5677, Val Acc: 72.78% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 14:57:52,028 - INFO - Confusion Matrix:
+2025-07-06 14:57:52,028 - INFO - [[1883  595]
+ [ 754 1724]]
+2025-07-06 14:57:52,028 - INFO - E accuracy 76.0%  |  I accuracy 69.6%
+2025-07-06 14:57:52,411 - INFO - New best saved (72.78%)
+2025-07-06 14:59:48,332 - INFO - Epoch 13/100 | Train Loss: 0.5156, Train Acc: 75.65% | Val Loss: 0.5777, Val Acc: 71.85% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 14:59:48,336 - INFO - Confusion Matrix:
+2025-07-06 14:59:48,337 - INFO - [[1951  527]
+ [ 868 1610]]
+2025-07-06 14:59:48,337 - INFO - E accuracy 78.7%  |  I accuracy 65.0%
+2025-07-06 15:01:44,102 - INFO - Epoch 14/100 | Train Loss: 0.5053, Train Acc: 76.48% | Val Loss: 0.5837, Val Acc: 70.12% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 15:01:44,106 - INFO - Confusion Matrix:
+2025-07-06 15:01:44,106 - INFO - [[2080  398]
+ [1083 1395]]
+2025-07-06 15:01:44,106 - INFO - E accuracy 83.9%  |  I accuracy 56.3%
+2025-07-06 15:03:40,541 - INFO - Epoch 15/100 | Train Loss: 0.4988, Train Acc: 76.77% | Val Loss: 0.5877, Val Acc: 70.76% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 15:03:40,545 - INFO - Confusion Matrix:
+2025-07-06 15:03:40,546 - INFO - [[2057  421]
+ [1028 1450]]
+2025-07-06 15:03:40,546 - INFO - E accuracy 83.0%  |  I accuracy 58.5%
+2025-07-06 15:05:36,687 - INFO - Epoch 16/100 | Train Loss: 0.4919, Train Acc: 77.01% | Val Loss: 0.5857, Val Acc: 71.43% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 15:05:36,692 - INFO - Confusion Matrix:
+2025-07-06 15:05:36,692 - INFO - [[1939  539]
+ [ 877 1601]]
+2025-07-06 15:05:36,692 - INFO - E accuracy 78.2%  |  I accuracy 64.6%
+2025-07-06 15:07:36,197 - INFO - Epoch 17/100 | Train Loss: 0.4839, Train Acc: 77.51% | Val Loss: 0.6017, Val Acc: 71.33% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 15:07:36,201 - INFO - Confusion Matrix:
+2025-07-06 15:07:36,201 - INFO - [[1762  716]
+ [ 705 1773]]
+2025-07-06 15:07:36,201 - INFO - E accuracy 71.1%  |  I accuracy 71.5%
+2025-07-06 15:09:33,009 - INFO - Epoch 18/100 | Train Loss: 0.4723, Train Acc: 78.54% | Val Loss: 0.6153, Val Acc: 70.80% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 15:09:33,013 - INFO - Confusion Matrix:
+2025-07-06 15:09:33,013 - INFO - [[1897  581]
+ [ 866 1612]]
+2025-07-06 15:09:33,013 - INFO - E accuracy 76.6%  |  I accuracy 65.1%
+2025-07-06 15:11:29,125 - INFO - Epoch 19/100 | Train Loss: 0.4432, Train Acc: 80.03% | Val Loss: 0.6417, Val Acc: 69.57% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 15:11:29,129 - INFO - Confusion Matrix:
+2025-07-06 15:11:29,129 - INFO - [[2060  418]
+ [1090 1388]]
+2025-07-06 15:11:29,129 - INFO - E accuracy 83.1%  |  I accuracy 56.0%
+2025-07-06 15:13:25,587 - INFO - Epoch 20/100 | Train Loss: 0.4214, Train Acc: 81.29% | Val Loss: 0.6720, Val Acc: 69.03% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 15:13:25,592 - INFO - Confusion Matrix:
+2025-07-06 15:13:25,592 - INFO - [[1954  524]
+ [1011 1467]]
+2025-07-06 15:13:25,592 - INFO - E accuracy 78.9%  |  I accuracy 59.2%
+2025-07-06 15:15:23,033 - INFO - Epoch 21/100 | Train Loss: 0.4128, Train Acc: 81.77% | Val Loss: 0.6661, Val Acc: 69.49% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 15:15:23,037 - INFO - Confusion Matrix:
+2025-07-06 15:15:23,037 - INFO - [[1781  697]
+ [ 815 1663]]
+2025-07-06 15:15:23,038 - INFO - E accuracy 71.9%  |  I accuracy 67.1%
+2025-07-06 15:17:18,701 - INFO - Epoch 22/100 | Train Loss: 0.3918, Train Acc: 82.91% | Val Loss: 0.6741, Val Acc: 70.12% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 15:17:18,705 - INFO - Confusion Matrix:
+2025-07-06 15:17:18,705 - INFO - [[1813  665]
+ [ 816 1662]]
+2025-07-06 15:17:18,705 - INFO - E accuracy 73.2%  |  I accuracy 67.1%
+2025-07-06 15:19:14,703 - INFO - Epoch 23/100 | Train Loss: 0.3827, Train Acc: 83.36% | Val Loss: 0.6584, Val Acc: 68.95% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 15:19:14,707 - INFO - Confusion Matrix:
+2025-07-06 15:19:14,708 - INFO - [[1779  699]
+ [ 840 1638]]
+2025-07-06 15:19:14,708 - INFO - E accuracy 71.8%  |  I accuracy 66.1%
+2025-07-06 15:21:10,262 - INFO - Epoch 24/100 | Train Loss: 0.3623, Train Acc: 84.56% | Val Loss: 0.6899, Val Acc: 69.65% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 15:21:10,266 - INFO - Confusion Matrix:
+2025-07-06 15:21:10,267 - INFO - [[1709  769]
+ [ 735 1743]]
+2025-07-06 15:21:10,267 - INFO - E accuracy 69.0%  |  I accuracy 70.3%
+2025-07-06 15:23:05,776 - INFO - Epoch 25/100 | Train Loss: 0.3328, Train Acc: 86.12% | Val Loss: 0.7212, Val Acc: 69.96% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 15:23:05,780 - INFO - Confusion Matrix:
+2025-07-06 15:23:05,781 - INFO - [[1848  630]
+ [ 859 1619]]
+2025-07-06 15:23:05,781 - INFO - E accuracy 74.6%  |  I accuracy 65.3%
+2025-07-06 15:25:01,749 - INFO - Epoch 26/100 | Train Loss: 0.3125, Train Acc: 87.15% | Val Loss: 0.7755, Val Acc: 69.55% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 15:25:01,753 - INFO - Confusion Matrix:
+2025-07-06 15:25:01,753 - INFO - [[1749  729]
+ [ 780 1698]]
+2025-07-06 15:25:01,753 - INFO - E accuracy 70.6%  |  I accuracy 68.5%
+2025-07-06 15:26:59,434 - INFO - Epoch 27/100 | Train Loss: 0.2978, Train Acc: 87.95% | Val Loss: 0.7590, Val Acc: 69.17% | GPU Memory: 0.2GB used, 1.1GB cached
+2025-07-06 15:26:59,438 - INFO - Confusion Matrix:
+2025-07-06 15:26:59,438 - INFO - [[1819  659]
+ [ 869 1609]]
+2025-07-06 15:26:59,438 - INFO - E accuracy 73.4%  |  I accuracy 64.9%
+2025-07-06 15:26:59,438 - INFO - Early stopping at epoch 27 (no improvement for 15 epochs)
+2025-07-06 15:26:59,438 - INFO - Training complete. Best val acc: 72.78%
+2025-07-06 15:26:59,438 - INFO - Classification report on validation:

@@ -1,0 +1,162 @@
+2025-07-02 17:57:39,605 - INFO - Loading CSV...
+2025-07-02 17:57:41,228 - INFO - Total params: 11,177,538
+2025-07-02 18:02:30,640 - INFO - Epoch 1/30 | Train Loss: 0.6518, Train Acc: 62.69% | Val Loss: 0.6177, Val Acc: 66.42%
+2025-07-02 18:02:30,645 - INFO - Confusion Matrix:
+2025-07-02 18:02:30,646 - INFO - [[1766  712]
+ [ 952 1526]]
+2025-07-02 18:02:30,646 - INFO - E accuracy 71.3%  |  I accuracy 61.6%
+2025-07-02 18:02:31,004 - INFO - New best saved (66.42%)
+2025-07-02 18:07:04,487 - INFO - Epoch 2/30 | Train Loss: 0.6112, Train Acc: 67.32% | Val Loss: 0.5967, Val Acc: 69.03%
+2025-07-02 18:07:04,489 - INFO - Confusion Matrix:
+2025-07-02 18:07:04,490 - INFO - [[2000  478]
+ [1057 1421]]
+2025-07-02 18:07:04,490 - INFO - E accuracy 80.7%  |  I accuracy 57.3%
+2025-07-02 18:07:04,846 - INFO - New best saved (69.03%)
+2025-07-02 18:11:39,284 - INFO - Epoch 3/30 | Train Loss: 0.5958, Train Acc: 68.91% | Val Loss: 0.5895, Val Acc: 70.46%
+2025-07-02 18:11:39,287 - INFO - Confusion Matrix:
+2025-07-02 18:11:39,287 - INFO - [[2075  403]
+ [1061 1417]]
+2025-07-02 18:11:39,287 - INFO - E accuracy 83.7%  |  I accuracy 57.2%
+2025-07-02 18:11:39,675 - INFO - New best saved (70.46%)
+2025-07-02 18:18:00,376 - INFO - Epoch 4/30 | Train Loss: 0.5865, Train Acc: 70.00% | Val Loss: 0.5751, Val Acc: 70.64%
+2025-07-02 18:18:00,390 - INFO - Confusion Matrix:
+2025-07-02 18:18:00,390 - INFO - [[1965  513]
+ [ 942 1536]]
+2025-07-02 18:18:00,390 - INFO - E accuracy 79.3%  |  I accuracy 62.0%
+2025-07-02 18:18:00,781 - INFO - New best saved (70.64%)
+2025-07-02 18:28:00,780 - INFO - Epoch 5/30 | Train Loss: 0.5787, Train Acc: 70.38% | Val Loss: 0.5752, Val Acc: 71.13%
+2025-07-02 18:28:00,784 - INFO - Confusion Matrix:
+2025-07-02 18:28:00,784 - INFO - [[1789  689]
+ [ 742 1736]]
+2025-07-02 18:28:00,784 - INFO - E accuracy 72.2%  |  I accuracy 70.1%
+2025-07-02 18:28:01,090 - INFO - New best saved (71.13%)
+2025-07-02 18:38:04,191 - INFO - Epoch 6/30 | Train Loss: 0.5745, Train Acc: 71.00% | Val Loss: 0.5656, Val Acc: 71.83%
+2025-07-02 18:38:04,195 - INFO - Confusion Matrix:
+2025-07-02 18:38:04,195 - INFO - [[1975  503]
+ [ 893 1585]]
+2025-07-02 18:38:04,195 - INFO - E accuracy 79.7%  |  I accuracy 64.0%
+2025-07-02 18:38:04,525 - INFO - New best saved (71.83%)
+2025-07-02 18:48:03,788 - INFO - Epoch 7/30 | Train Loss: 0.5671, Train Acc: 71.61% | Val Loss: 0.5741, Val Acc: 71.61%
+2025-07-02 18:48:03,791 - INFO - Confusion Matrix:
+2025-07-02 18:48:03,791 - INFO - [[2049  429]
+ [ 978 1500]]
+2025-07-02 18:48:03,791 - INFO - E accuracy 82.7%  |  I accuracy 60.5%
+2025-07-02 18:58:15,138 - INFO - Epoch 8/30 | Train Loss: 0.5622, Train Acc: 72.43% | Val Loss: 0.5691, Val Acc: 71.81%
+2025-07-02 18:58:15,143 - INFO - Confusion Matrix:
+2025-07-02 18:58:15,143 - INFO - [[1810  668]
+ [ 729 1749]]
+2025-07-02 18:58:15,143 - INFO - E accuracy 73.0%  |  I accuracy 70.6%
+2025-07-02 19:08:35,145 - INFO - Epoch 9/30 | Train Loss: 0.5572, Train Acc: 72.68% | Val Loss: 0.5641, Val Acc: 71.79%
+2025-07-02 19:08:35,166 - INFO - Confusion Matrix:
+2025-07-02 19:08:35,166 - INFO - [[1942  536]
+ [ 862 1616]]
+2025-07-02 19:08:35,166 - INFO - E accuracy 78.4%  |  I accuracy 65.2%
+2025-07-02 19:18:20,974 - INFO - Epoch 10/30 | Train Loss: 0.5522, Train Acc: 72.90% | Val Loss: 0.5659, Val Acc: 72.24%
+2025-07-02 19:18:20,979 - INFO - Confusion Matrix:
+2025-07-02 19:18:20,979 - INFO - [[2043  435]
+ [ 941 1537]]
+2025-07-02 19:18:20,979 - INFO - E accuracy 82.4%  |  I accuracy 62.0%
+2025-07-02 19:18:21,388 - INFO - New best saved (72.24%)
+2025-07-02 19:28:39,829 - INFO - Epoch 11/30 | Train Loss: 0.5488, Train Acc: 73.18% | Val Loss: 0.5704, Val Acc: 71.57%
+2025-07-02 19:28:39,835 - INFO - Confusion Matrix:
+2025-07-02 19:28:39,835 - INFO - [[2050  428]
+ [ 981 1497]]
+2025-07-02 19:28:39,835 - INFO - E accuracy 82.7%  |  I accuracy 60.4%
+2025-07-02 19:38:04,116 - INFO - Epoch 12/30 | Train Loss: 0.5411, Train Acc: 73.84% | Val Loss: 0.5755, Val Acc: 72.18%
+2025-07-02 19:38:04,121 - INFO - Confusion Matrix:
+2025-07-02 19:38:04,121 - INFO - [[2053  425]
+ [ 954 1524]]
+2025-07-02 19:38:04,121 - INFO - E accuracy 82.8%  |  I accuracy 61.5%
+2025-07-02 19:43:42,488 - INFO - Epoch 13/30 | Train Loss: 0.5393, Train Acc: 74.04% | Val Loss: 0.5723, Val Acc: 71.37%
+2025-07-02 19:43:42,492 - INFO - Confusion Matrix:
+2025-07-02 19:43:42,492 - INFO - [[1806  672]
+ [ 747 1731]]
+2025-07-02 19:43:42,493 - INFO - E accuracy 72.9%  |  I accuracy 69.9%
+2025-07-02 19:49:21,551 - INFO - Epoch 14/30 | Train Loss: 0.5319, Train Acc: 74.82% | Val Loss: 0.5764, Val Acc: 71.37%
+2025-07-02 19:49:21,554 - INFO - Confusion Matrix:
+2025-07-02 19:49:21,554 - INFO - [[1758  720]
+ [ 699 1779]]
+2025-07-02 19:49:21,554 - INFO - E accuracy 70.9%  |  I accuracy 71.8%
+2025-07-02 19:55:00,201 - INFO - Epoch 15/30 | Train Loss: 0.5077, Train Acc: 76.38% | Val Loss: 0.5670, Val Acc: 73.51%
+2025-07-02 19:55:00,203 - INFO - Confusion Matrix:
+2025-07-02 19:55:00,203 - INFO - [[2046  432]
+ [ 881 1597]]
+2025-07-02 19:55:00,203 - INFO - E accuracy 82.6%  |  I accuracy 64.4%
+2025-07-02 19:55:00,608 - INFO - New best saved (73.51%)
+2025-07-02 20:00:09,733 - INFO - Epoch 16/30 | Train Loss: 0.4923, Train Acc: 77.30% | Val Loss: 0.5792, Val Acc: 72.40%
+2025-07-02 20:00:09,746 - INFO - Confusion Matrix:
+2025-07-02 20:00:09,747 - INFO - [[2038  440]
+ [ 928 1550]]
+2025-07-02 20:00:09,747 - INFO - E accuracy 82.2%  |  I accuracy 62.6%
+2025-07-02 20:05:38,206 - INFO - Epoch 17/30 | Train Loss: 0.4812, Train Acc: 77.70% | Val Loss: 0.5902, Val Acc: 71.75%
+2025-07-02 20:05:38,210 - INFO - Confusion Matrix:
+2025-07-02 20:05:38,211 - INFO - [[2045  433]
+ [ 967 1511]]
+2025-07-02 20:05:38,211 - INFO - E accuracy 82.5%  |  I accuracy 61.0%
+2025-07-02 20:10:56,769 - INFO - Epoch 18/30 | Train Loss: 0.4752, Train Acc: 78.25% | Val Loss: 0.5988, Val Acc: 71.03%
+2025-07-02 20:10:56,771 - INFO - Confusion Matrix:
+2025-07-02 20:10:56,772 - INFO - [[1903  575]
+ [ 861 1617]]
+2025-07-02 20:10:56,772 - INFO - E accuracy 76.8%  |  I accuracy 65.3%
+2025-07-02 20:18:37,358 - INFO - Epoch 19/30 | Train Loss: 0.4613, Train Acc: 79.10% | Val Loss: 0.6145, Val Acc: 72.54%
+2025-07-02 20:18:37,362 - INFO - Confusion Matrix:
+2025-07-02 20:18:37,363 - INFO - [[1939  539]
+ [ 822 1656]]
+2025-07-02 20:18:37,363 - INFO - E accuracy 78.2%  |  I accuracy 66.8%
+2025-07-02 20:29:33,303 - INFO - Epoch 20/30 | Train Loss: 0.4360, Train Acc: 80.34% | Val Loss: 0.6176, Val Acc: 70.78%
+2025-07-02 20:29:33,307 - INFO - Confusion Matrix:
+2025-07-02 20:29:33,307 - INFO - [[1817  661]
+ [ 787 1691]]
+2025-07-02 20:29:33,307 - INFO - E accuracy 73.3%  |  I accuracy 68.2%
+2025-07-02 20:38:53,631 - INFO - Epoch 21/30 | Train Loss: 0.4163, Train Acc: 81.60% | Val Loss: 0.6298, Val Acc: 70.96%
+2025-07-02 20:38:53,634 - INFO - Confusion Matrix:
+2025-07-02 20:38:53,634 - INFO - [[1869  609]
+ [ 830 1648]]
+2025-07-02 20:38:53,634 - INFO - E accuracy 75.4%  |  I accuracy 66.5%
+2025-07-02 20:43:12,227 - INFO - Epoch 22/30 | Train Loss: 0.4074, Train Acc: 82.18% | Val Loss: 0.6424, Val Acc: 70.44%
+2025-07-02 20:43:12,230 - INFO - Confusion Matrix:
+2025-07-02 20:43:12,230 - INFO - [[1858  620]
+ [ 845 1633]]
+2025-07-02 20:43:12,230 - INFO - E accuracy 75.0%  |  I accuracy 65.9%
+2025-07-02 20:47:33,746 - INFO - Epoch 23/30 | Train Loss: 0.3914, Train Acc: 82.76% | Val Loss: 0.6815, Val Acc: 70.24%
+2025-07-02 20:47:33,748 - INFO - Confusion Matrix:
+2025-07-02 20:47:33,748 - INFO - [[1823  655]
+ [ 820 1658]]
+2025-07-02 20:47:33,748 - INFO - E accuracy 73.6%  |  I accuracy 66.9%
+2025-07-02 20:51:55,177 - INFO - Epoch 24/30 | Train Loss: 0.3767, Train Acc: 83.83% | Val Loss: 0.6748, Val Acc: 70.22%
+2025-07-02 20:51:55,179 - INFO - Confusion Matrix:
+2025-07-02 20:51:55,180 - INFO - [[1871  607]
+ [ 869 1609]]
+2025-07-02 20:51:55,180 - INFO - E accuracy 75.5%  |  I accuracy 64.9%
+2025-07-02 20:56:16,893 - INFO - Epoch 25/30 | Train Loss: 0.3602, Train Acc: 84.77% | Val Loss: 0.6953, Val Acc: 69.47%
+2025-07-02 20:56:16,896 - INFO - Confusion Matrix:
+2025-07-02 20:56:16,896 - INFO - [[1910  568]
+ [ 945 1533]]
+2025-07-02 20:56:16,897 - INFO - E accuracy 77.1%  |  I accuracy 61.9%
+2025-07-02 21:00:39,247 - INFO - Epoch 26/30 | Train Loss: 0.3537, Train Acc: 85.05% | Val Loss: 0.7000, Val Acc: 69.94%
+2025-07-02 21:00:39,249 - INFO - Confusion Matrix:
+2025-07-02 21:00:39,249 - INFO - [[1771  707]
+ [ 783 1695]]
+2025-07-02 21:00:39,249 - INFO - E accuracy 71.5%  |  I accuracy 68.4%
+2025-07-02 21:05:02,497 - INFO - Epoch 27/30 | Train Loss: 0.3309, Train Acc: 86.35% | Val Loss: 0.7499, Val Acc: 69.31%
+2025-07-02 21:05:02,499 - INFO - Confusion Matrix:
+2025-07-02 21:05:02,500 - INFO - [[1885  593]
+ [ 928 1550]]
+2025-07-02 21:05:02,500 - INFO - E accuracy 76.1%  |  I accuracy 62.6%
+2025-07-02 21:09:25,984 - INFO - Epoch 28/30 | Train Loss: 0.3247, Train Acc: 86.74% | Val Loss: 0.7545, Val Acc: 69.05%
+2025-07-02 21:09:25,987 - INFO - Confusion Matrix:
+2025-07-02 21:09:25,987 - INFO - [[1834  644]
+ [ 890 1588]]
+2025-07-02 21:09:25,987 - INFO - E accuracy 74.0%  |  I accuracy 64.1%
+2025-07-02 21:13:48,828 - INFO - Epoch 29/30 | Train Loss: 0.3118, Train Acc: 87.43% | Val Loss: 0.7572, Val Acc: 69.27%
+2025-07-02 21:13:48,830 - INFO - Confusion Matrix:
+2025-07-02 21:13:48,830 - INFO - [[1897  581]
+ [ 942 1536]]
+2025-07-02 21:13:48,830 - INFO - E accuracy 76.6%  |  I accuracy 62.0%
+2025-07-02 21:18:09,148 - INFO - Epoch 30/30 | Train Loss: 0.3137, Train Acc: 87.24% | Val Loss: 0.7496, Val Acc: 69.39%
+2025-07-02 21:18:09,151 - INFO - Confusion Matrix:
+2025-07-02 21:18:09,151 - INFO - [[1830  648]
+ [ 869 1609]]
+2025-07-02 21:18:09,151 - INFO - E accuracy 73.8%  |  I accuracy 64.9%
+2025-07-02 21:18:09,151 - INFO - Training complete. Best val acc: 73.51%
+2025-07-02 21:18:09,151 - INFO - Classification report on validation:

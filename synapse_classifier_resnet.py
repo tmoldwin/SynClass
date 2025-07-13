@@ -442,16 +442,6 @@ def main():
         for x, y in pbar:
             x, y = x.to(device), y.to(device)
             
-            # Mixup augmentation
-            if random.random() > 0.5:
-                alpha = 0.2
-                lam = np.random.beta(alpha, alpha)
-                batch_size = x.size(0)
-                index = torch.randperm(batch_size).to(device)
-                mixed_x = lam * x + (1 - lam) * x[index, :]
-                mixed_y = y
-                x, y = mixed_x, mixed_y
-            
             optimizer.zero_grad()
             out = model(x)
             loss = criterion(out, y)

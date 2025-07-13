@@ -402,6 +402,13 @@ def main():
         model.load_state_dict(torch.load(save_path, map_location=device))
     logger.info(f'Total params: {sum(p.numel() for p in model.parameters()):,}')
 
+    # Print model summary
+    try:
+        from torchinfo import summary
+        print(summary(model, input_size=(BATCH_SIZE, 3, INPUT_XY, INPUT_XY)))
+    except ImportError:
+        print('Install torchinfo for a model summary (pip install torchinfo)')
+
     criterion = nn.CrossEntropyLoss(weight=cls_w, label_smoothing=LABEL_SMOOTHING)
     optimizer = optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
     

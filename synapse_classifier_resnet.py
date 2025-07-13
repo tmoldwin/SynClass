@@ -20,6 +20,7 @@ import torchvision.models as models
 import matplotlib.pyplot as plt
 import seaborn as sns
 from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS, setup_logging
+import datetime
 
 warnings.filterwarnings("ignore")
 
@@ -229,7 +230,7 @@ class ResNetClassifier(nn.Module):
         return self.resnet(x)
 
 
-def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, save_path=None):
+def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_timestamp=None):
     """Plot comprehensive learning curves and save to figures directory."""
     epochs = range(1, len(train_losses) + 1)
     
@@ -319,10 +320,13 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     plt.tight_layout()
     
     # Ensure figures directory exists and save with proper error handling
+    if run_timestamp is None:
+        import datetime
+        run_timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     try:
         os.makedirs('figures', exist_ok=True)
         # Create a proper filename for the plot
-        plot_filename = 'figures/resnet_training_curves.png'
+        plot_filename = f'figures/resnet_training_curves_{run_timestamp}.png'
         plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
         print(f'Plot saved successfully to: {plot_filename}')
     except Exception as e:
@@ -343,6 +347,9 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
 def main():
     # Setup logging
     logger = setup_logging('resnet')
+
+    # Run start timestamp
+    RUN_TIMESTAMP = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     
     # ------------------------- data preparation ---------------------
     logger.info('Loading CSV...')
@@ -506,7 +513,7 @@ def main():
         
         # Update visualization every epoch
         plot_learning_curves(train_losses, train_accs, val_losses, val_accs, 
-                           learning_rates, e_accs, i_accs, None)
+                           learning_rates, e_accs, i_accs, RUN_TIMESTAMP)
         
         # Log GPU memory usage
         if torch.cuda.is_available():

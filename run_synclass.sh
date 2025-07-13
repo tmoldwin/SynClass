@@ -9,6 +9,9 @@
 # module load anaconda
 # source activate myenv
 
+# Cancel all previous synclass jobs for this user
+squeue -u $USER | grep synclass | awk '{print $1}' | xargs scancel
+
 cd $HOME/code/SynClass
 git pull origin main || echo "Warning: git pull failed, continuing with current code"
 python synapse_classifier_resnet.py

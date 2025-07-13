@@ -27,11 +27,12 @@ warnings.filterwarnings("ignore")
 BATCH_SIZE = 32           # Larger batch size for better GPU utilization
 INPUT_XY = 224            # Standard ResNet input size
 EPOCHS = 100              # More epochs for better convergence
-LR = 1e-5                 # Much lower LR to prevent overfitting
+LR = 5e-6                 # Even lower LR to prevent overfitting
 NUM_WORKERS = 4           # Increased workers for GPU
 RNG_SEED = 42
-DROPOUT_RATE = 0.7        # Higher dropout to prevent overfitting
-WEIGHT_DECAY = 5e-3       # Much stronger weight decay
+DROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting
+WEIGHT_DECAY = 1e-2       # Much stronger weight decay
+LABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization
 
 # ------------------------- argparse ------------------------------
 parser = argparse.ArgumentParser(description='ResNet-based synapse classifier')
@@ -130,6 +131,11 @@ class Synapse2DDataset(Dataset):
             pre_slice = np.rot90(pre_slice, k)
             post_slice = np.rot90(post_slice, k)
 
+        # Add Gaussian noise (appropriate for EM data)
+        if random.random() > 0.7:
+            noise = np.random.normal(0, 0.02, data.shape)  # Reduced noise level
+            data = np.clip(data + noise, 0, 1)
+
         return data.copy(), pre_slice.copy(), post_slice.copy()
 
     def __getitem__(self, idx):
@@ -194,18 +200,42 @@ class Synapse2DDataset(Dataset):
 
         return image, label
 
+# ------------------------- focal loss --------------------------
+class FocalLoss(nn.Module):
+    def __init__(self, alpha=1, gamma=2, reduction='mean'):
+        super().__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.reduction = reduction
+
+    def forward(self, inputs, targets):
+        ce_loss = F.cross_entropy(inputs, targets, reduction='none')
+        pt = torch.exp(-ce_loss)
+        focal_loss = self.alpha * (1-pt)**self.gamma * ce_loss
+        
+        if self.reduction == 'mean':
+            return focal_loss.mean()
+        elif self.reduction == 'sum':
+            return focal_loss.sum()
+        else:
+            return focal_loss
+
 # ------------------------- ResNet model --------------------------
 class ResNetClassifier(nn.Module):
     def __init__(self, num_classes=2, pretrained=True):
         super().__init__()
-        # Load a pre-trained ResNet-18
-        self.resnet = models.resnet18(pretrained=pretrained)
+        # Load a pre-trained ResNet-50 for better feature extraction
+        self.resnet = models.resnet50(pretrained=pretrained)
         
         # Replace the final fully connected layer with stronger regularization
         num_ftrs = self.resnet.fc.in_features
         self.resnet.fc = nn.Sequential(
             nn.Dropout(DROPOUT_RATE),
-            nn.Linear(num_ftrs, 256),
+            nn.Linear(num_ftrs, 512),
+            nn.ReLU(),
+            nn.BatchNorm1d(512),
+            nn.Dropout(DROPOUT_RATE),
+            nn.Linear(512, 256),
             nn.ReLU(),
             nn.BatchNorm1d(256),
             nn.Dropout(DROPOUT_RATE),
@@ -381,14 +411,20 @@ def main():
         model.load_state_dict(torch.load(save_path, map_location=device))
     logger.info(f'Total params: {sum(p.numel() for p in model.parameters()):,}')
 
-    criterion = nn.CrossEntropyLoss(weight=cls_w)
-    optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', patience=3, factor=0.5, min_lr=1e-7)
+    criterion = FocalLoss(alpha=cls_w[1], gamma=2)  # Use focal loss with class weights
+    optimizer = optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
+    
+    # Warmup scheduler for first 5 epochs
+    warmup_scheduler = optim.lr_scheduler.LinearLR(optimizer, start_factor=0.1, total_iters=5)
+    # Main scheduler
+    main_scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2, eta_min=1e-7)
 
     # ------------------------- training loop ------------------------
     best_acc = 0
-    patience = 10  # Reduced patience for earlier stopping
+    best_loss = float('inf')
+    patience = 15  # Increased patience for better convergence
     patience_counter = 0
+    min_epochs = 20  # Minimum training epochs
     
     # Track learning curves
     train_losses = []
@@ -405,10 +441,25 @@ def main():
         pbar = tqdm(train_loader, desc=f'Epoch {epoch}/{EPOCHS} [Train]')
         for x, y in pbar:
             x, y = x.to(device), y.to(device)
+            
+            # Mixup augmentation
+            if random.random() > 0.5:
+                alpha = 0.2
+                lam = np.random.beta(alpha, alpha)
+                batch_size = x.size(0)
+                index = torch.randperm(batch_size).to(device)
+                mixed_x = lam * x + (1 - lam) * x[index, :]
+                mixed_y = y
+                x, y = mixed_x, mixed_y
+            
             optimizer.zero_grad()
             out = model(x)
             loss = criterion(out, y)
             loss.backward()
+            
+            # Gradient clipping
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            
             optimizer.step()
             tot_loss += loss.item() * x.size(0)
             tot += y.size(0)
@@ -435,7 +486,12 @@ def main():
                 pbar.set_postfix(Loss=f'{loss.item():.3f}', Acc=f'{100*v_corr/v_tot:.1f}%')
         val_loss = v_tot_loss / v_tot
         val_acc = 100*v_corr/v_tot
-        scheduler.step(val_acc)
+        
+        # Update learning rate
+        if epoch <= 5:
+            warmup_scheduler.step()
+        else:
+            main_scheduler.step()
         
         # Track metrics
         train_losses.append(train_loss)
@@ -482,12 +538,19 @@ def main():
 
         if val_acc > best_acc:
             best_acc = val_acc
+            best_loss = val_loss # Update best_loss
             patience_counter = 0
             torch.save(model.state_dict(), save_path)
             logger.info(f'New best saved ({best_acc:.2f}%)')
+        elif val_loss < best_loss: # Consider loss as well
+            best_loss = val_loss
+            best_acc = val_acc
+            patience_counter = 0
+            torch.save(model.state_dict(), save_path)
+            logger.info(f'New best saved ({best_acc:.2f}%) based on loss')
         else:
             patience_counter += 1
-            if patience_counter >= patience:
+            if patience_counter >= patience and epoch >= min_epochs:
                 logger.info(f'Early stopping at epoch {epoch} (no improvement for {patience} epochs)')
                 break
 

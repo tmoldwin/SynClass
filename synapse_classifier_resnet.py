@@ -545,9 +545,10 @@ def main():
             logger.info(f'New best saved ({best_acc:.2f}%) based on loss')
         else:
             patience_counter += 1
-            if patience_counter >= patience and epoch >= min_epochs:
-                logger.info(f'Early stopping at epoch {epoch} (no improvement for {patience} epochs)')
-                break
+            # Remove early stopping: always run for EPOCHS
+            # if patience_counter >= patience and epoch >= min_epochs:
+            #     logger.info(f'Early stopping at epoch {epoch} (no improvement for {patience} epochs)')
+            #     break
 
     logger.info(f'Training complete. Best val acc: {best_acc:.2f}%')
 

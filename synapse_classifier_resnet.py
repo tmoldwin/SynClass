@@ -111,31 +111,22 @@ class Synapse2DDataset(Dataset):
     def _augment(self, data, pre_slice, post_slice):
         if not self.augment:
             return data, pre_slice, post_slice
-
         # Random horizontal flip
         if random.random() > 0.5:
             data = np.fliplr(data)
             pre_slice = np.fliplr(pre_slice)
             post_slice = np.fliplr(post_slice)
-
         # Random vertical flip
         if random.random() > 0.5:
             data = np.flipud(data)
             pre_slice = np.flipud(pre_slice)
             post_slice = np.flipud(post_slice)
-
         # Random rotation (90, 180, 270 degrees)
         if random.random() > 0.5:
             k = random.choice([1, 2, 3])
             data = np.rot90(data, k)
             pre_slice = np.rot90(pre_slice, k)
             post_slice = np.rot90(post_slice, k)
-
-        # Add Gaussian noise (appropriate for EM data)
-        if random.random() > 0.7:
-            noise = np.random.normal(0, 0.02, data.shape)  # Reduced noise level
-            data = np.clip(data + noise, 0, 1)
-
         return data.copy(), pre_slice.copy(), post_slice.copy()
 
     def __getitem__(self, idx):
@@ -222,30 +213,18 @@ class FocalLoss(nn.Module):
 
 # ------------------------- ResNet model --------------------------
 class ResNetClassifier(nn.Module):
-    def __init__(self, num_classes=2, pretrained=True):
+    def __init__(self, num_classes=2, pretrained=False):
         super().__init__()
-        # Load a pre-trained ResNet-50 for better feature extraction
-        self.resnet = models.resnet50(pretrained=pretrained)
-        
-        # Replace the final fully connected layer with stronger regularization
+        self.resnet = models.resnet18(pretrained=False)
         num_ftrs = self.resnet.fc.in_features
         self.resnet.fc = nn.Sequential(
             nn.Dropout(DROPOUT_RATE),
-            nn.Linear(num_ftrs, 512),
-            nn.ReLU(),
-            nn.BatchNorm1d(512),
-            nn.Dropout(DROPOUT_RATE),
-            nn.Linear(512, 256),
-            nn.ReLU(),
-            nn.BatchNorm1d(256),
-            nn.Dropout(DROPOUT_RATE),
-            nn.Linear(256, 128),
+            nn.Linear(num_ftrs, 128),
             nn.ReLU(),
             nn.BatchNorm1d(128),
             nn.Dropout(DROPOUT_RATE),
             nn.Linear(128, num_classes)
         )
-
     def forward(self, x):
         return self.resnet(x)
 
@@ -423,7 +402,7 @@ def main():
         model.load_state_dict(torch.load(save_path, map_location=device))
     logger.info(f'Total params: {sum(p.numel() for p in model.parameters()):,}')
 
-    criterion = FocalLoss(alpha=cls_w[1], gamma=2)  # Use focal loss with class weights
+    criterion = nn.CrossEntropyLoss(weight=cls_w, label_smoothing=LABEL_SMOOTHING)
     optimizer = optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
     
     # Warmup scheduler for first 5 epochs

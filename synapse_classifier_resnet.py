@@ -393,16 +393,28 @@ def main():
     train_f, test_f = train_test_split(files_bal, test_size=0.2, random_state=RNG_SEED,
                                       stratify=[map_type[int(f.split('_')[0])] for f in files_bal])
 
+    # Debug: Print E/I class counts in train/val splits
+    train_labels = [map_type[int(f.split('_')[0])] for f in train_f]
+    val_labels = [map_type[int(f.split('_')[0])] for f in test_f]
+    print('Train E:', train_labels.count('E'), 'I:', train_labels.count('I'))
+    print('Val   E:', val_labels.count('E'), 'I:', val_labels.count('I'))
+
     train_ds = Synapse2DDataset(train_f, map_type, DATA_DIR, augment=True)
     val_ds   = Synapse2DDataset(test_f,  map_type, DATA_DIR, augment=False)
 
     train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=True, persistent_workers=True)
     val_loader   = DataLoader(val_ds,   batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=True, persistent_workers=True)
 
-    # ------------------------- training setup -----------------------
+    # Debug: Print a batch of labels from DataLoader
+    for batch in train_loader:
+        _, y = batch
+        print('Sample batch labels:', y.tolist())
+        break
+
     labels_train = [1 if map_type[int(f.split('_')[0])] == 'I' else 0 for f in train_f]
     cls_w = compute_class_weight('balanced', classes=np.array([0,1]), y=labels_train)
     cls_w = torch.tensor(cls_w, dtype=torch.float32, device=device)
+    print('Class weights:', cls_w)
 
     model = ResNetClassifier().to(device)
     save_path = MODEL_SAVE_PATHS['resnet']

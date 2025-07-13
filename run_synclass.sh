@@ -10,7 +10,7 @@
 # source activate myenv
 
 # Cancel all previous jobs for this user
-scancel -u $USER
+scancel -p gpu.q -u $USER
 
 cd $HOME/code/SynClass
 git pull origin main || echo "Warning: git pull failed, continuing with current code"

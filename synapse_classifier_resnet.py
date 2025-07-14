@@ -31,9 +31,9 @@ EPOCHS = 100              # More epochs for better convergence
 LR = 2e-6                 # Lower LR to prevent overfitting
 NUM_WORKERS = 4           # Increased workers for GPU
 RNG_SEED = 42
-DROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting
-WEIGHT_DECAY = 1e-2       # Much stronger weight decay
-LABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization
+DROPOUT_RATE = 0.3        # Lower dropout to reduce underfitting
+WEIGHT_DECAY = 1e-4       # Lower weight decay to reduce underfitting
+LABEL_SMOOTHING = 0       # Remove label smoothing
 
 # ------------------------- argparse ------------------------------
 parser = argparse.ArgumentParser(description='ResNet-based synapse classifier')
@@ -216,7 +216,7 @@ class FocalLoss(nn.Module):
 class ResNetClassifier(nn.Module):
     def __init__(self, num_classes=2, pretrained=False):
         super().__init__()
-        self.resnet = models.resnet34(pretrained=False)  # Changed to ResNet34
+        self.resnet = models.resnet50(pretrained=False)  # Changed to ResNet50 for higher capacity
         num_ftrs = self.resnet.fc.in_features
         self.resnet.fc = nn.Sequential(
             nn.Dropout(DROPOUT_RATE),

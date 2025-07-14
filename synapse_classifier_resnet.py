@@ -25,7 +25,7 @@ import datetime
 warnings.filterwarnings("ignore")
 
 # ------------------------- configuration -------------------------
-BATCH_SIZE = 64           # Larger batch size for faster epochs
+BATCH_SIZE = 32           # Larger batch size for better GPU utilization
 INPUT_XY = 224            # Standard ResNet input size
 EPOCHS = 100              # More epochs for better convergence
 LR = 2e-6                 # Lower LR to prevent overfitting
@@ -98,60 +98,43 @@ else:
 class Synapse2DDataset(Dataset):
     """
     Dataset class for 2D synapse classification.
-    Loads synapse data, uses all Z-slices as individual samples.
+    Loads synapse data, takes a 2D slice, and preprocesses it.
     """
     def __init__(self, files: List[str], type_map, data_dir, augment: bool):
         self.files = files
         self.type_map = type_map
         self.data_dir = data_dir
         self.augment = augment
-        self.all_samples = []  # Store all possible samples
-        
-        # Generate all possible Z-slice samples
-        for fname in files:
-            syn_id = int(fname.split('_')[0])
-            syn_type = self.type_map.get(syn_id, 'E')
-            label = 1 if syn_type == 'I' else 0
-            
-            # Load to get Z dimension
-            raw_path = os.path.join(self.data_dir, fname)
-            raw = np.load(raw_path)
-            z_depth = raw.shape[2]
-            
-            # Add all Z-slices as possible samples
-            for z_idx in range(z_depth):
-                self.all_samples.append((fname, z_idx, syn_id, label))
-        
-        # Separate E and I samples
-        self.e_samples = [s for s in self.all_samples if s[3] == 0]  # E class
-        self.i_samples = [s for s in self.all_samples if s[3] == 1]  # I class
-        
-        # Subsample to fixed size (e.g., 3000 samples per epoch)
-        self.epoch_size = min(3000, len(self.all_samples))
-        self.resample_epoch()
-    
-    def resample_epoch(self):
-        """Randomly sample a balanced subset for this epoch."""
-        # Calculate how many samples per class to maintain balance
-        samples_per_class = self.epoch_size // 2
-        
-        # Sample equal numbers from each class
-        e_subset = random.sample(self.e_samples, min(samples_per_class, len(self.e_samples)))
-        i_subset = random.sample(self.i_samples, min(samples_per_class, len(self.i_samples)))
-        
-        # Combine and shuffle
-        self.samples = e_subset + i_subset
-        random.shuffle(self.samples)
 
     def __len__(self):
-        return len(self.samples)
+        return len(self.files)
 
     def _augment(self, data, pre_slice, post_slice):
-        # No augmentation - return original data
-        return data, pre_slice, post_slice
+        if not self.augment:
+            return data, pre_slice, post_slice
+        # Random horizontal flip
+        if random.random() > 0.5:
+            data = np.fliplr(data)
+            pre_slice = np.fliplr(pre_slice)
+            post_slice = np.fliplr(post_slice)
+        # Random vertical flip
+        if random.random() > 0.5:
+            data = np.flipud(data)
+            pre_slice = np.flipud(pre_slice)
+            post_slice = np.flipud(post_slice)
+        # Random rotation (90, 180, 270 degrees)
+        if random.random() > 0.5:
+            k = random.choice([1, 2, 3])
+            data = np.rot90(data, k)
+            pre_slice = np.rot90(pre_slice, k)
+            post_slice = np.rot90(post_slice, k)
+        return data.copy(), pre_slice.copy(), post_slice.copy()
 
     def __getitem__(self, idx):
-        fname, z_idx, syn_id, label = self.samples[idx]
+        fname = self.files[idx]
+        syn_id = int(fname.split('_')[0])
+        syn_type = self.type_map.get(syn_id, 'E')
+        label = 1 if syn_type == 'I' else 0
 
         # Load arrays
         raw_path = os.path.join(self.data_dir, fname)
@@ -165,19 +148,14 @@ class Synapse2DDataset(Dataset):
         combined_mask = np.logical_or(pre_mask, post_mask)
         masked_data = raw * combined_mask
 
-        # Take specific Z slice
-        data_slice = masked_data[:, :, z_idx]
-        pre_slice = pre_mask[:, :, z_idx]
-        post_slice = post_mask[:, :, z_idx]
+        # Take middle Z slice
+        z_mid = masked_data.shape[2] // 2
+        data_slice = masked_data[:, :, z_mid]
+        pre_slice = pre_mask[:, :, z_mid]
+        post_slice = post_mask[:, :, z_mid]
         
-        # Skip slices with no synapse data
-        if not np.any(combined_mask[:, :, z_idx]):
-            # Return zeros for empty slices
-            image = np.zeros((3, INPUT_XY, INPUT_XY), dtype=np.float32)
-            return torch.from_numpy(image), label
-        
-        # Bounding box and crop
-        synapse_pixels = np.where(combined_mask[:, :, z_idx])
+        # Bounding box and crop (this part is less important with large resize, but can help focus)
+        synapse_pixels = np.where(combined_mask[:, :, z_mid])
         if len(synapse_pixels[0]) > 0:
             min_h, max_h = synapse_pixels[0].min(), synapse_pixels[0].max()
             min_w, max_w = synapse_pixels[1].min(), synapse_pixels[1].max()
@@ -192,7 +170,7 @@ class Synapse2DDataset(Dataset):
             pre_slice = pre_slice[min_h:max_h, min_w:max_w]
             post_slice = post_slice[min_h:max_h, min_w:max_w]
         
-        # Resize to fixed size
+        # Resize to fixed size (using cv2 for better interpolation)
         data_slice = cv2.resize(data_slice, (INPUT_XY, INPUT_XY), interpolation=cv2.INTER_AREA)
         pre_slice = cv2.resize(pre_slice.astype(float), (INPUT_XY, INPUT_XY), interpolation=cv2.INTER_NEAREST)
         post_slice = cv2.resize(post_slice.astype(float), (INPUT_XY, INPUT_XY), interpolation=cv2.INTER_NEAREST)
@@ -206,65 +184,13 @@ class Synapse2DDataset(Dataset):
             if np.any(non_zero_mask):
                 p5, p95 = np.percentile(data_slice[non_zero_mask], [5, 95])
                 data_slice = np.clip((data_slice - p5) / (p95 - p5 + 1e-8), 0, 1)
-            else:
+            else: # All zero
                 data_slice = np.zeros((INPUT_XY, INPUT_XY))
         
         image = np.stack([data_slice, pre_slice, post_slice], axis=0)
         image = torch.from_numpy(image.astype(np.float32))
 
         return image, label
-
-# Add function to evaluate per-synapse accuracy
-def evaluate_per_synapse(model, dataset, device):
-    """Evaluate per-synapse accuracy using confidence-weighted voting across Z-slices."""
-    model.eval()
-    synapse_predictions = {}  # syn_id -> list of (prediction, confidence)
-    synapse_labels = {}       # syn_id -> true label
-    
-    with torch.no_grad():
-        for i in range(len(dataset)):
-            image, label = dataset[i]
-            fname, z_idx, syn_id, _ = dataset.samples[i]
-            
-            image = image.unsqueeze(0).to(device)
-            output = model(image)
-            
-            # Get softmax probabilities for confidence weighting
-            probs = F.softmax(output, dim=1)
-            pred = output.argmax(1).item()
-            confidence = probs[0, pred].item()  # Confidence is the max probability
-            
-            if syn_id not in synapse_predictions:
-                synapse_predictions[syn_id] = []
-                synapse_labels[syn_id] = label
-            
-            synapse_predictions[syn_id].append((pred, confidence))
-    
-    # Confidence-weighted vote for each synapse
-    correct = 0
-    total = 0
-    for syn_id in synapse_predictions:
-        pred_conf_pairs = synapse_predictions[syn_id]
-        true_label = synapse_labels[syn_id]
-        
-        # Calculate confidence-weighted scores for each class
-        class_0_score = 0.0  # E class
-        class_1_score = 0.0  # I class
-        
-        for pred, conf in pred_conf_pairs:
-            if pred == 0:
-                class_0_score += conf
-            else:
-                class_1_score += conf
-        
-        # Final prediction is the class with higher confidence-weighted score
-        final_pred = 1 if class_1_score > class_0_score else 0
-        
-        if final_pred == true_label:
-            correct += 1
-        total += 1
-    
-    return 100 * correct / total if total > 0 else 0
 
 # ------------------------- focal loss --------------------------
 class FocalLoss(nn.Module):
@@ -304,16 +230,15 @@ class ResNetClassifier(nn.Module):
         return self.resnet(x)
 
 
-def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, 
-                        synapse_train_accs, synapse_val_accs, run_timestamp=None):
-    """Plot comprehensive learning curves including per-synapse accuracies."""
+def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_timestamp=None):
+    """Plot comprehensive learning curves and save to figures directory."""
     epochs = range(1, len(train_losses) + 1)
     
-    # Create figure with subplots - 3x3 layout for comprehensive view
-    fig = plt.figure(figsize=(24, 18))
+    # Create figure with subplots - 3x2 layout for comprehensive view
+    fig = plt.figure(figsize=(20, 15))
     
     # Plot 1: Training and validation loss
-    ax1 = plt.subplot(3, 3, 1)
+    ax1 = plt.subplot(3, 2, 1)
     ax1.plot(epochs, train_losses, 'b-', label='Training Loss', linewidth=2, alpha=0.8)
     ax1.plot(epochs, val_losses, 'r-', label='Validation Loss', linewidth=2, alpha=0.8)
     ax1.set_title('Training and Validation Loss', fontsize=14, fontweight='bold')
@@ -322,126 +247,91 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     ax1.legend()
     ax1.grid(True, alpha=0.3)
     
-    # Plot 2: Per-slice accuracy
-    ax2 = plt.subplot(3, 3, 2)
-    ax2.plot(epochs, train_accs, 'b-', label='Training Accuracy (Per-Slice)', linewidth=2, alpha=0.8)
-    ax2.plot(epochs, val_accs, 'r-', label='Validation Accuracy (Per-Slice)', linewidth=2, alpha=0.8)
-    ax2.set_title('Per-Slice Accuracy', fontsize=14, fontweight='bold')
+    # Plot 2: Training and validation accuracy
+    ax2 = plt.subplot(3, 2, 2)
+    ax2.plot(epochs, train_accs, 'b-', label='Training Accuracy', linewidth=2, alpha=0.8)
+    ax2.plot(epochs, val_accs, 'r-', label='Validation Accuracy', linewidth=2, alpha=0.8)
+    ax2.set_title('Training and Validation Accuracy', fontsize=14, fontweight='bold')
     ax2.set_xlabel('Epoch')
     ax2.set_ylabel('Accuracy (%)')
     ax2.legend()
     ax2.grid(True, alpha=0.3)
     
-    # Plot 3: Per-synapse accuracy
-    ax3 = plt.subplot(3, 3, 3)
-    if len(synapse_train_accs) > 0:
-        ax3.plot(epochs, synapse_train_accs, 'g-', label='Training Accuracy (Per-Synapse)', linewidth=2, alpha=0.8)
-        ax3.plot(epochs, synapse_val_accs, 'm-', label='Validation Accuracy (Per-Synapse)', linewidth=2, alpha=0.8)
-        ax3.set_title('Per-Synapse Accuracy (Majority Vote)', fontsize=14, fontweight='bold')
+    # Plot 3: E and I class accuracies
+    ax3 = plt.subplot(3, 2, 3)
+    if len(e_accs) > 0:
+        ax3.plot(epochs, e_accs, 'g-', label='E (Excitatory) Accuracy', linewidth=2, alpha=0.8)
+        ax3.plot(epochs, i_accs, 'm-', label='I (Inhibitory) Accuracy', linewidth=2, alpha=0.8)
+        ax3.set_title('Per-Class Validation Accuracy', fontsize=14, fontweight='bold')
         ax3.set_xlabel('Epoch')
         ax3.set_ylabel('Accuracy (%)')
         ax3.legend()
         ax3.grid(True, alpha=0.3)
     
-    # Plot 4: E and I class accuracies
-    ax4 = plt.subplot(3, 3, 4)
-    if len(e_accs) > 0:
-        ax4.plot(epochs, e_accs, 'g-', label='E (Excitatory) Accuracy', linewidth=2, alpha=0.8)
-        ax4.plot(epochs, i_accs, 'm-', label='I (Inhibitory) Accuracy', linewidth=2, alpha=0.8)
-        ax4.set_title('Per-Class Validation Accuracy', fontsize=14, fontweight='bold')
-        ax4.set_xlabel('Epoch')
-        ax4.set_ylabel('Accuracy (%)')
-        ax4.legend()
-        ax4.grid(True, alpha=0.3)
+    # Plot 4: Learning rate schedule
+    ax4 = plt.subplot(3, 2, 4)
+    ax4.plot(epochs, learning_rates, 'orange', linewidth=2, alpha=0.8)
+    ax4.set_title('Learning Rate Schedule', fontsize=14, fontweight='bold')
+    ax4.set_xlabel('Epoch')
+    ax4.set_ylabel('Learning Rate')
+    ax4.set_yscale('log')
+    ax4.grid(True, alpha=0.3)
     
-    # Plot 5: Learning rate schedule
-    ax5 = plt.subplot(3, 3, 5)
-    ax5.plot(epochs, learning_rates, 'orange', linewidth=2, alpha=0.8)
-    ax5.set_title('Learning Rate Schedule', fontsize=14, fontweight='bold')
+    # Plot 5: Overfitting indicator
+    ax5 = plt.subplot(3, 2, 5)
+    overfitting_gap = [t - v for t, v in zip(train_accs, val_accs)]
+    ax5.plot(epochs, overfitting_gap, 'purple', linewidth=2, alpha=0.8)
+    ax5.axhline(y=0, color='black', linestyle='--', alpha=0.5)
+    ax5.axhline(y=10, color='red', linestyle='--', alpha=0.5, label='Overfitting Threshold')
+    ax5.axhline(y=-10, color='red', linestyle='--', alpha=0.5)
+    ax5.set_title('Overfitting Indicator (Train - Val Accuracy)', fontsize=14, fontweight='bold')
     ax5.set_xlabel('Epoch')
-    ax5.set_ylabel('Learning Rate')
-    ax5.set_yscale('log')
+    ax5.set_ylabel('Accuracy Gap (%)')
+    ax5.legend()
     ax5.grid(True, alpha=0.3)
     
-    # Plot 6: Overfitting indicator (per-slice)
-    ax6 = plt.subplot(3, 3, 6)
-    overfitting_gap = [t - v for t, v in zip(train_accs, val_accs)]
-    ax6.plot(epochs, overfitting_gap, 'purple', linewidth=2, alpha=0.8)
-    ax6.axhline(y=0, color='black', linestyle='--', alpha=0.5)
-    ax6.axhline(y=10, color='red', linestyle='--', alpha=0.5, label='Overfitting Threshold')
-    ax6.axhline(y=-10, color='red', linestyle='--', alpha=0.5)
-    ax6.set_title('Overfitting Indicator (Per-Slice)', fontsize=14, fontweight='bold')
-    ax6.set_xlabel('Epoch')
-    ax6.set_ylabel('Accuracy Gap (%)')
-    ax6.legend()
-    ax6.grid(True, alpha=0.3)
-    
-    # Plot 7: Synapse overfitting indicator
-    ax7 = plt.subplot(3, 3, 7)
-    if len(synapse_train_accs) > 0:
-        synapse_overfitting_gap = [t - v for t, v in zip(synapse_train_accs, synapse_val_accs)]
-        ax7.plot(epochs, synapse_overfitting_gap, 'brown', linewidth=2, alpha=0.8)
-        ax7.axhline(y=0, color='black', linestyle='--', alpha=0.5)
-        ax7.axhline(y=10, color='red', linestyle='--', alpha=0.5, label='Overfitting Threshold')
-        ax7.axhline(y=-10, color='red', linestyle='--', alpha=0.5)
-        ax7.set_title('Overfitting Indicator (Per-Synapse)', fontsize=14, fontweight='bold')
-        ax7.set_xlabel('Epoch')
-        ax7.set_ylabel('Accuracy Gap (%)')
-        ax7.legend()
-        ax7.grid(True, alpha=0.3)
-    
-    # Plot 8: Comparison of slice vs synapse accuracy
-    ax8 = plt.subplot(3, 3, 8)
-    if len(synapse_val_accs) > 0:
-        ax8.plot(epochs, val_accs, 'r-', label='Per-Slice Val Accuracy', linewidth=2, alpha=0.8)
-        ax8.plot(epochs, synapse_val_accs, 'm-', label='Per-Synapse Val Accuracy', linewidth=2, alpha=0.8)
-        ax8.set_title('Slice vs Synapse Validation Accuracy', fontsize=14, fontweight='bold')
-        ax8.set_xlabel('Epoch')
-        ax8.set_ylabel('Accuracy (%)')
-        ax8.legend()
-        ax8.grid(True, alpha=0.3)
-    
-    # Plot 9: Training progress summary
-    ax9 = plt.subplot(3, 3, 9)
+    # Plot 6: Training progress summary
+    ax6 = plt.subplot(3, 2, 6)
+    # Create a summary table
     current_epoch = len(epochs)
     best_val_acc = max(val_accs) if val_accs else 0
     best_epoch = val_accs.index(best_val_acc) + 1 if val_accs else 0
-    best_synapse_acc = max(synapse_val_accs) if synapse_val_accs else 0
     current_lr = learning_rates[-1] if learning_rates else 0
     
     summary_text = f"""
     Training Progress Summary:
     
     Current Epoch: {current_epoch}
-    Best Per-Slice Val Accuracy: {best_val_acc:.2f}% (Epoch {best_epoch})
-    Best Per-Synapse Val Accuracy: {best_synapse_acc:.2f}%
+    Best Validation Accuracy: {best_val_acc:.2f}% (Epoch {best_epoch})
     Current Learning Rate: {current_lr:.2e}
-    
-    Current Per-Slice Accuracy: {val_accs[-1]:.2f}%
-    Current Per-Synapse Accuracy: {synapse_val_accs[-1]:.2f}%
+    Training Accuracy: {train_accs[-1]:.2f}% (Current)
+    Validation Accuracy: {val_accs[-1]:.2f}% (Current)
+    Overfitting Gap: {overfitting_gap[-1]:.2f}% (Current)
     
     E Accuracy: {e_accs[-1]:.2f}% (Current)
     I Accuracy: {i_accs[-1]:.2f}% (Current)
     """
     
-    ax9.text(0.1, 0.9, summary_text, transform=ax9.transAxes, fontsize=12, 
+    ax6.text(0.1, 0.9, summary_text, transform=ax6.transAxes, fontsize=12, 
              verticalalignment='top', bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.8))
-    ax9.set_title('Training Summary', fontsize=14, fontweight='bold')
-    ax9.axis('off')
+    ax6.set_title('Training Summary', fontsize=14, fontweight='bold')
+    ax6.axis('off')
     
     plt.tight_layout()
     
-    # Save plot
+    # Ensure figures directory exists and save with proper error handling
     if run_timestamp is None:
         import datetime
         run_timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     try:
         os.makedirs('figures', exist_ok=True)
+        # Create a proper filename for the plot
         plot_filename = f'figures/resnet_training_curves_{run_timestamp}.png'
         plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
         print(f'Plot saved successfully to: {plot_filename}')
     except Exception as e:
         print(f'Error saving plot: {e}')
+        # Try saving to current directory as fallback
         try:
             plt.savefig('resnet_training_curves.png', dpi=300, bbox_inches='tight')
             print('Plot saved to current directory as fallback')
@@ -451,7 +341,7 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     plt.close()
     
     # Print progress update
-    print(f'Epoch {current_epoch}: Per-Slice Val Acc {val_accs[-1]:.2f}%, Per-Synapse Val Acc {synapse_val_accs[-1]:.2f}%')
+    print(f'Epoch {current_epoch}: Val Acc {val_accs[-1]:.2f}%, Best {best_val_acc:.2f}% (Epoch {best_epoch})')
 
 
 def main():
@@ -547,13 +437,8 @@ def main():
     learning_rates = []
     e_accs = []
     i_accs = []
-    synapse_train_accs = []
-    synapse_val_accs = []
     
     for epoch in range(1, EPOCHS+1):
-        # Resample training data for this epoch
-        train_ds.resample_epoch()
-        
         model.train()
         tot_loss = tot_corr = tot = 0
         pbar = tqdm(train_loader, desc=f'Epoch {epoch}/{EPOCHS} [Train]')
@@ -621,21 +506,9 @@ def main():
             e_accs.append(e_acc)
             i_accs.append(i_acc)
         
-        # Evaluate per-synapse accuracy
-        synapse_train_acc = evaluate_per_synapse(model, train_ds, device)
-        synapse_val_acc = evaluate_per_synapse(model, val_ds, device)
-
-        # Track per-synapse accuracies
-        if epoch == 1:
-            synapse_train_accs = [synapse_train_acc]
-            synapse_val_accs = [synapse_val_acc]
-        else:
-            synapse_train_accs.append(synapse_train_acc)
-            synapse_val_accs.append(synapse_val_acc)
-        
         # Update visualization every epoch
         plot_learning_curves(train_losses, train_accs, val_losses, val_accs, 
-                           learning_rates, e_accs, i_accs, synapse_train_accs, synapse_val_accs, RUN_TIMESTAMP)
+                           learning_rates, e_accs, i_accs, RUN_TIMESTAMP)
         
         # Log GPU memory usage
         if torch.cuda.is_available():
@@ -652,18 +525,6 @@ def main():
             e_acc = cm[0,0]/cm[0].sum() if cm[0].sum() > 0 else 0
             i_acc = cm[1,1]/cm[1].sum() if cm[1].sum() > 0 else 0
             logger.info(f'E accuracy {e_acc*100:.1f}%  |  I accuracy {i_acc*100:.1f}%')
-
-        # Evaluate per-synapse accuracy
-        # synapse_train_acc = evaluate_per_synapse(model, train_ds, device)
-        # synapse_val_acc = evaluate_per_synapse(model, val_ds, device)
-
-        # Track per-synapse accuracies
-        # if epoch == 1:
-        #     synapse_train_accs = [synapse_train_acc]
-        #     synapse_val_accs = [synapse_val_acc]
-        # else:
-        #     synapse_train_accs.append(synapse_train_acc)
-        #     synapse_val_accs.append(synapse_val_acc)
 
         if val_acc > best_acc:
             best_acc = val_acc

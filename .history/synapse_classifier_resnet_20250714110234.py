@@ -28,7 +28,7 @@ warnings.filterwarnings("ignore")
 BATCH_SIZE = 32           # Larger batch size for better GPU utilization
 INPUT_XY = 224            # Standard ResNet input size
 EPOCHS = 100              # More epochs for better convergence
-LR = 2e-6                 # Lower LR to prevent overfitting
+LR = 5e-6                 # Even lower LR to prevent overfitting
 NUM_WORKERS = 4           # Increased workers for GPU
 RNG_SEED = 42
 DROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting
@@ -216,7 +216,7 @@ class FocalLoss(nn.Module):
 class ResNetClassifier(nn.Module):
     def __init__(self, num_classes=2, pretrained=False):
         super().__init__()
-        self.resnet = models.resnet34(pretrained=False)  # Changed to ResNet34
+        self.resnet = models.resnet18(pretrained=False)
         num_ftrs = self.resnet.fc.in_features
         self.resnet.fc = nn.Sequential(
             nn.Dropout(DROPOUT_RATE),
@@ -419,8 +419,10 @@ def main():
     criterion = nn.CrossEntropyLoss(weight=cls_w, label_smoothing=LABEL_SMOOTHING)
     optimizer = optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
     
-    # Replace scheduler with ReduceLROnPlateau
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5, min_lr=1e-7, verbose=True)
+    # Warmup scheduler for first 5 epochs
+    warmup_scheduler = optim.lr_scheduler.LinearLR(optimizer, start_factor=0.1, total_iters=5)
+    # Main scheduler
+    main_scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2, eta_min=1e-7)
 
     # ------------------------- training loop ------------------------
     best_acc = 0
@@ -480,8 +482,11 @@ def main():
         val_loss = v_tot_loss / v_tot
         val_acc = 100*v_corr/v_tot
         
-        # Update learning rate with ReduceLROnPlateau
-        scheduler.step(val_loss)
+        # Update learning rate
+        if epoch <= 5:
+            warmup_scheduler.step()
+        else:
+            main_scheduler.step()
         
         # Track metrics
         train_losses.append(train_loss)

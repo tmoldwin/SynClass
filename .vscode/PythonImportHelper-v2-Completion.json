@@ -1,0 +1,1924 @@
+[
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "random",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "random",
+        "description": "random",
+        "detail": "random",
+        "documentation": {}
+    },
+    {
+        "label": "warnings",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "warnings",
+        "description": "warnings",
+        "detail": "warnings",
+        "documentation": {}
+    },
+    {
+        "label": "argparse",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "argparse",
+        "description": "argparse",
+        "detail": "argparse",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "numpy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "numpy",
+        "description": "numpy",
+        "detail": "numpy",
+        "documentation": {}
+    },
+    {
+        "label": "pandas",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pandas",
+        "description": "pandas",
+        "detail": "pandas",
+        "documentation": {}
+    },
+    {
+        "label": "torch",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "torch",
+        "description": "torch",
+        "detail": "torch",
+        "documentation": {}
+    },
+    {
+        "label": "torch.nn",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "torch.nn",
+        "description": "torch.nn",
+        "detail": "torch.nn",
+        "documentation": {}
+    },
+    {
+        "label": "torch.nn.functional",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "torch.nn.functional",
+        "description": "torch.nn.functional",
+        "detail": "torch.nn.functional",
+        "documentation": {}
+    },
+    {
+        "label": "torch.optim",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "torch.optim",
+        "description": "torch.optim",
+        "detail": "torch.optim",
+        "documentation": {}
+    },
+    {
+        "label": "classification_report",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "confusion_matrix",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "classification_report",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "confusion_matrix",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "classification_report",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "confusion_matrix",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "classification_report",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "confusion_matrix",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "classification_report",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "confusion_matrix",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "classification_report",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "confusion_matrix",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "classification_report",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "confusion_matrix",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "train_test_split",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
+        "label": "train_test_split",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
+        "label": "train_test_split",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
+        "label": "train_test_split",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
+        "label": "train_test_split",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
+        "label": "train_test_split",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
+        "label": "train_test_split",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
+        "label": "compute_class_weight",
+        "importPath": "sklearn.utils.class_weight",
+        "description": "sklearn.utils.class_weight",
+        "isExtraImport": true,
+        "detail": "sklearn.utils.class_weight",
+        "documentation": {}
+    },
+    {
+        "label": "compute_class_weight",
+        "importPath": "sklearn.utils.class_weight",
+        "description": "sklearn.utils.class_weight",
+        "isExtraImport": true,
+        "detail": "sklearn.utils.class_weight",
+        "documentation": {}
+    },
+    {
+        "label": "compute_class_weight",
+        "importPath": "sklearn.utils.class_weight",
+        "description": "sklearn.utils.class_weight",
+        "isExtraImport": true,
+        "detail": "sklearn.utils.class_weight",
+        "documentation": {}
+    },
+    {
+        "label": "compute_class_weight",
+        "importPath": "sklearn.utils.class_weight",
+        "description": "sklearn.utils.class_weight",
+        "isExtraImport": true,
+        "detail": "sklearn.utils.class_weight",
+        "documentation": {}
+    },
+    {
+        "label": "compute_class_weight",
+        "importPath": "sklearn.utils.class_weight",
+        "description": "sklearn.utils.class_weight",
+        "isExtraImport": true,
+        "detail": "sklearn.utils.class_weight",
+        "documentation": {}
+    },
+    {
+        "label": "Dataset",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "Dataset",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "Dataset",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "Dataset",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "Dataset",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "WeightedRandomSampler",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "Dataset",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "Dataset",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "cv2",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "cv2",
+        "description": "cv2",
+        "detail": "cv2",
+        "documentation": {}
+    },
+    {
+        "label": "torchvision.models",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "torchvision.models",
+        "description": "torchvision.models",
+        "detail": "torchvision.models",
+        "documentation": {}
+    },
+    {
+        "label": "matplotlib.pyplot",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "matplotlib.pyplot",
+        "description": "matplotlib.pyplot",
+        "detail": "matplotlib.pyplot",
+        "documentation": {}
+    },
+    {
+        "label": "seaborn",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "seaborn",
+        "description": "seaborn",
+        "detail": "seaborn",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_DIR",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CSV_PATH",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_SAVE_PATHS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "setup_logging",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_DIR",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CSV_PATH",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_SAVE_PATHS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "setup_logging",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_DIR",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CSV_PATH",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_DIR",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CSV_PATH",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_SAVE_PATHS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "setup_logging",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_DIR",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CSV_PATH",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_SAVE_PATHS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "setup_logging",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_DIR",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CSV_PATH",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_SAVE_PATHS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "setup_logging",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_DIR",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CSV_PATH",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_SAVE_PATHS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "setup_logging",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_DIR",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CSV_PATH",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_SAVE_PATHS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "setup_logging",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "datetime",
+        "description": "datetime",
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "logging",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "logging",
+        "description": "logging",
+        "detail": "logging",
+        "documentation": {}
+    },
+    {
+        "label": "transforms",
+        "importPath": "torchvision",
+        "description": "torchvision",
+        "isExtraImport": true,
+        "detail": "torchvision",
+        "documentation": {}
+    },
+    {
+        "label": "multiprocessing",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "multiprocessing",
+        "description": "multiprocessing",
+        "detail": "multiprocessing",
+        "documentation": {}
+    },
+    {
+        "label": "partial",
+        "importPath": "functools",
+        "description": "functools",
+        "isExtraImport": true,
+        "detail": "functools",
+        "documentation": {}
+    },
+    {
+        "label": "Synapse2DDataset",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "class Synapse2DDataset(Dataset):\n    \"\"\"\n    Dataset class for 2D synapse classification.\n    Loads synapse data, takes a 2D slice, and preprocesses it.\n    \"\"\"\n    def __init__(self, files: List[str], type_map, data_dir, augment: bool):\n        self.files = files\n        self.type_map = type_map\n        self.data_dir = data_dir\n        self.augment = augment",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "FocalLoss",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "class FocalLoss(nn.Module):\n    def __init__(self, alpha=1, gamma=2, reduction='mean'):\n        super().__init__()\n        self.alpha = alpha\n        self.gamma = gamma\n        self.reduction = reduction\n    def forward(self, inputs, targets):\n        ce_loss = F.cross_entropy(inputs, targets, reduction='none')\n        pt = torch.exp(-ce_loss)\n        focal_loss = self.alpha * (1-pt)**self.gamma * ce_loss",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "ResNetClassifier",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "class ResNetClassifier(nn.Module):\n    def __init__(self, num_classes=2, pretrained=False):\n        super().__init__()\n        self.resnet = models.resnet18(pretrained=False)\n        num_ftrs = self.resnet.fc.in_features\n        self.resnet.fc = nn.Sequential(\n            nn.Dropout(DROPOUT_RATE),\n            nn.Linear(num_ftrs, 128),\n            nn.ReLU(),\n            nn.BatchNorm1d(128),",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "plot_learning_curves",
+        "kind": 2,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_timestamp=None):\n    \"\"\"Plot comprehensive learning curves and save to figures directory.\"\"\"\n    epochs = range(1, len(train_losses) + 1)\n    # Create figure with subplots - 3x2 layout for comprehensive view\n    fig = plt.figure(figsize=(20, 15))\n    # Plot 1: Training and validation loss\n    ax1 = plt.subplot(3, 2, 1)\n    ax1.plot(epochs, train_losses, 'b-', label='Training Loss', linewidth=2, alpha=0.8)\n    ax1.plot(epochs, val_losses, 'r-', label='Validation Loss', linewidth=2, alpha=0.8)\n    ax1.set_title('Training and Validation Loss', fontsize=14, fontweight='bold')",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "def main():\n    # Setup logging\n    logger = setup_logging('resnet')\n    # Run start timestamp\n    RUN_TIMESTAMP = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')\n    # ------------------------- data preparation ---------------------\n    logger.info('Loading CSV...')\n    if not os.path.exists(CSV_PATH):\n        raise FileNotFoundError(CSV_PATH)\n    data = pd.read_csv(CSV_PATH)",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "BATCH_SIZE",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "BATCH_SIZE = 32           # Larger batch size for better GPU utilization\nINPUT_XY = 224            # Standard ResNet input size\nEPOCHS = 100              # More epochs for better convergence\nLR = 5e-6                 # Even lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "INPUT_XY",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "INPUT_XY = 224            # Standard ResNet input size\nEPOCHS = 100              # More epochs for better convergence\nLR = 5e-6                 # Even lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "EPOCHS = 100              # More epochs for better convergence\nLR = 5e-6                 # Even lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "LR = 5e-6                 # Even lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "NUM_WORKERS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "NUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "RNG_SEED",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "RNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "DROPOUT_RATE",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "DROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "WEIGHT_DECAY",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "WEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "LABEL_SMOOTHING",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "LABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "parser",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "parser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "args",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "args = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "EPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "LR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():\n    gpu_name = torch.cuda.get_device_name(0)",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "device",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110234",
+        "description": ".history.synapse_classifier_resnet_20250714110234",
+        "peekOfCode": "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():\n    gpu_name = torch.cuda.get_device_name(0)\n    gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3\n    gpu_memory_available = torch.cuda.memory_allocated(0) / 1024**3\n    gpu_memory_free = gpu_memory - gpu_memory_available\n    print(f'GPU: {gpu_name}')\n    print(f'GPU Memory: {gpu_memory:.1f} GB')",
+        "detail": ".history.synapse_classifier_resnet_20250714110234",
+        "documentation": {}
+    },
+    {
+        "label": "Synapse2DDataset",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "class Synapse2DDataset(Dataset):\n    \"\"\"\n    Dataset class for 2D synapse classification.\n    Loads synapse data, takes a 2D slice, and preprocesses it.\n    \"\"\"\n    def __init__(self, files: List[str], type_map, data_dir, augment: bool):\n        self.files = files\n        self.type_map = type_map\n        self.data_dir = data_dir\n        self.augment = augment",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "FocalLoss",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "class FocalLoss(nn.Module):\n    def __init__(self, alpha=1, gamma=2, reduction='mean'):\n        super().__init__()\n        self.alpha = alpha\n        self.gamma = gamma\n        self.reduction = reduction\n    def forward(self, inputs, targets):\n        ce_loss = F.cross_entropy(inputs, targets, reduction='none')\n        pt = torch.exp(-ce_loss)\n        focal_loss = self.alpha * (1-pt)**self.gamma * ce_loss",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "ResNetClassifier",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "class ResNetClassifier(nn.Module):\n    def __init__(self, num_classes=2, pretrained=False):\n        super().__init__()\n        self.resnet = models.resnet34(pretrained=False)  # Changed to ResNet34\n        num_ftrs = self.resnet.fc.in_features\n        self.resnet.fc = nn.Sequential(\n            nn.Dropout(DROPOUT_RATE),\n            nn.Linear(num_ftrs, 128),\n            nn.ReLU(),\n            nn.BatchNorm1d(128),",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "plot_learning_curves",
+        "kind": 2,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_timestamp=None):\n    \"\"\"Plot comprehensive learning curves and save to figures directory.\"\"\"\n    epochs = range(1, len(train_losses) + 1)\n    # Create figure with subplots - 3x2 layout for comprehensive view\n    fig = plt.figure(figsize=(20, 15))\n    # Plot 1: Training and validation loss\n    ax1 = plt.subplot(3, 2, 1)\n    ax1.plot(epochs, train_losses, 'b-', label='Training Loss', linewidth=2, alpha=0.8)\n    ax1.plot(epochs, val_losses, 'r-', label='Validation Loss', linewidth=2, alpha=0.8)\n    ax1.set_title('Training and Validation Loss', fontsize=14, fontweight='bold')",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "def main():\n    # Setup logging\n    logger = setup_logging('resnet')\n    # Run start timestamp\n    RUN_TIMESTAMP = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')\n    # ------------------------- data preparation ---------------------\n    logger.info('Loading CSV...')\n    if not os.path.exists(CSV_PATH):\n        raise FileNotFoundError(CSV_PATH)\n    data = pd.read_csv(CSV_PATH)",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "BATCH_SIZE",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "BATCH_SIZE = 32           # Larger batch size for better GPU utilization\nINPUT_XY = 224            # Standard ResNet input size\nEPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "INPUT_XY",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "INPUT_XY = 224            # Standard ResNet input size\nEPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "EPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "LR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "NUM_WORKERS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "NUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "RNG_SEED",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "RNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "DROPOUT_RATE",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "DROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "WEIGHT_DECAY",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "WEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "LABEL_SMOOTHING",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "LABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "parser",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "parser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "args",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "args = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "EPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "LR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():\n    gpu_name = torch.cuda.get_device_name(0)",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "device",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714110740",
+        "description": ".history.synapse_classifier_resnet_20250714110740",
+        "peekOfCode": "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():\n    gpu_name = torch.cuda.get_device_name(0)\n    gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3\n    gpu_memory_available = torch.cuda.memory_allocated(0) / 1024**3\n    gpu_memory_free = gpu_memory - gpu_memory_available\n    print(f'GPU: {gpu_name}')\n    print(f'GPU Memory: {gpu_memory:.1f} GB')",
+        "detail": ".history.synapse_classifier_resnet_20250714110740",
+        "documentation": {}
+    },
+    {
+        "label": "setup_logging",
+        "kind": 2,
+        "importPath": "constants",
+        "description": "constants",
+        "peekOfCode": "def setup_logging(model_name):\n    \"\"\"Setup logging to both file and console\"\"\"\n    timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n    log_filename = f\"result_logs/{model_name}_{timestamp}.log\"\n    # Configure logging\n    logging.basicConfig(\n        level=logging.INFO,\n        format='%(asctime)s - %(levelname)s - %(message)s',\n        handlers=[\n            logging.FileHandler(log_filename),",
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_DIR",
+        "kind": 5,
+        "importPath": "constants",
+        "description": "constants",
+        "peekOfCode": "DATA_DIR = 'Data/synpase_raw_em/'\nCSV_PATH = 'Data/synpase_raw_em/synapse_data.csv'\n# Model save paths\nMODEL_SAVE_PATHS = {\n    'vgg2d': 'saved_models/best_synapse_model_vgg2d.pth',\n    'resnet': 'saved_models/best_synapse_model_resnet.pth',\n    'masked': 'saved_models/best_synapse_model_masked.pth',\n    'fast': 'saved_models/best_synapse_model_fast.pth',\n    'default': 'saved_models/best_synapse_model.pth'\n}",
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CSV_PATH",
+        "kind": 5,
+        "importPath": "constants",
+        "description": "constants",
+        "peekOfCode": "CSV_PATH = 'Data/synpase_raw_em/synapse_data.csv'\n# Model save paths\nMODEL_SAVE_PATHS = {\n    'vgg2d': 'saved_models/best_synapse_model_vgg2d.pth',\n    'resnet': 'saved_models/best_synapse_model_resnet.pth',\n    'masked': 'saved_models/best_synapse_model_masked.pth',\n    'fast': 'saved_models/best_synapse_model_fast.pth',\n    'default': 'saved_models/best_synapse_model.pth'\n}\n# Ensure directories exist",
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_SAVE_PATHS",
+        "kind": 5,
+        "importPath": "constants",
+        "description": "constants",
+        "peekOfCode": "MODEL_SAVE_PATHS = {\n    'vgg2d': 'saved_models/best_synapse_model_vgg2d.pth',\n    'resnet': 'saved_models/best_synapse_model_resnet.pth',\n    'masked': 'saved_models/best_synapse_model_masked.pth',\n    'fast': 'saved_models/best_synapse_model_fast.pth',\n    'default': 'saved_models/best_synapse_model.pth'\n}\n# Ensure directories exist\nos.makedirs('saved_models', exist_ok=True)\nos.makedirs('result_logs', exist_ok=True)",
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "load_synapse_subset",
+        "kind": 2,
+        "importPath": "load_synapses",
+        "description": "load_synapses",
+        "peekOfCode": "def load_synapse_subset(num_samples=5):\n    # List only the main synapse files (not mask files)\n    all_files = [f for f in os.listdir(DATA_DIR) if f.endswith('syn.npy')]\n    # Randomly select a subset of files\n    selected_files = np.random.choice(all_files, num_samples, replace=False)\n    # Load and visualize the selected files\n    for file in selected_files:\n            synapse_id = int(file.split('_')[0])\n            synapse_type = synapse_type_map.get(synapse_id, 'Unknown')\n            file_path = os.path.join(DATA_DIR, file)",
+        "detail": "load_synapses",
+        "documentation": {}
+    },
+    {
+        "label": "synapse_data_path",
+        "kind": 5,
+        "importPath": "load_synapses",
+        "description": "load_synapses",
+        "peekOfCode": "synapse_data_path = CSV_PATH\nsynapse_data = pd.read_csv(synapse_data_path)\n# Create a mapping from synapse ID to type\nsynapse_type_map = {row['id_']: row['pre_clf_type'] for _, row in synapse_data.iterrows()}\n# Ensure the figures directory exists\nfigures_dir = 'figures'\nos.makedirs(figures_dir, exist_ok=True)\n# Create a separate folder for synapse demos\nsynapse_demos_dir = os.path.join(figures_dir, 'synapse_demos')\nif os.path.exists(synapse_demos_dir):",
+        "detail": "load_synapses",
+        "documentation": {}
+    },
+    {
+        "label": "synapse_data",
+        "kind": 5,
+        "importPath": "load_synapses",
+        "description": "load_synapses",
+        "peekOfCode": "synapse_data = pd.read_csv(synapse_data_path)\n# Create a mapping from synapse ID to type\nsynapse_type_map = {row['id_']: row['pre_clf_type'] for _, row in synapse_data.iterrows()}\n# Ensure the figures directory exists\nfigures_dir = 'figures'\nos.makedirs(figures_dir, exist_ok=True)\n# Create a separate folder for synapse demos\nsynapse_demos_dir = os.path.join(figures_dir, 'synapse_demos')\nif os.path.exists(synapse_demos_dir):\n    # Clear the folder at the start of the script",
+        "detail": "load_synapses",
+        "documentation": {}
+    },
+    {
+        "label": "synapse_type_map",
+        "kind": 5,
+        "importPath": "load_synapses",
+        "description": "load_synapses",
+        "peekOfCode": "synapse_type_map = {row['id_']: row['pre_clf_type'] for _, row in synapse_data.iterrows()}\n# Ensure the figures directory exists\nfigures_dir = 'figures'\nos.makedirs(figures_dir, exist_ok=True)\n# Create a separate folder for synapse demos\nsynapse_demos_dir = os.path.join(figures_dir, 'synapse_demos')\nif os.path.exists(synapse_demos_dir):\n    # Clear the folder at the start of the script\n    for f in os.listdir(synapse_demos_dir):\n        os.remove(os.path.join(synapse_demos_dir, f))",
+        "detail": "load_synapses",
+        "documentation": {}
+    },
+    {
+        "label": "figures_dir",
+        "kind": 5,
+        "importPath": "load_synapses",
+        "description": "load_synapses",
+        "peekOfCode": "figures_dir = 'figures'\nos.makedirs(figures_dir, exist_ok=True)\n# Create a separate folder for synapse demos\nsynapse_demos_dir = os.path.join(figures_dir, 'synapse_demos')\nif os.path.exists(synapse_demos_dir):\n    # Clear the folder at the start of the script\n    for f in os.listdir(synapse_demos_dir):\n        os.remove(os.path.join(synapse_demos_dir, f))\nelse:\n    os.makedirs(synapse_demos_dir)",
+        "detail": "load_synapses",
+        "documentation": {}
+    },
+    {
+        "label": "synapse_demos_dir",
+        "kind": 5,
+        "importPath": "load_synapses",
+        "description": "load_synapses",
+        "peekOfCode": "synapse_demos_dir = os.path.join(figures_dir, 'synapse_demos')\nif os.path.exists(synapse_demos_dir):\n    # Clear the folder at the start of the script\n    for f in os.listdir(synapse_demos_dir):\n        os.remove(os.path.join(synapse_demos_dir, f))\nelse:\n    os.makedirs(synapse_demos_dir)\n# Function to load a subset of synapse data\ndef load_synapse_subset(num_samples=5):\n    # List only the main synapse files (not mask files)",
+        "detail": "load_synapses",
+        "documentation": {}
+    },
+    {
+        "label": "SynapseDataset",
+        "kind": 6,
+        "importPath": "synapse_classifier",
+        "description": "synapse_classifier",
+        "peekOfCode": "class SynapseDataset(Dataset):\n    def __init__(self, file_list, synapse_type_map, data_dir, transform=None):\n        self.file_list = file_list\n        self.synapse_type_map = synapse_type_map\n        self.data_dir = data_dir\n        self.transform = transform\n    def __len__(self):\n        return len(self.file_list)\n    def __getitem__(self, idx):\n        file = self.file_list[idx]",
+        "detail": "synapse_classifier",
+        "documentation": {}
+    },
+    {
+        "label": "SynapseClassifier3D",
+        "kind": 6,
+        "importPath": "synapse_classifier",
+        "description": "synapse_classifier",
+        "peekOfCode": "class SynapseClassifier3D(nn.Module):\n    def __init__(self, num_classes=2):\n        super(SynapseClassifier3D, self).__init__()\n        # 3D Convolutional layers\n        self.conv1 = nn.Conv3d(3, 32, kernel_size=3, padding=1)\n        self.bn1 = nn.BatchNorm3d(32)\n        self.conv2 = nn.Conv3d(32, 64, kernel_size=3, padding=1)\n        self.bn2 = nn.BatchNorm3d(64)\n        self.conv3 = nn.Conv3d(64, 128, kernel_size=3, padding=1)\n        self.bn3 = nn.BatchNorm3d(128)",
+        "detail": "synapse_classifier",
+        "documentation": {}
+    },
+    {
+        "label": "load_and_prepare_data",
+        "kind": 2,
+        "importPath": "synapse_classifier",
+        "description": "synapse_classifier",
+        "peekOfCode": "def load_and_prepare_data():\n    \"\"\"Load and prepare the dataset\"\"\"\n    logger = setup_logging('default')\n    logger.info(\"Loading synapse data...\")\n    # Load CSV data\n    if not os.path.exists(SYNAPSE_DATA_PATH):\n        logger.error(f\"Error: {SYNAPSE_DATA_PATH} not found!\")\n        return None, None, None\n    synapse_data = pd.read_csv(SYNAPSE_DATA_PATH)\n    synapse_type_map = {row['id_']: row['pre_clf_type'] for _, row in synapse_data.iterrows()}",
+        "detail": "synapse_classifier",
+        "documentation": {}
+    },
+    {
+        "label": "train_model",
+        "kind": 2,
+        "importPath": "synapse_classifier",
+        "description": "synapse_classifier",
+        "peekOfCode": "def train_model(model, train_loader, test_loader, criterion, optimizer, num_epochs):\n    \"\"\"Train the model\"\"\"\n    train_losses = []\n    test_losses = []\n    train_accuracies = []\n    test_accuracies = []\n    best_test_acc = 0.0\n    for epoch in range(num_epochs):\n        # Training phase\n        model.train()",
+        "detail": "synapse_classifier",
+        "documentation": {}
+    },
+    {
+        "label": "plot_training_curves",
+        "kind": 2,
+        "importPath": "synapse_classifier",
+        "description": "synapse_classifier",
+        "peekOfCode": "def plot_training_curves(train_losses, test_losses, train_accuracies, test_accuracies):\n    \"\"\"Plot training curves\"\"\"\n    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))\n    # Loss curves\n    ax1.plot(train_losses, label='Train Loss')\n    ax1.plot(test_losses, label='Test Loss')\n    ax1.set_title('Training and Test Loss')\n    ax1.set_xlabel('Epoch')\n    ax1.set_ylabel('Loss')\n    ax1.legend()",
+        "detail": "synapse_classifier",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "synapse_classifier",
+        "description": "synapse_classifier",
+        "peekOfCode": "def main():\n    \"\"\"Main training function\"\"\"\n    print(\"Starting Synapse Classification Training\")\n    print(\"=\" * 50)\n    # Load data\n    train_dataset, test_dataset, synapse_type_map = load_and_prepare_data()\n    if train_dataset is None:\n        print(\"Failed to load data. Exiting.\")\n        return\n    # Create data loaders with optimizations",
+        "detail": "synapse_classifier",
+        "documentation": {}
+    },
+    {
+        "label": "device",
+        "kind": 5,
+        "importPath": "synapse_classifier",
+        "description": "synapse_classifier",
+        "peekOfCode": "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")\n# Configuration\nSYNAPSE_DATA_PATH = CSV_PATH\nBATCH_SIZE = 16  # Increased batch size for better GPU utilization\nLEARNING_RATE = 0.001\nEPOCHS = 50\nINPUT_SIZE = 64  # Resize to 64x64xZ\nRANDOM_SEED = 42\nNUM_WORKERS = 4  # Number of CPU cores for data loading",
+        "detail": "synapse_classifier",
+        "documentation": {}
+    },
+    {
+        "label": "SYNAPSE_DATA_PATH",
+        "kind": 5,
+        "importPath": "synapse_classifier",
+        "description": "synapse_classifier",
+        "peekOfCode": "SYNAPSE_DATA_PATH = CSV_PATH\nBATCH_SIZE = 16  # Increased batch size for better GPU utilization\nLEARNING_RATE = 0.001\nEPOCHS = 50\nINPUT_SIZE = 64  # Resize to 64x64xZ\nRANDOM_SEED = 42\nNUM_WORKERS = 4  # Number of CPU cores for data loading\n# Set random seeds for reproducibility\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)",
+        "detail": "synapse_classifier",
+        "documentation": {}
+    },
+    {
+        "label": "BATCH_SIZE",
+        "kind": 5,
+        "importPath": "synapse_classifier",
+        "description": "synapse_classifier",
+        "peekOfCode": "BATCH_SIZE = 16  # Increased batch size for better GPU utilization\nLEARNING_RATE = 0.001\nEPOCHS = 50\nINPUT_SIZE = 64  # Resize to 64x64xZ\nRANDOM_SEED = 42\nNUM_WORKERS = 4  # Number of CPU cores for data loading\n# Set random seeds for reproducibility\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)\nclass SynapseDataset(Dataset):",
+        "detail": "synapse_classifier",
+        "documentation": {}
+    },
+    {
+        "label": "LEARNING_RATE",
+        "kind": 5,
+        "importPath": "synapse_classifier",
+        "description": "synapse_classifier",
+        "peekOfCode": "LEARNING_RATE = 0.001\nEPOCHS = 50\nINPUT_SIZE = 64  # Resize to 64x64xZ\nRANDOM_SEED = 42\nNUM_WORKERS = 4  # Number of CPU cores for data loading\n# Set random seeds for reproducibility\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)\nclass SynapseDataset(Dataset):\n    def __init__(self, file_list, synapse_type_map, data_dir, transform=None):",
+        "detail": "synapse_classifier",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": "synapse_classifier",
+        "description": "synapse_classifier",
+        "peekOfCode": "EPOCHS = 50\nINPUT_SIZE = 64  # Resize to 64x64xZ\nRANDOM_SEED = 42\nNUM_WORKERS = 4  # Number of CPU cores for data loading\n# Set random seeds for reproducibility\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)\nclass SynapseDataset(Dataset):\n    def __init__(self, file_list, synapse_type_map, data_dir, transform=None):\n        self.file_list = file_list",
+        "detail": "synapse_classifier",
+        "documentation": {}
+    },
+    {
+        "label": "INPUT_SIZE",
+        "kind": 5,
+        "importPath": "synapse_classifier",
+        "description": "synapse_classifier",
+        "peekOfCode": "INPUT_SIZE = 64  # Resize to 64x64xZ\nRANDOM_SEED = 42\nNUM_WORKERS = 4  # Number of CPU cores for data loading\n# Set random seeds for reproducibility\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)\nclass SynapseDataset(Dataset):\n    def __init__(self, file_list, synapse_type_map, data_dir, transform=None):\n        self.file_list = file_list\n        self.synapse_type_map = synapse_type_map",
+        "detail": "synapse_classifier",
+        "documentation": {}
+    },
+    {
+        "label": "RANDOM_SEED",
+        "kind": 5,
+        "importPath": "synapse_classifier",
+        "description": "synapse_classifier",
+        "peekOfCode": "RANDOM_SEED = 42\nNUM_WORKERS = 4  # Number of CPU cores for data loading\n# Set random seeds for reproducibility\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)\nclass SynapseDataset(Dataset):\n    def __init__(self, file_list, synapse_type_map, data_dir, transform=None):\n        self.file_list = file_list\n        self.synapse_type_map = synapse_type_map\n        self.data_dir = data_dir",
+        "detail": "synapse_classifier",
+        "documentation": {}
+    },
+    {
+        "label": "NUM_WORKERS",
+        "kind": 5,
+        "importPath": "synapse_classifier",
+        "description": "synapse_classifier",
+        "peekOfCode": "NUM_WORKERS = 4  # Number of CPU cores for data loading\n# Set random seeds for reproducibility\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)\nclass SynapseDataset(Dataset):\n    def __init__(self, file_list, synapse_type_map, data_dir, transform=None):\n        self.file_list = file_list\n        self.synapse_type_map = synapse_type_map\n        self.data_dir = data_dir\n        self.transform = transform",
+        "detail": "synapse_classifier",
+        "documentation": {}
+    },
+    {
+        "label": "FastSynapseDataset",
+        "kind": 6,
+        "importPath": "synapse_classifier_fast",
+        "description": "synapse_classifier_fast",
+        "peekOfCode": "class FastSynapseDataset(Dataset):\n    def __init__(self, file_list, synapse_type_map, data_dir):\n        self.file_list = file_list\n        self.synapse_type_map = synapse_type_map\n        self.data_dir = data_dir\n    def __len__(self):\n        return len(self.file_list)\n    def __getitem__(self, idx):\n        file = self.file_list[idx]\n        synapse_id = int(file.split('_')[0])",
+        "detail": "synapse_classifier_fast",
+        "documentation": {}
+    },
+    {
+        "label": "SimpleSynapseClassifier",
+        "kind": 6,
+        "importPath": "synapse_classifier_fast",
+        "description": "synapse_classifier_fast",
+        "peekOfCode": "class SimpleSynapseClassifier(nn.Module):\n    def __init__(self, num_classes=2):\n        super(SimpleSynapseClassifier, self).__init__()\n        # Simple 2D CNN (much faster than 3D)\n        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1)\n        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)\n        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)\n        self.pool = nn.MaxPool2d(2, 2)\n        self.dropout = nn.Dropout(0.3)\n        # Calculate the size after convolutions and pooling",
+        "detail": "synapse_classifier_fast",
+        "documentation": {}
+    },
+    {
+        "label": "load_and_prepare_data",
+        "kind": 2,
+        "importPath": "synapse_classifier_fast",
+        "description": "synapse_classifier_fast",
+        "peekOfCode": "def load_and_prepare_data():\n    \"\"\"Load and prepare the dataset\"\"\"\n    logger = setup_logging('fast')\n    logger.info(\"Loading synapse data...\")\n    if not os.path.exists(SYNAPSE_DATA_PATH):\n        logger.error(f\"Error: {SYNAPSE_DATA_PATH} not found!\")\n        return None, None, None\n    synapse_data = pd.read_csv(SYNAPSE_DATA_PATH)\n    synapse_type_map = {row['id_']: row['pre_clf_type'] for _, row in synapse_data.iterrows()}\n    all_files = [f for f in os.listdir(DATA_DIR) if f.endswith('syn.npy')]",
+        "detail": "synapse_classifier_fast",
+        "documentation": {}
+    },
+    {
+        "label": "train_model",
+        "kind": 2,
+        "importPath": "synapse_classifier_fast",
+        "description": "synapse_classifier_fast",
+        "peekOfCode": "def train_model(model, train_loader, test_loader, criterion, optimizer, num_epochs):\n    \"\"\"Train the model\"\"\"\n    train_losses = []\n    test_losses = []\n    train_accuracies = []\n    test_accuracies = []\n    best_test_acc = 0.0\n    for epoch in range(num_epochs):\n        # Training phase\n        model.train()",
+        "detail": "synapse_classifier_fast",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "synapse_classifier_fast",
+        "description": "synapse_classifier_fast",
+        "peekOfCode": "def main():\n    \"\"\"Main training function\"\"\"\n    print(\"Starting Fast Synapse Classification Training\")\n    print(\"=\" * 50)\n    train_dataset, test_dataset, synapse_type_map = load_and_prepare_data()\n    if train_dataset is None:\n        print(\"Failed to load data. Exiting.\")\n        return\n    # Create data loaders\n    train_loader = DataLoader(",
+        "detail": "synapse_classifier_fast",
+        "documentation": {}
+    },
+    {
+        "label": "SYNAPSE_DATA_PATH",
+        "kind": 5,
+        "importPath": "synapse_classifier_fast",
+        "description": "synapse_classifier_fast",
+        "peekOfCode": "SYNAPSE_DATA_PATH = CSV_PATH\nBATCH_SIZE = 32  # Much larger batch size\nLEARNING_RATE = 0.001\nEPOCHS = 20  # Fewer epochs to test faster\nINPUT_SIZE = 32  # Smaller input size for speed\nRANDOM_SEED = 42\nNUM_WORKERS = 2  # Reduced to avoid memory issues\n# Set device\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")",
+        "detail": "synapse_classifier_fast",
+        "documentation": {}
+    },
+    {
+        "label": "BATCH_SIZE",
+        "kind": 5,
+        "importPath": "synapse_classifier_fast",
+        "description": "synapse_classifier_fast",
+        "peekOfCode": "BATCH_SIZE = 32  # Much larger batch size\nLEARNING_RATE = 0.001\nEPOCHS = 20  # Fewer epochs to test faster\nINPUT_SIZE = 32  # Smaller input size for speed\nRANDOM_SEED = 42\nNUM_WORKERS = 2  # Reduced to avoid memory issues\n# Set device\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")\n# Set random seeds",
+        "detail": "synapse_classifier_fast",
+        "documentation": {}
+    },
+    {
+        "label": "LEARNING_RATE",
+        "kind": 5,
+        "importPath": "synapse_classifier_fast",
+        "description": "synapse_classifier_fast",
+        "peekOfCode": "LEARNING_RATE = 0.001\nEPOCHS = 20  # Fewer epochs to test faster\nINPUT_SIZE = 32  # Smaller input size for speed\nRANDOM_SEED = 42\nNUM_WORKERS = 2  # Reduced to avoid memory issues\n# Set device\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")\n# Set random seeds\ntorch.manual_seed(RANDOM_SEED)",
+        "detail": "synapse_classifier_fast",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": "synapse_classifier_fast",
+        "description": "synapse_classifier_fast",
+        "peekOfCode": "EPOCHS = 20  # Fewer epochs to test faster\nINPUT_SIZE = 32  # Smaller input size for speed\nRANDOM_SEED = 42\nNUM_WORKERS = 2  # Reduced to avoid memory issues\n# Set device\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")\n# Set random seeds\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)",
+        "detail": "synapse_classifier_fast",
+        "documentation": {}
+    },
+    {
+        "label": "INPUT_SIZE",
+        "kind": 5,
+        "importPath": "synapse_classifier_fast",
+        "description": "synapse_classifier_fast",
+        "peekOfCode": "INPUT_SIZE = 32  # Smaller input size for speed\nRANDOM_SEED = 42\nNUM_WORKERS = 2  # Reduced to avoid memory issues\n# Set device\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")\n# Set random seeds\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)\nclass FastSynapseDataset(Dataset):",
+        "detail": "synapse_classifier_fast",
+        "documentation": {}
+    },
+    {
+        "label": "RANDOM_SEED",
+        "kind": 5,
+        "importPath": "synapse_classifier_fast",
+        "description": "synapse_classifier_fast",
+        "peekOfCode": "RANDOM_SEED = 42\nNUM_WORKERS = 2  # Reduced to avoid memory issues\n# Set device\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")\n# Set random seeds\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)\nclass FastSynapseDataset(Dataset):\n    def __init__(self, file_list, synapse_type_map, data_dir):",
+        "detail": "synapse_classifier_fast",
+        "documentation": {}
+    },
+    {
+        "label": "NUM_WORKERS",
+        "kind": 5,
+        "importPath": "synapse_classifier_fast",
+        "description": "synapse_classifier_fast",
+        "peekOfCode": "NUM_WORKERS = 2  # Reduced to avoid memory issues\n# Set device\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")\n# Set random seeds\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)\nclass FastSynapseDataset(Dataset):\n    def __init__(self, file_list, synapse_type_map, data_dir):\n        self.file_list = file_list",
+        "detail": "synapse_classifier_fast",
+        "documentation": {}
+    },
+    {
+        "label": "device",
+        "kind": 5,
+        "importPath": "synapse_classifier_fast",
+        "description": "synapse_classifier_fast",
+        "peekOfCode": "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")\n# Set random seeds\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)\nclass FastSynapseDataset(Dataset):\n    def __init__(self, file_list, synapse_type_map, data_dir):\n        self.file_list = file_list\n        self.synapse_type_map = synapse_type_map\n        self.data_dir = data_dir",
+        "detail": "synapse_classifier_fast",
+        "documentation": {}
+    },
+    {
+        "label": "MaskedSynapseDataset",
+        "kind": 6,
+        "importPath": "synapse_classifier_masked",
+        "description": "synapse_classifier_masked",
+        "peekOfCode": "class MaskedSynapseDataset(Dataset):\n    def __init__(self, file_list, synapse_type_map, data_dir, augment=True):\n        self.file_list = file_list\n        self.synapse_type_map = synapse_type_map\n        self.data_dir = data_dir\n        self.augment = augment\n    def __len__(self):\n        return len(self.file_list)\n    def augment_data(self, data, pre_slice, post_slice):\n        \"\"\"Apply data augmentation\"\"\"",
+        "detail": "synapse_classifier_masked",
+        "documentation": {}
+    },
+    {
+        "label": "MaskedSynapseClassifier",
+        "kind": 6,
+        "importPath": "synapse_classifier_masked",
+        "description": "synapse_classifier_masked",
+        "peekOfCode": "class MaskedSynapseClassifier(nn.Module):\n    def __init__(self, num_classes=2):\n        super(MaskedSynapseClassifier, self).__init__()\n        # 2D CNN with 3 input channels (masked_data, pre_mask, post_mask)\n        self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)\n        self.bn1 = nn.BatchNorm2d(32)\n        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)\n        self.bn2 = nn.BatchNorm2d(64)\n        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)\n        self.bn3 = nn.BatchNorm2d(128)",
+        "detail": "synapse_classifier_masked",
+        "documentation": {}
+    },
+    {
+        "label": "load_and_prepare_data",
+        "kind": 2,
+        "importPath": "synapse_classifier_masked",
+        "description": "synapse_classifier_masked",
+        "peekOfCode": "def load_and_prepare_data():\n    \"\"\"Load and prepare the dataset\"\"\"\n    logger = setup_logging('masked')\n    logger.info(\"Loading synapse data...\")\n    if not os.path.exists(SYNAPSE_DATA_PATH):\n        logger.error(f\"Error: {SYNAPSE_DATA_PATH} not found!\")\n        return None, None, None\n    synapse_data = pd.read_csv(SYNAPSE_DATA_PATH)\n    synapse_type_map = {row['id_']: row['pre_clf_type'] for _, row in synapse_data.iterrows()}\n    all_files = [f for f in os.listdir(DATA_DIR) if f.endswith('syn.npy')]",
+        "detail": "synapse_classifier_masked",
+        "documentation": {}
+    },
+    {
+        "label": "train_model",
+        "kind": 2,
+        "importPath": "synapse_classifier_masked",
+        "description": "synapse_classifier_masked",
+        "peekOfCode": "def train_model(model, train_loader, test_loader, criterion, optimizer, scheduler, num_epochs):\n    \"\"\"Train the model\"\"\"\n    train_losses = []\n    test_losses = []\n    train_accuracies = []\n    test_accuracies = []\n    best_test_acc = 0.0\n    for epoch in range(num_epochs):\n        # Training phase\n        model.train()",
+        "detail": "synapse_classifier_masked",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "synapse_classifier_masked",
+        "description": "synapse_classifier_masked",
+        "peekOfCode": "def main():\n    \"\"\"Main training function\"\"\"\n    logger = setup_logging('masked')\n    logger.info(\"Starting Masked Synapse Classification Training\")\n    logger.info(\"=\" * 50)\n    train_dataset, test_dataset, synapse_type_map = load_and_prepare_data()\n    if train_dataset is None:\n        logger.error(\"Failed to load data. Exiting.\")\n        return\n    # Create data loaders",
+        "detail": "synapse_classifier_masked",
+        "documentation": {}
+    },
+    {
+        "label": "SYNAPSE_DATA_PATH",
+        "kind": 5,
+        "importPath": "synapse_classifier_masked",
+        "description": "synapse_classifier_masked",
+        "peekOfCode": "SYNAPSE_DATA_PATH = CSV_PATH\nBATCH_SIZE = 16\nLEARNING_RATE = 0.0005  # Lower learning rate\nEPOCHS = 30\nINPUT_SIZE = 48\nRANDOM_SEED = 42\nNUM_WORKERS = 2\n# Set device\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")",
+        "detail": "synapse_classifier_masked",
+        "documentation": {}
+    },
+    {
+        "label": "BATCH_SIZE",
+        "kind": 5,
+        "importPath": "synapse_classifier_masked",
+        "description": "synapse_classifier_masked",
+        "peekOfCode": "BATCH_SIZE = 16\nLEARNING_RATE = 0.0005  # Lower learning rate\nEPOCHS = 30\nINPUT_SIZE = 48\nRANDOM_SEED = 42\nNUM_WORKERS = 2\n# Set device\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")\n# Set random seeds",
+        "detail": "synapse_classifier_masked",
+        "documentation": {}
+    },
+    {
+        "label": "LEARNING_RATE",
+        "kind": 5,
+        "importPath": "synapse_classifier_masked",
+        "description": "synapse_classifier_masked",
+        "peekOfCode": "LEARNING_RATE = 0.0005  # Lower learning rate\nEPOCHS = 30\nINPUT_SIZE = 48\nRANDOM_SEED = 42\nNUM_WORKERS = 2\n# Set device\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")\n# Set random seeds\ntorch.manual_seed(RANDOM_SEED)",
+        "detail": "synapse_classifier_masked",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": "synapse_classifier_masked",
+        "description": "synapse_classifier_masked",
+        "peekOfCode": "EPOCHS = 30\nINPUT_SIZE = 48\nRANDOM_SEED = 42\nNUM_WORKERS = 2\n# Set device\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")\n# Set random seeds\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)",
+        "detail": "synapse_classifier_masked",
+        "documentation": {}
+    },
+    {
+        "label": "INPUT_SIZE",
+        "kind": 5,
+        "importPath": "synapse_classifier_masked",
+        "description": "synapse_classifier_masked",
+        "peekOfCode": "INPUT_SIZE = 48\nRANDOM_SEED = 42\nNUM_WORKERS = 2\n# Set device\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")\n# Set random seeds\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)\nrandom.seed(RANDOM_SEED)",
+        "detail": "synapse_classifier_masked",
+        "documentation": {}
+    },
+    {
+        "label": "RANDOM_SEED",
+        "kind": 5,
+        "importPath": "synapse_classifier_masked",
+        "description": "synapse_classifier_masked",
+        "peekOfCode": "RANDOM_SEED = 42\nNUM_WORKERS = 2\n# Set device\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")\n# Set random seeds\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)\nrandom.seed(RANDOM_SEED)\nclass MaskedSynapseDataset(Dataset):",
+        "detail": "synapse_classifier_masked",
+        "documentation": {}
+    },
+    {
+        "label": "NUM_WORKERS",
+        "kind": 5,
+        "importPath": "synapse_classifier_masked",
+        "description": "synapse_classifier_masked",
+        "peekOfCode": "NUM_WORKERS = 2\n# Set device\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")\n# Set random seeds\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)\nrandom.seed(RANDOM_SEED)\nclass MaskedSynapseDataset(Dataset):\n    def __init__(self, file_list, synapse_type_map, data_dir, augment=True):",
+        "detail": "synapse_classifier_masked",
+        "documentation": {}
+    },
+    {
+        "label": "device",
+        "kind": 5,
+        "importPath": "synapse_classifier_masked",
+        "description": "synapse_classifier_masked",
+        "peekOfCode": "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f\"Using device: {device}\")\n# Set random seeds\ntorch.manual_seed(RANDOM_SEED)\nnp.random.seed(RANDOM_SEED)\nrandom.seed(RANDOM_SEED)\nclass MaskedSynapseDataset(Dataset):\n    def __init__(self, file_list, synapse_type_map, data_dir, augment=True):\n        self.file_list = file_list\n        self.synapse_type_map = synapse_type_map",
+        "detail": "synapse_classifier_masked",
+        "documentation": {}
+    },
+    {
+        "label": "Synapse2DDataset",
+        "kind": 6,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "class Synapse2DDataset(Dataset):\n    \"\"\"\n    Dataset class for 2D synapse classification.\n    Loads synapse data, takes a 2D slice, and preprocesses it.\n    \"\"\"\n    def __init__(self, files: List[str], type_map, data_dir, augment: bool):\n        self.files = files\n        self.type_map = type_map\n        self.data_dir = data_dir\n        self.augment = augment",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "FocalLoss",
+        "kind": 6,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "class FocalLoss(nn.Module):\n    def __init__(self, alpha=1, gamma=2, reduction='mean'):\n        super().__init__()\n        self.alpha = alpha\n        self.gamma = gamma\n        self.reduction = reduction\n    def forward(self, inputs, targets):\n        ce_loss = F.cross_entropy(inputs, targets, reduction='none')\n        pt = torch.exp(-ce_loss)\n        focal_loss = self.alpha * (1-pt)**self.gamma * ce_loss",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "ResNetClassifier",
+        "kind": 6,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "class ResNetClassifier(nn.Module):\n    def __init__(self, num_classes=2, pretrained=False):\n        super().__init__()\n        self.resnet = models.resnet34(pretrained=False)  # Changed to ResNet34\n        num_ftrs = self.resnet.fc.in_features\n        self.resnet.fc = nn.Sequential(\n            nn.Dropout(DROPOUT_RATE),\n            nn.Linear(num_ftrs, 128),\n            nn.ReLU(),\n            nn.BatchNorm1d(128),",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "plot_learning_curves",
+        "kind": 2,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_timestamp=None):\n    \"\"\"Plot comprehensive learning curves and save to figures directory.\"\"\"\n    epochs = range(1, len(train_losses) + 1)\n    # Create figure with subplots - 3x2 layout for comprehensive view\n    fig = plt.figure(figsize=(20, 15))\n    # Plot 1: Training and validation loss\n    ax1 = plt.subplot(3, 2, 1)\n    ax1.plot(epochs, train_losses, 'b-', label='Training Loss', linewidth=2, alpha=0.8)\n    ax1.plot(epochs, val_losses, 'r-', label='Validation Loss', linewidth=2, alpha=0.8)\n    ax1.set_title('Training and Validation Loss', fontsize=14, fontweight='bold')",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "def main():\n    # Setup logging\n    logger = setup_logging('resnet')\n    # Run start timestamp\n    RUN_TIMESTAMP = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')\n    # ------------------------- data preparation ---------------------\n    logger.info('Loading CSV...')\n    if not os.path.exists(CSV_PATH):\n        raise FileNotFoundError(CSV_PATH)\n    data = pd.read_csv(CSV_PATH)",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "BATCH_SIZE",
+        "kind": 5,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "BATCH_SIZE = 32           # Larger batch size for better GPU utilization\nINPUT_XY = 224            # Standard ResNet input size\nEPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "INPUT_XY",
+        "kind": 5,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "INPUT_XY = 224            # Standard ResNet input size\nEPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "EPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "LR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "NUM_WORKERS",
+        "kind": 5,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "NUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "RNG_SEED",
+        "kind": 5,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "RNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "DROPOUT_RATE",
+        "kind": 5,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "DROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "WEIGHT_DECAY",
+        "kind": 5,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "WEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "LABEL_SMOOTHING",
+        "kind": 5,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "LABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "parser",
+        "kind": 5,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "parser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "args",
+        "kind": 5,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "args = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "EPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "LR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():\n    gpu_name = torch.cuda.get_device_name(0)",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "device",
+        "kind": 5,
+        "importPath": "synapse_classifier_resnet",
+        "description": "synapse_classifier_resnet",
+        "peekOfCode": "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():\n    gpu_name = torch.cuda.get_device_name(0)\n    gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3\n    gpu_memory_available = torch.cuda.memory_allocated(0) / 1024**3\n    gpu_memory_free = gpu_memory - gpu_memory_available\n    print(f'GPU: {gpu_name}')\n    print(f'GPU Memory: {gpu_memory:.1f} GB')",
+        "detail": "synapse_classifier_resnet",
+        "documentation": {}
+    },
+    {
+        "label": "Synapse2DDataset",
+        "kind": 6,
+        "importPath": "synapse_classifier_vgg3d",
+        "description": "synapse_classifier_vgg3d",
+        "peekOfCode": "class Synapse2DDataset(Dataset):\n    \"\"\"\n    Dataset class for 2D synapse classification.\n    Loads synapse data, takes a 2D slice, and preprocesses it\n    similarly to the MaskedSynapseClassifier.\n    \"\"\"\n    def __init__(self, files: List[str], type_map, data_dir, augment: bool):\n        self.files = files\n        self.type_map = type_map\n        self.data_dir = data_dir",
+        "detail": "synapse_classifier_vgg3d",
+        "documentation": {}
+    },
+    {
+        "label": "VGG2D",
+        "kind": 6,
+        "importPath": "synapse_classifier_vgg3d",
+        "description": "synapse_classifier_vgg3d",
+        "peekOfCode": "class VGG2D(nn.Module):\n    def __init__(self):\n        super().__init__()\n        def block(in_c, out_c):\n            layers = [\n                nn.Conv2d(in_c, out_c, 3, padding=1), nn.BatchNorm2d(out_c), nn.ReLU(inplace=True),\n                nn.Conv2d(out_c, out_c, 3, padding=1), nn.BatchNorm2d(out_c), nn.ReLU(inplace=True),\n                nn.MaxPool2d(kernel_size=2, stride=2)\n            ]\n            return nn.Sequential(*layers)",
+        "detail": "synapse_classifier_vgg3d",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "synapse_classifier_vgg3d",
+        "description": "synapse_classifier_vgg3d",
+        "peekOfCode": "def main():\n    # Setup logging\n    logger = setup_logging('vgg2d')\n    # ------------------------- data preparation ---------------------\n    logger.info('Loading CSV...')\n    if not os.path.exists(CSV_PATH):\n        raise FileNotFoundError(CSV_PATH)\n    data = pd.read_csv(CSV_PATH)\n    map_type = {r['id_']: r['pre_clf_type'] for _, r in data.iterrows()}\n    all_files = []",
+        "detail": "synapse_classifier_vgg3d",
+        "documentation": {}
+    },
+    {
+        "label": "BATCH_SIZE",
+        "kind": 5,
+        "importPath": "synapse_classifier_vgg3d",
+        "description": "synapse_classifier_vgg3d",
+        "peekOfCode": "BATCH_SIZE = 16            # Can use a larger batch size for 2D\nINPUT_XY = 48             # keep same XY size\nEPOCHS = 30\nLR = 5e-4\nNUM_WORKERS = 2\nRNG_SEED = 42\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='3-D VGG-style synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)",
+        "detail": "synapse_classifier_vgg3d",
+        "documentation": {}
+    },
+    {
+        "label": "INPUT_XY",
+        "kind": 5,
+        "importPath": "synapse_classifier_vgg3d",
+        "description": "synapse_classifier_vgg3d",
+        "peekOfCode": "INPUT_XY = 48             # keep same XY size\nEPOCHS = 30\nLR = 5e-4\nNUM_WORKERS = 2\nRNG_SEED = 42\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='3-D VGG-style synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)",
+        "detail": "synapse_classifier_vgg3d",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": "synapse_classifier_vgg3d",
+        "description": "synapse_classifier_vgg3d",
+        "peekOfCode": "EPOCHS = 30\nLR = 5e-4\nNUM_WORKERS = 2\nRNG_SEED = 42\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='3-D VGG-style synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()",
+        "detail": "synapse_classifier_vgg3d",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": "synapse_classifier_vgg3d",
+        "description": "synapse_classifier_vgg3d",
+        "peekOfCode": "LR = 5e-4\nNUM_WORKERS = 2\nRNG_SEED = 42\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='3-D VGG-style synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs",
+        "detail": "synapse_classifier_vgg3d",
+        "documentation": {}
+    },
+    {
+        "label": "NUM_WORKERS",
+        "kind": 5,
+        "importPath": "synapse_classifier_vgg3d",
+        "description": "synapse_classifier_vgg3d",
+        "peekOfCode": "NUM_WORKERS = 2\nRNG_SEED = 42\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='3-D VGG-style synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr",
+        "detail": "synapse_classifier_vgg3d",
+        "documentation": {}
+    },
+    {
+        "label": "RNG_SEED",
+        "kind": 5,
+        "importPath": "synapse_classifier_vgg3d",
+        "description": "synapse_classifier_vgg3d",
+        "peekOfCode": "RNG_SEED = 42\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='3-D VGG-style synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------",
+        "detail": "synapse_classifier_vgg3d",
+        "documentation": {}
+    },
+    {
+        "label": "parser",
+        "kind": 5,
+        "importPath": "synapse_classifier_vgg3d",
+        "description": "synapse_classifier_vgg3d",
+        "peekOfCode": "parser = argparse.ArgumentParser(description='3-D VGG-style synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)",
+        "detail": "synapse_classifier_vgg3d",
+        "documentation": {}
+    },
+    {
+        "label": "args",
+        "kind": 5,
+        "importPath": "synapse_classifier_vgg3d",
+        "description": "synapse_classifier_vgg3d",
+        "peekOfCode": "args = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# ------------------------- dataset ------------------------------",
+        "detail": "synapse_classifier_vgg3d",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": "synapse_classifier_vgg3d",
+        "description": "synapse_classifier_vgg3d",
+        "peekOfCode": "EPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# ------------------------- dataset ------------------------------\nclass Synapse2DDataset(Dataset):",
+        "detail": "synapse_classifier_vgg3d",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": "synapse_classifier_vgg3d",
+        "description": "synapse_classifier_vgg3d",
+        "peekOfCode": "LR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# ------------------------- dataset ------------------------------\nclass Synapse2DDataset(Dataset):\n    \"\"\"",
+        "detail": "synapse_classifier_vgg3d",
+        "documentation": {}
+    },
+    {
+        "label": "device",
+        "kind": 5,
+        "importPath": "synapse_classifier_vgg3d",
+        "description": "synapse_classifier_vgg3d",
+        "peekOfCode": "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# ------------------------- dataset ------------------------------\nclass Synapse2DDataset(Dataset):\n    \"\"\"\n    Dataset class for 2D synapse classification.\n    Loads synapse data, takes a 2D slice, and preprocesses it\n    similarly to the MaskedSynapseClassifier.\n    \"\"\"\n    def __init__(self, files: List[str], type_map, data_dir, augment: bool):",
+        "detail": "synapse_classifier_vgg3d",
+        "documentation": {}
+    }
+]

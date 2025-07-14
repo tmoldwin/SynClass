@@ -76,6 +76,38 @@
         "documentation": {}
     },
     {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "numpy",
         "kind": 6,
         "isExtraImport": true,
@@ -258,6 +290,102 @@
         "documentation": {}
     },
     {
+        "label": "classification_report",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "confusion_matrix",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "classification_report",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "confusion_matrix",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "classification_report",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "confusion_matrix",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "classification_report",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "confusion_matrix",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "train_test_split",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
+        "label": "train_test_split",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
+        "label": "train_test_split",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
+        "label": "train_test_split",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
         "label": "train_test_split",
         "importPath": "sklearn.model_selection",
         "description": "sklearn.model_selection",
@@ -367,6 +495,102 @@
         "description": "sklearn.utils.class_weight",
         "isExtraImport": true,
         "detail": "sklearn.utils.class_weight",
+        "documentation": {}
+    },
+    {
+        "label": "compute_class_weight",
+        "importPath": "sklearn.utils.class_weight",
+        "description": "sklearn.utils.class_weight",
+        "isExtraImport": true,
+        "detail": "sklearn.utils.class_weight",
+        "documentation": {}
+    },
+    {
+        "label": "compute_class_weight",
+        "importPath": "sklearn.utils.class_weight",
+        "description": "sklearn.utils.class_weight",
+        "isExtraImport": true,
+        "detail": "sklearn.utils.class_weight",
+        "documentation": {}
+    },
+    {
+        "label": "compute_class_weight",
+        "importPath": "sklearn.utils.class_weight",
+        "description": "sklearn.utils.class_weight",
+        "isExtraImport": true,
+        "detail": "sklearn.utils.class_weight",
+        "documentation": {}
+    },
+    {
+        "label": "compute_class_weight",
+        "importPath": "sklearn.utils.class_weight",
+        "description": "sklearn.utils.class_weight",
+        "isExtraImport": true,
+        "detail": "sklearn.utils.class_weight",
+        "documentation": {}
+    },
+    {
+        "label": "Dataset",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "Dataset",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "Dataset",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "Dataset",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
         "documentation": {}
     },
     {
@@ -570,6 +794,38 @@
         "documentation": {}
     },
     {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
         "label": "cv2",
         "kind": 6,
         "isExtraImport": true,
@@ -603,6 +859,134 @@
         "importPath": "seaborn",
         "description": "seaborn",
         "detail": "seaborn",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_DIR",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CSV_PATH",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_SAVE_PATHS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "setup_logging",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_DIR",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CSV_PATH",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_SAVE_PATHS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "setup_logging",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_DIR",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CSV_PATH",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_SAVE_PATHS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "setup_logging",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_DIR",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CSV_PATH",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_SAVE_PATHS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "setup_logging",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
         "documentation": {}
     },
     {
@@ -1439,6 +1823,690 @@
         "description": ".history.synapse_classifier_resnet_20250714110919",
         "peekOfCode": "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():\n    gpu_name = torch.cuda.get_device_name(0)\n    gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3\n    gpu_memory_available = torch.cuda.memory_allocated(0) / 1024**3\n    gpu_memory_free = gpu_memory - gpu_memory_available\n    print(f'GPU: {gpu_name}')\n    print(f'GPU Memory: {gpu_memory:.1f} GB')",
         "detail": ".history.synapse_classifier_resnet_20250714110919",
+        "documentation": {}
+    },
+    {
+        "label": "Synapse2DDataset",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "class Synapse2DDataset(Dataset):\n    \"\"\"\n    Dataset class for 2D synapse classification.\n    Loads synapse data, takes a 2D slice, and preprocesses it.\n    \"\"\"\n    def __init__(self, files: List[str], type_map, data_dir, augment: bool):\n        self.files = files\n        self.type_map = type_map\n        self.data_dir = data_dir\n        self.augment = augment",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "FocalLoss",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "class FocalLoss(nn.Module):\n    def __init__(self, alpha=1, gamma=2, reduction='mean'):\n        super().__init__()\n        self.alpha = alpha\n        self.gamma = gamma\n        self.reduction = reduction\n    def forward(self, inputs, targets):\n        ce_loss = F.cross_entropy(inputs, targets, reduction='none')\n        pt = torch.exp(-ce_loss)\n        focal_loss = self.alpha * (1-pt)**self.gamma * ce_loss",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "ResNetClassifier",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "class ResNetClassifier(nn.Module):\n    def __init__(self, num_classes=2, pretrained=False):\n        super().__init__()\n        self.resnet = models.resnet34(pretrained=False)  # Changed to ResNet34\n        num_ftrs = self.resnet.fc.in_features\n        self.resnet.fc = nn.Sequential(\n            nn.Dropout(DROPOUT_RATE),\n            nn.Linear(num_ftrs, 128),\n            nn.ReLU(),\n            nn.BatchNorm1d(128),",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "plot_learning_curves",
+        "kind": 2,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_timestamp=None):\n    \"\"\"Plot comprehensive learning curves and save to figures directory.\"\"\"\n    epochs = range(1, len(train_losses) + 1)\n    # Create figure with subplots - 3x2 layout for comprehensive view\n    fig = plt.figure(figsize=(20, 15))\n    # Plot 1: Training and validation loss\n    ax1 = plt.subplot(3, 2, 1)\n    ax1.plot(epochs, train_losses, 'b-', label='Training Loss', linewidth=2, alpha=0.8)\n    ax1.plot(epochs, val_losses, 'r-', label='Validation Loss', linewidth=2, alpha=0.8)\n    ax1.set_title('Training and Validation Loss', fontsize=14, fontweight='bold')",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "def main():\n    # Setup logging\n    logger = setup_logging('resnet')\n    # Run start timestamp\n    RUN_TIMESTAMP = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')\n    # ------------------------- data preparation ---------------------\n    logger.info('Loading CSV...')\n    if not os.path.exists(CSV_PATH):\n        raise FileNotFoundError(CSV_PATH)\n    data = pd.read_csv(CSV_PATH)",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "BATCH_SIZE",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "BATCH_SIZE = 32           # Larger batch size for better GPU utilization\nINPUT_XY = 224            # Standard ResNet input size\nEPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "INPUT_XY",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "INPUT_XY = 224            # Standard ResNet input size\nEPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "EPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "LR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "NUM_WORKERS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "NUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "RNG_SEED",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "RNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "DROPOUT_RATE",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "DROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "WEIGHT_DECAY",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "WEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "LABEL_SMOOTHING",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "LABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "parser",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "parser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "args",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "args = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "EPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "LR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():\n    gpu_name = torch.cuda.get_device_name(0)",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "device",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112121",
+        "description": ".history.synapse_classifier_resnet_20250714112121",
+        "peekOfCode": "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():\n    gpu_name = torch.cuda.get_device_name(0)\n    gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3\n    gpu_memory_available = torch.cuda.memory_allocated(0) / 1024**3\n    gpu_memory_free = gpu_memory - gpu_memory_available\n    print(f'GPU: {gpu_name}')\n    print(f'GPU Memory: {gpu_memory:.1f} GB')",
+        "detail": ".history.synapse_classifier_resnet_20250714112121",
+        "documentation": {}
+    },
+    {
+        "label": "Synapse2DDataset",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "class Synapse2DDataset(Dataset):\n    \"\"\"\n    Dataset class for 2D synapse classification.\n    Loads synapse data, takes a 2D slice, and preprocesses it.\n    \"\"\"\n    def __init__(self, files: List[str], type_map, data_dir, augment: bool):\n        self.files = files\n        self.type_map = type_map\n        self.data_dir = data_dir\n        self.augment = augment",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "FocalLoss",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "class FocalLoss(nn.Module):\n    def __init__(self, alpha=1, gamma=2, reduction='mean'):\n        super().__init__()\n        self.alpha = alpha\n        self.gamma = gamma\n        self.reduction = reduction\n    def forward(self, inputs, targets):\n        ce_loss = F.cross_entropy(inputs, targets, reduction='none')\n        pt = torch.exp(-ce_loss)\n        focal_loss = self.alpha * (1-pt)**self.gamma * ce_loss",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "ResNetClassifier",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "class ResNetClassifier(nn.Module):\n    def __init__(self, num_classes=2, pretrained=False):\n        super().__init__()\n        self.resnet = models.resnet34(pretrained=False)  # Changed to ResNet34\n        num_ftrs = self.resnet.fc.in_features\n        self.resnet.fc = nn.Sequential(\n            nn.Dropout(DROPOUT_RATE),\n            nn.Linear(num_ftrs, 128),\n            nn.ReLU(),\n            nn.BatchNorm1d(128),",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "plot_learning_curves",
+        "kind": 2,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_timestamp=None):\n    \"\"\"Plot comprehensive learning curves and save to figures directory.\"\"\"\n    epochs = range(1, len(train_losses) + 1)\n    # Create figure with subplots - 3x2 layout for comprehensive view\n    fig = plt.figure(figsize=(20, 15))\n    # Plot 1: Training and validation loss\n    ax1 = plt.subplot(3, 2, 1)\n    ax1.plot(epochs, train_losses, 'b-', label='Training Loss', linewidth=2, alpha=0.8)\n    ax1.plot(epochs, val_losses, 'r-', label='Validation Loss', linewidth=2, alpha=0.8)\n    ax1.set_title('Training and Validation Loss', fontsize=14, fontweight='bold')",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "def main():\n    # Setup logging\n    logger = setup_logging('resnet')\n    # Run start timestamp\n    RUN_TIMESTAMP = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')\n    # ------------------------- data preparation ---------------------\n    logger.info('Loading CSV...')\n    if not os.path.exists(CSV_PATH):\n        raise FileNotFoundError(CSV_PATH)\n    data = pd.read_csv(CSV_PATH)",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "BATCH_SIZE",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "BATCH_SIZE = 32           # Larger batch size for better GPU utilization\nINPUT_XY = 224            # Standard ResNet input size\nEPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "INPUT_XY",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "INPUT_XY = 224            # Standard ResNet input size\nEPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "EPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "LR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "NUM_WORKERS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "NUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "RNG_SEED",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "RNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "DROPOUT_RATE",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "DROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "WEIGHT_DECAY",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "WEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "LABEL_SMOOTHING",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "LABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "parser",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "parser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "args",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "args = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "EPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "LR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():\n    gpu_name = torch.cuda.get_device_name(0)",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "device",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112227",
+        "description": ".history.synapse_classifier_resnet_20250714112227",
+        "peekOfCode": "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():\n    gpu_name = torch.cuda.get_device_name(0)\n    gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3\n    gpu_memory_available = torch.cuda.memory_allocated(0) / 1024**3\n    gpu_memory_free = gpu_memory - gpu_memory_available\n    print(f'GPU: {gpu_name}')\n    print(f'GPU Memory: {gpu_memory:.1f} GB')",
+        "detail": ".history.synapse_classifier_resnet_20250714112227",
+        "documentation": {}
+    },
+    {
+        "label": "Synapse2DDataset",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "class Synapse2DDataset(Dataset):\n    \"\"\"\n    Dataset class for 2D synapse classification.\n    Loads synapse data, takes a 2D slice, and preprocesses it.\n    \"\"\"\n    def __init__(self, files: List[str], type_map, data_dir, augment: bool):\n        self.files = files\n        self.type_map = type_map\n        self.data_dir = data_dir\n        self.augment = augment",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "FocalLoss",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "class FocalLoss(nn.Module):\n    def __init__(self, alpha=1, gamma=2, reduction='mean'):\n        super().__init__()\n        self.alpha = alpha\n        self.gamma = gamma\n        self.reduction = reduction\n    def forward(self, inputs, targets):\n        ce_loss = F.cross_entropy(inputs, targets, reduction='none')\n        pt = torch.exp(-ce_loss)\n        focal_loss = self.alpha * (1-pt)**self.gamma * ce_loss",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "ResNetClassifier",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "class ResNetClassifier(nn.Module):\n    def __init__(self, num_classes=2, pretrained=False):\n        super().__init__()\n        self.resnet = models.resnet34(pretrained=False)  # Changed to ResNet34\n        num_ftrs = self.resnet.fc.in_features\n        self.resnet.fc = nn.Sequential(\n            nn.Dropout(DROPOUT_RATE),\n            nn.Linear(num_ftrs, 128),\n            nn.ReLU(),\n            nn.BatchNorm1d(128),",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "plot_learning_curves",
+        "kind": 2,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_timestamp=None):\n    \"\"\"Plot comprehensive learning curves and save to figures directory.\"\"\"\n    epochs = range(1, len(train_losses) + 1)\n    # Create figure with subplots - 3x2 layout for comprehensive view\n    fig = plt.figure(figsize=(20, 15))\n    # Plot 1: Training and validation loss\n    ax1 = plt.subplot(3, 2, 1)\n    ax1.plot(epochs, train_losses, 'b-', label='Training Loss', linewidth=2, alpha=0.8)\n    ax1.plot(epochs, val_losses, 'r-', label='Validation Loss', linewidth=2, alpha=0.8)\n    ax1.set_title('Training and Validation Loss', fontsize=14, fontweight='bold')",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "def main():\n    # Setup logging\n    logger = setup_logging('resnet')\n    # Run start timestamp\n    RUN_TIMESTAMP = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')\n    # ------------------------- data preparation ---------------------\n    logger.info('Loading CSV...')\n    if not os.path.exists(CSV_PATH):\n        raise FileNotFoundError(CSV_PATH)\n    data = pd.read_csv(CSV_PATH)",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "BATCH_SIZE",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "BATCH_SIZE = 32           # Larger batch size for better GPU utilization\nINPUT_XY = 224            # Standard ResNet input size\nEPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "INPUT_XY",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "INPUT_XY = 224            # Standard ResNet input size\nEPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "EPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "LR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "NUM_WORKERS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "NUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "RNG_SEED",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "RNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "DROPOUT_RATE",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "DROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "WEIGHT_DECAY",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "WEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "LABEL_SMOOTHING",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "LABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "parser",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "parser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "args",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "args = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "EPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "LR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():\n    gpu_name = torch.cuda.get_device_name(0)",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "device",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112228",
+        "description": ".history.synapse_classifier_resnet_20250714112228",
+        "peekOfCode": "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():\n    gpu_name = torch.cuda.get_device_name(0)\n    gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3\n    gpu_memory_available = torch.cuda.memory_allocated(0) / 1024**3\n    gpu_memory_free = gpu_memory - gpu_memory_available\n    print(f'GPU: {gpu_name}')\n    print(f'GPU Memory: {gpu_memory:.1f} GB')",
+        "detail": ".history.synapse_classifier_resnet_20250714112228",
+        "documentation": {}
+    },
+    {
+        "label": "Synapse2DDataset",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "class Synapse2DDataset(Dataset):\n    \"\"\"\n    Dataset class for 2D synapse classification.\n    Loads synapse data, takes a 2D slice, and preprocesses it.\n    \"\"\"\n    def __init__(self, files: List[str], type_map, data_dir, augment: bool):\n        self.files = files\n        self.type_map = type_map\n        self.data_dir = data_dir\n        self.augment = augment",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "FocalLoss",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "class FocalLoss(nn.Module):\n    def __init__(self, alpha=1, gamma=2, reduction='mean'):\n        super().__init__()\n        self.alpha = alpha\n        self.gamma = gamma\n        self.reduction = reduction\n    def forward(self, inputs, targets):\n        ce_loss = F.cross_entropy(inputs, targets, reduction='none')\n        pt = torch.exp(-ce_loss)\n        focal_loss = self.alpha * (1-pt)**self.gamma * ce_loss",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "ResNetClassifier",
+        "kind": 6,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "class ResNetClassifier(nn.Module):\n    def __init__(self, num_classes=2, pretrained=False):\n        super().__init__()\n        self.resnet = models.resnet34(pretrained=False)  # Changed to ResNet34\n        num_ftrs = self.resnet.fc.in_features\n        self.resnet.fc = nn.Sequential(\n            nn.Dropout(DROPOUT_RATE),\n            nn.Linear(num_ftrs, 128),\n            nn.ReLU(),\n            nn.BatchNorm1d(128),",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "plot_learning_curves",
+        "kind": 2,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_timestamp=None):\n    \"\"\"Plot comprehensive learning curves and save to figures directory.\"\"\"\n    epochs = range(1, len(train_losses) + 1)\n    # Create figure with subplots - 3x2 layout for comprehensive view\n    fig = plt.figure(figsize=(20, 15))\n    # Plot 1: Training and validation loss\n    ax1 = plt.subplot(3, 2, 1)\n    ax1.plot(epochs, train_losses, 'b-', label='Training Loss', linewidth=2, alpha=0.8)\n    ax1.plot(epochs, val_losses, 'r-', label='Validation Loss', linewidth=2, alpha=0.8)\n    ax1.set_title('Training and Validation Loss', fontsize=14, fontweight='bold')",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "def main():\n    # Setup logging\n    logger = setup_logging('resnet')\n    # Run start timestamp\n    RUN_TIMESTAMP = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')\n    # ------------------------- data preparation ---------------------\n    logger.info('Loading CSV...')\n    if not os.path.exists(CSV_PATH):\n        raise FileNotFoundError(CSV_PATH)\n    data = pd.read_csv(CSV_PATH)",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "BATCH_SIZE",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "BATCH_SIZE = 32           # Larger batch size for better GPU utilization\nINPUT_XY = 224            # Standard ResNet input size\nEPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "INPUT_XY",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "INPUT_XY = 224            # Standard ResNet input size\nEPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "EPOCHS = 100              # More epochs for better convergence\nLR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "LR = 2e-6                 # Lower LR to prevent overfitting\nNUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "NUM_WORKERS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "NUM_WORKERS = 4           # Increased workers for GPU\nRNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "RNG_SEED",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "RNG_SEED = 42\nDROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "DROPOUT_RATE",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "DROPOUT_RATE = 0.8        # Higher dropout to prevent overfitting\nWEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "WEIGHT_DECAY",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "WEIGHT_DECAY = 1e-2       # Much stronger weight decay\nLABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "LABEL_SMOOTHING",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "LABEL_SMOOTHING = 0.1     # Add label smoothing for better generalization\n# ------------------------- argparse ------------------------------\nparser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "parser",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "parser = argparse.ArgumentParser(description='ResNet-based synapse classifier')\nparser.add_argument('--resume', action='store_true', help='resume from checkpoint')\nparser.add_argument('--epochs', type=int, default=EPOCHS)\nparser.add_argument('--lr', type=float, default=LR)\nargs = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "args",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "args = parser.parse_args()\nEPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "EPOCHS",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "EPOCHS = args.epochs\nLR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "LR",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "LR = args.lr\n# ------------------------- reproducibility ----------------------\nrandom.seed(RNG_SEED)\nnp.random.seed(RNG_SEED)\ntorch.manual_seed(RNG_SEED)\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():\n    gpu_name = torch.cuda.get_device_name(0)",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
+        "documentation": {}
+    },
+    {
+        "label": "device",
+        "kind": 5,
+        "importPath": ".history.synapse_classifier_resnet_20250714112241",
+        "description": ".history.synapse_classifier_resnet_20250714112241",
+        "peekOfCode": "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nprint(f'Using device: {device}')\n# GPU optimization based on hardware\nif torch.cuda.is_available():\n    gpu_name = torch.cuda.get_device_name(0)\n    gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3\n    gpu_memory_available = torch.cuda.memory_allocated(0) / 1024**3\n    gpu_memory_free = gpu_memory - gpu_memory_available\n    print(f'GPU: {gpu_name}')\n    print(f'GPU Memory: {gpu_memory:.1f} GB')",
+        "detail": ".history.synapse_classifier_resnet_20250714112241",
         "documentation": {}
     },
     {

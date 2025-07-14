@@ -1,7 +1,0 @@
-From https://github.com/tmoldwin/SynClass
- * branch            main       -> FETCH_HEAD
-Already up to date.
-Traceback (most recent call last):
-  File "/ems/elsc-labs/segev-i/toviah.moldwin/code/SynClass/synapse_classifier_resnet.py", line 21, in <module>
-    import seaborn as sns
-ModuleNotFoundError: No module named 'seaborn'

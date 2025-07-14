@@ -25,7 +25,7 @@ import datetime
 warnings.filterwarnings("ignore")
 
 # ------------------------- configuration -------------------------
-BATCH_SIZE = 32           # Larger batch size for better GPU utilization
+BATCH_SIZE = 64           # Larger batch size for faster epochs
 INPUT_XY = 224            # Standard ResNet input size
 EPOCHS = 100              # More epochs for better convergence
 LR = 2e-6                 # Lower LR to prevent overfitting
@@ -105,9 +105,9 @@ class Synapse2DDataset(Dataset):
         self.type_map = type_map
         self.data_dir = data_dir
         self.augment = augment
-        self.samples = []  # Will store (file, z_slice_idx, synapse_id, label)
+        self.all_samples = []  # Store all possible samples
         
-        # Generate all Z-slice samples
+        # Generate all possible Z-slice samples
         for fname in files:
             syn_id = int(fname.split('_')[0])
             syn_type = self.type_map.get(syn_id, 'E')
@@ -118,33 +118,37 @@ class Synapse2DDataset(Dataset):
             raw = np.load(raw_path)
             z_depth = raw.shape[2]
             
-            # Add all Z-slices as individual samples
+            # Add all Z-slices as possible samples
             for z_idx in range(z_depth):
-                self.samples.append((fname, z_idx, syn_id, label))
+                self.all_samples.append((fname, z_idx, syn_id, label))
+        
+        # Separate E and I samples
+        self.e_samples = [s for s in self.all_samples if s[3] == 0]  # E class
+        self.i_samples = [s for s in self.all_samples if s[3] == 1]  # I class
+        
+        # Subsample to fixed size (e.g., 3000 samples per epoch)
+        self.epoch_size = min(3000, len(self.all_samples))
+        self.resample_epoch()
+    
+    def resample_epoch(self):
+        """Randomly sample a balanced subset for this epoch."""
+        # Calculate how many samples per class to maintain balance
+        samples_per_class = self.epoch_size // 2
+        
+        # Sample equal numbers from each class
+        e_subset = random.sample(self.e_samples, min(samples_per_class, len(self.e_samples)))
+        i_subset = random.sample(self.i_samples, min(samples_per_class, len(self.i_samples)))
+        
+        # Combine and shuffle
+        self.samples = e_subset + i_subset
+        random.shuffle(self.samples)
 
     def __len__(self):
         return len(self.samples)
 
     def _augment(self, data, pre_slice, post_slice):
-        if not self.augment:
-            return data, pre_slice, post_slice
-        # Random horizontal flip
-        if random.random() > 0.5:
-            data = np.fliplr(data)
-            pre_slice = np.fliplr(pre_slice)
-            post_slice = np.fliplr(post_slice)
-        # Random vertical flip
-        if random.random() > 0.5:
-            data = np.flipud(data)
-            pre_slice = np.flipud(pre_slice)
-            post_slice = np.flipud(post_slice)
-        # Random rotation (90, 180, 270 degrees)
-        if random.random() > 0.5:
-            k = random.choice([1, 2, 3])
-            data = np.rot90(data, k)
-            pre_slice = np.rot90(pre_slice, k)
-            post_slice = np.rot90(post_slice, k)
-        return data.copy(), pre_slice.copy(), post_slice.copy()
+        # No augmentation - return original data
+        return data, pre_slice, post_slice
 
     def __getitem__(self, idx):
         fname, z_idx, syn_id, label = self.samples[idx]
@@ -212,9 +216,9 @@ class Synapse2DDataset(Dataset):
 
 # Add function to evaluate per-synapse accuracy
 def evaluate_per_synapse(model, dataset, device):
-    """Evaluate per-synapse accuracy using majority voting across Z-slices."""
+    """Evaluate per-synapse accuracy using confidence-weighted voting across Z-slices."""
     model.eval()
-    synapse_predictions = {}  # syn_id -> list of predictions
+    synapse_predictions = {}  # syn_id -> list of (prediction, confidence)
     synapse_labels = {}       # syn_id -> true label
     
     with torch.no_grad():
@@ -224,23 +228,39 @@ def evaluate_per_synapse(model, dataset, device):
             
             image = image.unsqueeze(0).to(device)
             output = model(image)
+            
+            # Get softmax probabilities for confidence weighting
+            probs = F.softmax(output, dim=1)
             pred = output.argmax(1).item()
+            confidence = probs[0, pred].item()  # Confidence is the max probability
             
             if syn_id not in synapse_predictions:
                 synapse_predictions[syn_id] = []
                 synapse_labels[syn_id] = label
             
-            synapse_predictions[syn_id].append(pred)
+            synapse_predictions[syn_id].append((pred, confidence))
     
-    # Majority vote for each synapse
+    # Confidence-weighted vote for each synapse
     correct = 0
     total = 0
     for syn_id in synapse_predictions:
-        preds = synapse_predictions[syn_id]
-        majority_pred = 1 if sum(preds) > len(preds) / 2 else 0
+        pred_conf_pairs = synapse_predictions[syn_id]
         true_label = synapse_labels[syn_id]
         
-        if majority_pred == true_label:
+        # Calculate confidence-weighted scores for each class
+        class_0_score = 0.0  # E class
+        class_1_score = 0.0  # I class
+        
+        for pred, conf in pred_conf_pairs:
+            if pred == 0:
+                class_0_score += conf
+            else:
+                class_1_score += conf
+        
+        # Final prediction is the class with higher confidence-weighted score
+        final_pred = 1 if class_1_score > class_0_score else 0
+        
+        if final_pred == true_label:
             correct += 1
         total += 1
     
@@ -531,6 +551,9 @@ def main():
     synapse_val_accs = []
     
     for epoch in range(1, EPOCHS+1):
+        # Resample training data for this epoch
+        train_ds.resample_epoch()
+        
         model.train()
         tot_loss = tot_corr = tot = 0
         pbar = tqdm(train_loader, desc=f'Epoch {epoch}/{EPOCHS} [Train]')

@@ -2,3 +2,4 @@ Data/*
 .history/*
 *.pyc
 .vscode/*
+.vscode/PythonImportHelper-v2-Completion.json

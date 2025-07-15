@@ -391,8 +391,111 @@ class ResNetAdvanced(nn.Module):
     def forward(self, x):
         return self.resnet(x)
 
+def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_timestamp=None):
+    """Plot comprehensive learning curves and save to figures directory."""
+    epochs = range(1, len(train_losses) + 1)
+    
+    # Create figure with subplots - 3x2 layout for comprehensive view
+    fig = plt.figure(figsize=(20, 15))
+    
+    # Plot 1: Training and validation loss
+    ax1 = plt.subplot(3, 2, 1)
+    ax1.plot(epochs, train_losses, 'b-', label='Training Loss', linewidth=2, alpha=0.8)
+    ax1.plot(epochs, val_losses, 'r-', label='Validation Loss', linewidth=2, alpha=0.8)
+    ax1.set_title('Training and Validation Loss', fontsize=14, fontweight='bold')
+    ax1.set_xlabel('Epoch')
+    ax1.set_ylabel('Loss')
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+    
+    # Plot 2: Training and validation accuracy
+    ax2 = plt.subplot(3, 2, 2)
+    ax2.plot(epochs, train_accs, 'b-', label='Training Accuracy', linewidth=2, alpha=0.8)
+    ax2.plot(epochs, val_accs, 'r-', label='Validation Accuracy', linewidth=2, alpha=0.8)
+    ax2.set_title('Training and Validation Accuracy', fontsize=14, fontweight='bold')
+    ax2.set_xlabel('Epoch')
+    ax2.set_ylabel('Accuracy (%)')
+    ax2.legend()
+    ax2.grid(True, alpha=0.3)
+    
+    # Plot 3: E and I class accuracies
+    ax3 = plt.subplot(3, 2, 3)
+    if len(e_accs) > 0:
+        ax3.plot(epochs, e_accs, 'g-', label='E (Excitatory) Accuracy', linewidth=2, alpha=0.8)
+        ax3.plot(epochs, i_accs, 'm-', label='I (Inhibitory) Accuracy', linewidth=2, alpha=0.8)
+        ax3.set_title('Per-Class Validation Accuracy', fontsize=14, fontweight='bold')
+        ax3.set_xlabel('Epoch')
+        ax3.set_ylabel('Accuracy (%)')
+        ax3.legend()
+        ax3.grid(True, alpha=0.3)
+    
+    # Plot 4: Learning rate schedule
+    ax4 = plt.subplot(3, 2, 4)
+    ax4.plot(epochs, learning_rates, 'orange', linewidth=2, alpha=0.8)
+    ax4.set_title('Learning Rate Schedule', fontsize=14, fontweight='bold')
+    ax4.set_xlabel('Epoch')
+    ax4.set_ylabel('Learning Rate')
+    ax4.set_yscale('log')
+    ax4.grid(True, alpha=0.3)
+    
+    # Plot 5: Overfitting indicator
+    ax5 = plt.subplot(3, 2, 5)
+    overfitting_gap = [t - v for t, v in zip(train_accs, val_accs)]
+    ax5.plot(epochs, overfitting_gap, 'purple', linewidth=2, alpha=0.8)
+    ax5.axhline(y=0, color='black', linestyle='--', alpha=0.5)
+    ax5.axhline(y=10, color='red', linestyle='--', alpha=0.5, label='Overfitting Threshold')
+    ax5.axhline(y=-10, color='red', linestyle='--', alpha=0.5)
+    ax5.set_title('Overfitting Indicator (Train - Val Accuracy)', fontsize=14, fontweight='bold')
+    ax5.set_xlabel('Epoch')
+    ax5.set_ylabel('Accuracy Gap (%)')
+    ax5.legend()
+    ax5.grid(True, alpha=0.3)
+    
+    # Plot 6: Training progress summary
+    ax6 = plt.subplot(3, 2, 6)
+    current_epoch = len(epochs)
+    best_val_acc = max(val_accs) if val_accs else 0
+    best_epoch = val_accs.index(best_val_acc) + 1 if val_accs else 0
+    current_lr = learning_rates[-1] if learning_rates else 0
+    
+    summary_text = f"""
+    🎯 ADVANCED SYNAPSE CLASSIFIER
+    
+    Current Epoch: {current_epoch}
+    Best Validation Accuracy: {best_val_acc:.2f}% (Epoch {best_epoch})
+    Current Learning Rate: {current_lr:.2e}
+    Training Accuracy: {train_accs[-1]:.2f}% (Current)
+    Validation Accuracy: {val_accs[-1]:.2f}% (Current)
+    Overfitting Gap: {overfitting_gap[-1]:.2f}% (Current)
+    
+    E Accuracy: {e_accs[-1]:.2f}% (Current)
+    I Accuracy: {i_accs[-1]:.2f}% (Current)
+    
+    🎯 TARGET: 90% Accuracy
+    """
+    
+    ax6.text(0.1, 0.9, summary_text, transform=ax6.transAxes, fontsize=12, 
+             verticalalignment='top', bbox=dict(boxstyle='round', facecolor='lightgreen', alpha=0.8))
+    ax6.set_title('Training Summary', fontsize=14, fontweight='bold')
+    ax6.axis('off')
+    
+    plt.tight_layout()
+    
+    # Save plot
+    if run_timestamp is None:
+        run_timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    try:
+        os.makedirs('figures', exist_ok=True)
+        plot_filename = f'figures/advanced_training_curves_{run_timestamp}.png'
+        plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
+        print(f'📊 Plot saved: {plot_filename}')
+    except Exception as e:
+        print(f'❌ Error saving plot: {e}')
+    
+    plt.close()
+
 # ------------------------- training functions --------------------------
-def train_epoch(model, train_loader, criterion, optimizer, epoch, use_mixup=True):
+def train_epoch(model, train_loader, criterion, optimizer, epoch, use_mixup=False):  # Disabled mixup
     model.train()
     total_loss = 0
     total_correct = 0
@@ -402,17 +505,10 @@ def train_epoch(model, train_loader, criterion, optimizer, epoch, use_mixup=True
     for batch_idx, (data, target) in enumerate(pbar):
         data, target = data.to(device), target.to(device)
         
-        # Apply mixup
-        if use_mixup and random.random() > 0.3:
-            mixed_data, target_a, target_b, lam = mixup_data(data, target, MIXUP_ALPHA)
-            optimizer.zero_grad()
-            output = model(mixed_data)
-            loss = mixup_criterion(criterion, output, target_a, target_b, lam)
-        else:
-            optimizer.zero_grad()
-            output = model(data)
-            loss = criterion(output, target)
-        
+        # Standard training without mixup
+        optimizer.zero_grad()
+        output = model(data)
+        loss = criterion(output, target)
         loss.backward()
         
         # Gradient clipping
@@ -420,20 +516,19 @@ def train_epoch(model, train_loader, criterion, optimizer, epoch, use_mixup=True
         
         optimizer.step()
         
+        # Calculate accuracy
+        pred = output.argmax(dim=1)
+        total_correct += pred.eq(target).sum().item()
         total_loss += loss.item() * data.size(0)
         total_samples += data.size(0)
         
-        if not use_mixup or random.random() <= 0.3:
-            pred = output.argmax(dim=1)
-            total_correct += pred.eq(target).sum().item()
-        
         pbar.set_postfix({
             'Loss': f'{loss.item():.4f}',
-            'Acc': f'{100.0 * total_correct / total_samples:.2f}%' if total_correct > 0 else 'N/A'
+            'Acc': f'{100.0 * total_correct / total_samples:.2f}%'
         })
     
     avg_loss = total_loss / total_samples
-    accuracy = 100.0 * total_correct / total_samples if total_correct > 0 else 0
+    accuracy = 100.0 * total_correct / total_samples
     
     return avg_loss, accuracy
 
@@ -592,6 +687,9 @@ def main():
     train_accs = []
     val_losses = []
     val_accs = []
+    learning_rates = []
+    e_accs = []
+    i_accs = []
     
     for epoch in range(1, EPOCHS + 1):
         # Training
@@ -608,6 +706,7 @@ def main():
         train_accs.append(train_acc)
         val_losses.append(val_loss)
         val_accs.append(val_acc)
+        learning_rates.append(optimizer.param_groups[0]['lr'])
         
         # Calculate per-class accuracy
         cm = confusion_matrix(val_targets, val_preds)
@@ -616,6 +715,14 @@ def main():
             i_acc = cm[1, 1] / cm[1].sum() * 100 if cm[1].sum() > 0 else 0
         else:
             e_acc = i_acc = 0
+        
+        e_accs.append(e_acc)
+        i_accs.append(i_acc)
+        
+        # Generate learning curves every 5 epochs or when we hit a new best
+        if epoch % 5 == 0 or val_acc > best_acc:
+            plot_learning_curves(train_losses, train_accs, val_losses, val_accs, 
+                               learning_rates, e_accs, i_accs, RUN_TIMESTAMP)
         
         logger.info(f'Epoch {epoch}/{EPOCHS}:')
         logger.info(f'  Train: Loss={train_loss:.4f}, Acc={train_acc:.2f}%')
@@ -636,6 +743,10 @@ def main():
             break
         
         logger.info('-' * 60)
+    
+    # Final plot
+    plot_learning_curves(train_losses, train_accs, val_losses, val_accs, 
+                       learning_rates, e_accs, i_accs, RUN_TIMESTAMP)
 
     logger.info(f'Training complete!')
     logger.info(f'Best validation accuracy: {best_acc:.2f}% (epoch {best_epoch})')

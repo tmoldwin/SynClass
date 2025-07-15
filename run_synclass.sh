@@ -9,8 +9,13 @@
 # module load anaconda
 # source activate myenv
 
-# Cancel all previous jobs for this specific project (synclass), excluding current job
-squeue -u $USER -n synclass_advanced -h -o %i | grep -v $SLURM_JOB_ID | xargs -r scancel
+# Cancel all previous jobs for this specific project only if 'd' parameter is passed
+if [ "$1" = "d" ]; then
+    echo "Deleting previous jobs..."
+    squeue -u $USER -n synclass_advanced -h -o %i | grep -v $SLURM_JOB_ID | xargs -r scancel
+else
+    echo "Not deleting previous jobs (pass 'd' parameter to delete)"
+fi
 
 cd $HOME/code/SynClass
 git pull origin main || echo "Warning: git pull failed, continuing with current code"

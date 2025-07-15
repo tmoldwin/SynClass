@@ -9,8 +9,8 @@
 # module load anaconda
 # source activate myenv
 
-# Cancel all previous jobs for this specific project (synclass)
-scancel -n synclass -u $USER
+# Cancel all previous jobs for this specific project (synclass), excluding current job
+squeue -u $USER -n synclass -h -o %i | grep -v $SLURM_JOB_ID | xargs -r scancel
 
 cd $HOME/code/SynClass
 git pull origin main || echo "Warning: git pull failed, continuing with current code"

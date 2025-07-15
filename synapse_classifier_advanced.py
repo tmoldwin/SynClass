@@ -319,8 +319,18 @@ class EfficientNetAdvanced(nn.Module):
             # Initialize new channels with small random values
             nn.init.normal_(self.backbone.features[0][0].weight[:, 3:], 0, 0.005)
         
+        # Get number of features from the classifier
+        # Remove the original classifier temporarily to get feature size
+        original_classifier = self.backbone.classifier
+        self.backbone.classifier = nn.Identity()
+        
+        # Get feature size with a dummy forward pass
+        with torch.no_grad():
+            dummy_input = torch.randn(1, 8, 224, 224)  # 8 channels, 224x224 input
+            features = self.backbone(dummy_input)
+            num_features = features.shape[1]
+        
         # Advanced classifier head
-        num_features = self.backbone.classifier.in_features
         self.backbone.classifier = nn.Sequential(
             nn.Dropout(DROPOUT_RATE),
             nn.Linear(num_features, 1024),

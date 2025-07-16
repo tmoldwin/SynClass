@@ -481,9 +481,6 @@ class UltraEfficientNet(nn.Module):
             # Initialize new channels with Xavier normal
             nn.init.xavier_normal_(self.backbone.features[0][0].weight[:, 3:])
         
-        # Add attention modules to key layers
-        self._add_attention_modules()
-        
         # Get feature size
         original_classifier = self.backbone.classifier
         self.backbone.classifier = nn.Identity()
@@ -496,37 +493,10 @@ class UltraEfficientNet(nn.Module):
         # Ultra-advanced classifier head with residual connections
         self.backbone.classifier = self._build_advanced_classifier(num_features, num_classes)
 
-    def _add_attention_modules(self):
-        """Add CBAM attention modules to key layers"""
-        # Add attention after certain blocks
-        attention_blocks = [3, 5, 7]  # Add attention after these feature blocks
-        for i, block_idx in enumerate(attention_blocks):
-            if block_idx < len(self.backbone.features):
-                # Get the number of output channels from the block
-                block = self.backbone.features[block_idx]
-                if hasattr(block, 'out_channels'):
-                    channels = block.out_channels
-                elif hasattr(block, '_modules'):
-                    # Try to infer from the last conv layer
-                    last_conv = None
-                    for module in block.modules():
-                        if isinstance(module, nn.Conv2d):
-                            last_conv = module
-                    if last_conv:
-                        channels = last_conv.out_channels
-                    else:
-                        continue
-                else:
-                    continue
-                
-                attention = CBAM(channels)
-                setattr(self, f'attention_{i}', attention)
-
     def _build_advanced_classifier(self, num_features, num_classes):
         """Build an advanced classifier with residual connections and attention"""
         return nn.Sequential(
-            nn.AdaptiveAvgPool2d(1),
-            nn.Flatten(),
+            # EfficientNet already has AdaptiveAvgPool2d and Flatten, so start directly with Linear
             
             # First residual block
             nn.Linear(num_features, 2048),
@@ -589,8 +559,7 @@ class UltraResNet(nn.Module):
     def _build_advanced_classifier(self, num_features, num_classes):
         """Build advanced classifier with multiple pathways"""
         return nn.Sequential(
-            nn.AdaptiveAvgPool2d(1),
-            nn.Flatten(),
+            # ResNet forward method already does avgpool and flatten, so start with Linear
             
             # Multi-scale feature processing
             nn.Linear(num_features, 2048),

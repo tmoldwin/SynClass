@@ -3,3 +3,4 @@ Data/*
 *.pyc
 .vscode/*
 .vscode/PythonImportHelper-v2-Completion.json
+*.log

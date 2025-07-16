@@ -261,15 +261,30 @@ class UltraAdvancedSynapseDataset(Dataset):
             data[noise < 0.05] = 0
             data[noise > 0.95] = 1
         
-        if random.random() > 0.7:  # Elastic deformation (simple version)
-            alpha = random.uniform(0, 50)
-            sigma = random.uniform(0, 10)
-            if alpha > 0 and sigma > 0:
-                dx = cv2.GaussianBlur(np.random.random(data.shape) * 2 - 1, (0, 0), sigma) * alpha
-                dy = cv2.GaussianBlur(np.random.random(data.shape) * 2 - 1, (0, 0), sigma) * alpha
-                x, y = np.meshgrid(np.arange(data.shape[1]), np.arange(data.shape[0]))
-                indices = np.reshape(y+dy, (-1, 1)), np.reshape(x+dx, (-1, 1))
-                data = cv2.remap(data, indices[1].astype(np.float32), indices[0].astype(np.float32), cv2.INTER_LINEAR)
+        if random.random() > 0.8:  # Elastic deformation (safer version)
+            try:
+                alpha = random.uniform(0, 20)  # Reduced intensity
+                sigma = random.uniform(2, 5)   # More conservative sigma
+                if alpha > 0 and sigma > 0 and data.shape[0] < 1000 and data.shape[1] < 1000:  # Size check
+                    # Create displacement fields
+                    dx = cv2.GaussianBlur((np.random.random(data.shape) - 0.5), (0, 0), sigma) * alpha
+                    dy = cv2.GaussianBlur((np.random.random(data.shape) - 0.5), (0, 0), sigma) * alpha
+                    
+                    # Create coordinate grids
+                    x, y = np.meshgrid(np.arange(data.shape[1]), np.arange(data.shape[0]))
+                    
+                    # Apply displacement with bounds checking
+                    map_x = (x + dx).astype(np.float32)
+                    map_y = (y + dy).astype(np.float32)
+                    
+                    # Ensure coordinates are within valid range
+                    map_x = np.clip(map_x, 0, data.shape[1] - 1)
+                    map_y = np.clip(map_y, 0, data.shape[0] - 1)
+                    
+                    data = cv2.remap(data, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+            except:
+                # If elastic deformation fails, skip it
+                pass
         
         return data.copy(), pre_slice.copy(), post_slice.copy()
 

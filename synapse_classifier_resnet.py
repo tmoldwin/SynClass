@@ -218,7 +218,9 @@ class ResNetClassifier(nn.Module):
         super().__init__()
         self.resnet = models.resnet50(pretrained=False)  # Changed to ResNet50 for higher capacity
         num_ftrs = self.resnet.fc.in_features
-        self.resnet.fc = nn.Sequential(
+        # Replace the final fully connected layer
+        self.resnet.fc = nn.Identity()  # Remove original fc layer
+        self.classifier = nn.Sequential(
             nn.Dropout(DROPOUT_RATE),
             nn.Linear(num_ftrs, 128),
             nn.ReLU(),
@@ -227,7 +229,8 @@ class ResNetClassifier(nn.Module):
             nn.Linear(128, num_classes)
         )
     def forward(self, x):
-        return self.resnet(x)
+        features = self.resnet(x)
+        return self.classifier(features)
 
 
 def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_timestamp=None):
@@ -548,7 +551,7 @@ def main():
     logger.info(f'Training complete. Best val acc: {best_acc:.2f}%')
 
     logger.info('Classification report on validation:')
-    logger.info(classification_report(all_lbls, all_preds, target_names=['E','I'], zero_division_report=0))
+    logger.info(classification_report(all_lbls, all_preds, target_names=['E','I'], zero_division=0))
 
 if __name__ == '__main__':
     main() 

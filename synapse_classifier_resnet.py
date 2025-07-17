@@ -216,10 +216,12 @@ class FocalLoss(nn.Module):
 class ResNetClassifier(nn.Module):
     def __init__(self, num_classes=2, pretrained=False):
         super().__init__()
-        self.resnet = models.resnet50(pretrained=False)  # Changed to ResNet50 for higher capacity
+        # Load ResNet50 and remove the final layer
+        self.resnet = models.resnet50(pretrained=False)
         num_ftrs = self.resnet.fc.in_features
-        # Replace the final fully connected layer
-        self.resnet.fc = nn.Identity()  # Remove original fc layer
+        # Remove the final fully connected layer
+        self.resnet = nn.Sequential(*list(self.resnet.children())[:-1])
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.classifier = nn.Sequential(
             nn.Dropout(DROPOUT_RATE),
             nn.Linear(num_ftrs, 128),
@@ -230,6 +232,8 @@ class ResNetClassifier(nn.Module):
         )
     def forward(self, x):
         features = self.resnet(x)
+        features = self.avgpool(features)
+        features = torch.flatten(features, 1)
         return self.classifier(features)
 
 
@@ -551,7 +555,7 @@ def main():
     logger.info(f'Training complete. Best val acc: {best_acc:.2f}%')
 
     logger.info('Classification report on validation:')
-    logger.info(classification_report(all_lbls, all_preds, target_names=['E','I'], zero_division=0))
+    logger.info(classification_report(all_lbls, all_preds, target_names=['E','I'], zero_division='warn'))
 
 if __name__ == '__main__':
     main() 

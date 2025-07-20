@@ -214,10 +214,10 @@ class FocalLoss(nn.Module):
 
 # ------------------------- ResNet model --------------------------
 class ResNetClassifier(nn.Module):
-    def __init__(self, num_classes=2, pretrained=False):
+    def __init__(self, num_classes=2, pretrained=True):
         super().__init__()
-        # Load ResNet50 and remove the final layer
-        self.resnet = models.resnet50(pretrained=False)
+        # Load ResNet152 and remove the final layer
+        self.resnet = models.resnet152(pretrained=pretrained)
         num_ftrs = self.resnet.fc.in_features
         # Remove the final fully connected layer
         self.resnet = nn.Sequential(*list(self.resnet.children())[:-1])

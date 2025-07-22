@@ -31,18 +31,25 @@ EPOCHS = 100              # More epochs for better convergence
 LR = 2e-6                 # Lower LR to prevent overfitting
 NUM_WORKERS = 4           # Increased workers for GPU
 RNG_SEED = 42
-DROPOUT_RATE = 0.3        # Lower dropout to reduce underfitting
-WEIGHT_DECAY = 1e-4       # Lower weight decay to reduce underfitting
-LABEL_SMOOTHING = 0       # Remove label smoothing
+DROPOUT_RATE = 0.5        # Default dropout rate
+WEIGHT_DECAY = 1e-3       # Default weight decay
+LABEL_SMOOTHING = 0.1     # Default label smoothing
 
 # ------------------------- argparse ------------------------------
 parser = argparse.ArgumentParser(description='ResNet-based synapse classifier')
 parser.add_argument('--resume', action='store_true', help='resume from checkpoint')
 parser.add_argument('--epochs', type=int, default=EPOCHS)
 parser.add_argument('--lr', type=float, default=LR)
+parser.add_argument('--dropout_rate', type=float, default=DROPOUT_RATE, help='Dropout rate for the classifier')
+parser.add_argument('--weight_decay', type=float, default=WEIGHT_DECAY, help='Weight decay for the optimizer')
+parser.add_argument('--label_smoothing', type=float, default=LABEL_SMOOTHING, help='Label smoothing for the loss function')
+parser.add_argument('--run_name', type=str, default=None, help='A unique name for the run for file naming')
 args = parser.parse_args()
 EPOCHS = args.epochs
 LR = args.lr
+DROPOUT_RATE = args.dropout_rate
+WEIGHT_DECAY = args.weight_decay
+LABEL_SMOOTHING = args.label_smoothing
 
 # ------------------------- reproducibility ----------------------
 random.seed(RNG_SEED)
@@ -214,7 +221,7 @@ class FocalLoss(nn.Module):
 
 # ------------------------- ResNet model --------------------------
 class ResNetClassifier(nn.Module):
-    def __init__(self, num_classes=2, pretrained=True):
+    def __init__(self, num_classes=2, pretrained=True, dropout_rate=0.5):
         super().__init__()
         # Load ResNet152 and remove the final layer
         self.resnet = models.resnet152(pretrained=pretrained)
@@ -223,11 +230,11 @@ class ResNetClassifier(nn.Module):
         self.resnet = nn.Sequential(*list(self.resnet.children())[:-1])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.classifier = nn.Sequential(
-            nn.Dropout(DROPOUT_RATE),
+            nn.Dropout(dropout_rate),
             nn.Linear(num_ftrs, 128),
             nn.ReLU(),
             nn.BatchNorm1d(128),
-            nn.Dropout(DROPOUT_RATE),
+            nn.Dropout(dropout_rate),
             nn.Linear(128, num_classes)
         )
     def forward(self, x):
@@ -237,7 +244,7 @@ class ResNetClassifier(nn.Module):
         return self.classifier(features)
 
 
-def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_timestamp=None):
+def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_name=None):
     """Plot comprehensive learning curves and save to figures directory."""
     epochs = range(1, len(train_losses) + 1)
     
@@ -327,13 +334,13 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     plt.tight_layout()
     
     # Ensure figures directory exists and save with proper error handling
-    if run_timestamp is None:
+    if run_name is None:
         import datetime
-        run_timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        run_name = f"run_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
     try:
         os.makedirs('figures', exist_ok=True)
         # Create a proper filename for the plot
-        plot_filename = f'figures/resnet_training_curves_{run_timestamp}.png'
+        plot_filename = f'figures/resnet_training_curves_{run_name}.png'
         plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
         print(f'Plot saved successfully to: {plot_filename}')
     except Exception as e:
@@ -358,6 +365,12 @@ def main():
     # Run start timestamp
     RUN_TIMESTAMP = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     
+    # Create a unique run name for file saving
+    if args.run_name:
+        RUN_NAME = args.run_name
+    else:
+        RUN_NAME = f"run_{RUN_TIMESTAMP}"
+
     # ------------------------- data preparation ---------------------
     logger.info('Loading CSV...')
     if not os.path.exists(CSV_PATH):
@@ -409,7 +422,7 @@ def main():
     cls_w = torch.tensor(cls_w, dtype=torch.float32, device=device)
     print('Class weights:', cls_w)
 
-    model = ResNetClassifier().to(device)
+    model = ResNetClassifier(dropout_rate=DROPOUT_RATE).to(device)
     save_path = MODEL_SAVE_PATHS['resnet']
     if args.resume and os.path.exists(save_path):
         logger.info(f'Resuming from checkpoint {save_path}')
@@ -515,7 +528,7 @@ def main():
         
         # Update visualization every epoch
         plot_learning_curves(train_losses, train_accs, val_losses, val_accs, 
-                           learning_rates, e_accs, i_accs, RUN_TIMESTAMP)
+                           learning_rates, e_accs, i_accs, RUN_NAME)
         
         # Log GPU memory usage
         if torch.cuda.is_available():
@@ -547,10 +560,9 @@ def main():
             logger.info(f'New best saved ({best_acc:.2f}%) based on loss')
         else:
             patience_counter += 1
-            # Remove early stopping: always run for EPOCHS
-            # if patience_counter >= patience and epoch >= min_epochs:
-            #     logger.info(f'Early stopping at epoch {epoch} (no improvement for {patience} epochs)')
-            #     break
+            if patience_counter >= patience and epoch >= min_epochs:
+                logger.info(f'Early stopping at epoch {epoch} (no improvement for {patience} epochs)')
+                break
 
     logger.info(f'Training complete. Best val acc: {best_acc:.2f}%')
 

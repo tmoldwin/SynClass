@@ -55,6 +55,9 @@ for LR in "${LEARNING_RATES[@]}"; do
       # Use sbatch with --wrap to submit the command as a job
       echo "Submitting job: $JOB_NAME"
       
+      # Prepare the full command for --wrap
+      FULL_CMD="cd $HOME/code/SynClass && pip install -r requirements.txt && $PYTHON_CMD"
+      
       SBATCH_CMD="sbatch \
         --job-name=\"$JOB_NAME\" \
         --partition=\"$PARTITION\" \
@@ -65,7 +68,7 @@ for LR in "${LEARNING_RATES[@]}"; do
         SBATCH_CMD="$SBATCH_CMD --gres=\"$GRES\""
       fi
 
-      SBATCH_CMD="$SBATCH_CMD --wrap=\"cd $HOME/code/SynClass && $PYTHON_CMD\""
+      SBATCH_CMD="$SBATCH_CMD --wrap=\"$FULL_CMD\""
       
       # Execute the sbatch command
       eval $SBATCH_CMD

@@ -6,6 +6,11 @@
 
 echo "--- Starting Hyperparameter Sweep Job Submission ---"
 
+# --- Update codebase ---
+echo "Pulling latest changes from git..."
+git pull
+echo "---"
+
 # --- Hyperparameter Grid ---
 LEARNING_RATES=(1e-5 5e-6 2e-6)
 DROPOUT_RATES=(0.3 0.5 0.7)
@@ -60,7 +65,7 @@ for LR in "${LEARNING_RATES[@]}"; do
         SBATCH_CMD="$SBATCH_CMD --gres=\"$GRES\""
       fi
 
-      SBATCH_CMD="$SBATCH_CMD --wrap=\"cd $HOME/code/SynClass && git pull && $PYTHON_CMD\""
+      SBATCH_CMD="$SBATCH_CMD --wrap=\"cd $HOME/code/SynClass && $PYTHON_CMD\""
       
       # Execute the sbatch command
       eval $SBATCH_CMD

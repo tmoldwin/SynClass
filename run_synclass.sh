@@ -2,6 +2,7 @@
 
 # Launcher script for submitting multiple independent SLURM jobs for a hyperparameter sweep.
 # Usage: ./run_synclass.sh
+# --> EDIT THE PARTITION VARIABLE أدناه TO SWITCH BETWEEN CPU AND GPU <--
 
 echo "--- Starting Hyperparameter Sweep Job Submission ---"
 
@@ -11,9 +12,17 @@ DROPOUT_RATES=(0.3 0.5 0.7)
 WEIGHT_DECAYS=(1e-4 5e-4 1e-3)
 
 # --- SLURM Configuration ---
-PARTITION="ss.q"
+PARTITION="ss.q" # Set to "ss.gpu" to automatically request a GPU
 TIME="24:00:00"
-GRES="gpu:1"
+GRES="" # Will be set automatically based on the partition name
+
+# Automatically add GPU request if partition name contains "gpu"
+if [[ "$PARTITION" == *"gpu"* ]]; then
+  GRES="gpu:1"
+  echo "GPU partition detected. Requesting GPU: $GRES"
+else
+  echo "CPU partition detected. No GPU requested."
+fi
 
 # --- Main Loop for Job Submission ---
 SWEEP_LOG_DIR="result_logs/sweep_$(date +"%Y%m%d_%H%M%S")"
@@ -40,13 +49,21 @@ for LR in "${LEARNING_RATES[@]}"; do
 
       # Use sbatch with --wrap to submit the command as a job
       echo "Submitting job: $JOB_NAME"
-      sbatch \
-        --job-name="$JOB_NAME" \
-        --partition="$PARTITION" \
-        --time="$TIME" \
-        --gres="$GRES" \
-        --output="$OUTPUT_LOG" \
-        --wrap="cd $HOME/code/SynClass && git pull && $PYTHON_CMD"
+      
+      SBATCH_CMD="sbatch \
+        --job-name=\"$JOB_NAME\" \
+        --partition=\"$PARTITION\" \
+        --time=\"$TIME\" \
+        --output=\"$OUTPUT_LOG\""
+
+      if [[ -n "$GRES" ]]; then
+        SBATCH_CMD="$SBATCH_CMD --gres=\"$GRES\""
+      fi
+
+      SBATCH_CMD="$SBATCH_CMD --wrap=\"cd $HOME/code/SynClass && git pull && $PYTHON_CMD\""
+      
+      # Execute the sbatch command
+      eval $SBATCH_CMD
       
       # Small delay to avoid overwhelming the SLURM scheduler
       sleep 1

@@ -11,7 +11,7 @@ DROPOUT_RATES=(0.3 0.5 0.7)
 WEIGHT_DECAYS=(1e-4 5e-4 1e-3)
 
 # --- SLURM Configuration ---
-PARTITION="ss.gpu"
+PARTITION="ss.q"
 TIME="24:00:00"
 GRES="gpu:1"
 

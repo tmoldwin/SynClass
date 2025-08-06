@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS, setup_logging
 import datetime
+import glob
 
 warnings.filterwarnings("ignore")
 
@@ -337,10 +338,19 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     if run_name is None:
         import datetime
         run_name = f"run_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    
     try:
         os.makedirs('figures', exist_ok=True)
-        # Create a proper filename for the plot
-        plot_filename = f'figures/resnet_training_curves_{run_name}.png'
+        
+        # Remove old plot for this run to avoid clutter
+        for old_plot in glob.glob(f'figures/{run_name}_epoch*.png'):
+            os.remove(old_plot)
+            
+        # Create a new, informative filename
+        current_epoch = len(epochs)
+        current_vacc = val_accs[-1] if val_accs else 0
+        plot_filename = f'figures/{run_name}_epoch{current_epoch}_vacc{current_vacc:.2f}.png'
+        
         plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
         print(f'Plot saved successfully to: {plot_filename}')
     except Exception as e:

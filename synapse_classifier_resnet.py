@@ -22,6 +22,8 @@ import seaborn as sns
 from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS, setup_logging
 import datetime
 import glob
+import csv
+import time
 
 warnings.filterwarnings("ignore")
 
@@ -45,6 +47,7 @@ parser.add_argument('--dropout_rate', type=float, default=DROPOUT_RATE, help='Dr
 parser.add_argument('--weight_decay', type=float, default=WEIGHT_DECAY, help='Weight decay for the optimizer')
 parser.add_argument('--label_smoothing', type=float, default=LABEL_SMOOTHING, help='Label smoothing for the loss function')
 parser.add_argument('--run_name', type=str, default=None, help='A unique name for the run for file naming')
+parser.add_argument('--use_focal_loss', action='store_true', help='Use FocalLoss instead of CrossEntropyLoss')
 args = parser.parse_args()
 EPOCHS = args.epochs
 LR = args.lr
@@ -245,6 +248,44 @@ class ResNetClassifier(nn.Module):
         return self.classifier(features)
 
 
+def log_epoch_to_csv(run_name, epoch, lr, dropout, weight_decay, train_acc, val_acc, overfitting_gap, use_focal_loss):
+    """Logs the metrics of a training epoch to a centralized CSV file with file locking."""
+    log_file = 'sweep_results.csv'
+    lock_file = log_file + '.lock'
+    
+    # Retry logic for acquiring the lock
+    for _ in range(10): # Try for a second
+        try:
+            # Attempt to acquire lock by creating a unique directory
+            os.mkdir(lock_file)
+            
+            try:
+                header = ['run_name', 'epoch', 'lr', 'dropout', 'weight_decay', 'train_acc', 'val_acc', 'overfitting_gap', 'use_focal_loss', 'timestamp']
+                file_exists = os.path.isfile(log_file)
+                
+                with open(log_file, 'a', newline='') as f:
+                    writer = csv.writer(f)
+                    if not file_exists:
+                        writer.writerow(header)
+                    
+                    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    writer.writerow([run_name, epoch, lr, dropout, weight_decay, f'{train_acc:.2f}', f'{val_acc:.2f}', f'{overfitting_gap:.2f}', use_focal_loss, timestamp])
+                
+                # Lock released, exit retry loop
+                break
+
+            finally:
+                # Always release the lock
+                os.rmdir(lock_file)
+                
+        except FileExistsError:
+            # Lock is held by another process, wait and retry
+            time.sleep(0.1)
+    else:
+        # If the lock is not acquired after multiple retries, log an error and move on
+        print(f"Warning: Could not acquire lock to write to {log_file} for run {run_name}, epoch {epoch}. Skipping log entry.")
+
+
 def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_name=None):
     """Plot comprehensive learning curves and save to figures directory."""
     epochs = range(1, len(train_losses) + 1)
@@ -380,6 +421,10 @@ def main():
         RUN_NAME = args.run_name
     else:
         RUN_NAME = f"run_{RUN_TIMESTAMP}"
+    
+    # Add focal loss status to run name
+    if args.use_focal_loss:
+        RUN_NAME += "_focal"
 
     # ------------------------- data preparation ---------------------
     logger.info('Loading CSV...')
@@ -446,7 +491,13 @@ def main():
     except ImportError:
         print('Install torchinfo for a model summary (pip install torchinfo)')
 
-    criterion = nn.CrossEntropyLoss(weight=cls_w, label_smoothing=LABEL_SMOOTHING)
+    if args.use_focal_loss:
+        criterion = FocalLoss(alpha=cls_w[1], gamma=2)
+        logger.info("Using FocalLoss as the loss function.")
+    else:
+        criterion = nn.CrossEntropyLoss(weight=cls_w, label_smoothing=LABEL_SMOOTHING)
+        logger.info("Using CrossEntropyLoss as the loss function.")
+        
     optimizer = optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
     
     # Replace scheduler with ReduceLROnPlateau
@@ -535,6 +586,11 @@ def main():
         else:
             e_accs.append(e_acc)
             i_accs.append(i_acc)
+        
+        # Log to centralized CSV
+        overfitting_gap = train_acc - val_acc
+        focal_status = 1 if args.use_focal_loss else 0
+        log_epoch_to_csv(RUN_NAME, epoch, LR, DROPOUT_RATE, WEIGHT_DECAY, train_acc, val_acc, overfitting_gap, focal_status)
         
         # Update visualization every epoch
         plot_learning_curves(train_losses, train_accs, val_losses, val_accs, 

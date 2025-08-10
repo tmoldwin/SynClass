@@ -15,6 +15,7 @@ echo "---"
 LEARNING_RATES=(5e-6 2e-6 1e-6)
 DROPOUT_RATES=(0.6 0.7 0.8)
 WEIGHT_DECAYS=(5e-4 1e-3 2e-3)
+USE_FOCAL_LOSS=(true false)
 
 # --- SLURM Configuration ---
 PARTITION="ss.gpu" # Set to "ss.gpu" to automatically request a GPU
@@ -37,45 +38,55 @@ echo "Log directory for this sweep: $SWEEP_LOG_DIR"
 for LR in "${LEARNING_RATES[@]}"; do
   for DROPOUT in "${DROPOUT_RATES[@]}"; do
     for WEIGHT_DECAY in "${WEIGHT_DECAYS[@]}"; do
+      for FOCAL_LOSS in "${USE_FOCAL_LOSS[@]}"; do
       
-      # Define unique names for the job and its output files
-      RUN_NAME="lr${LR}_dr${DROPOUT}_wd${WEIGHT_DECAY}"
-      JOB_NAME="synclass_${RUN_NAME}"
-      OUTPUT_LOG="${SWEEP_LOG_DIR}/${RUN_NAME}.out"
-      
-      # Construct the python command to be executed by SLURM
-      # Note: The path to the script is now relative, assuming submission from project root
-      PYTHON_CMD="python synapse_classifier_resnet.py \
-        --lr ${LR} \
-        --dropout_rate ${DROPOUT} \
-        --weight_decay ${WEIGHT_DECAY} \
-        --epochs 100 \
-        --run_name ${RUN_NAME}"
+        # Define unique names for the job and its output files
+        RUN_NAME="lr${LR}_dr${DROPOUT}_wd${WEIGHT_DECAY}"
+        if [ "$FOCAL_LOSS" = true ]; then
+          RUN_NAME+="_focal"
+        fi
+        
+        JOB_NAME="synclass_${RUN_NAME}"
+        OUTPUT_LOG="${SWEEP_LOG_DIR}/${RUN_NAME}.out"
+        
+        # Construct the python command to be executed by SLURM
+        # Note: The path to the script is now relative, assuming submission from project root
+        PYTHON_CMD="python synapse_classifier_resnet.py \
+          --lr ${LR} \
+          --dropout_rate ${DROPOUT} \
+          --weight_decay ${WEIGHT_DECAY} \
+          --epochs 100 \
+          --run_name ${RUN_NAME}"
+          
+        if [ "$FOCAL_LOSS" = true ]; then
+          PYTHON_CMD+=" --use_focal_loss"
+        fi
 
-      # Use sbatch with --wrap to submit the command as a job
-      echo "Submitting job: $JOB_NAME"
+        # Use sbatch with --wrap to submit the command as a job
+        echo "Submitting job: $JOB_NAME"
       
-      # Prepare the full command for --wrap
-      FULL_CMD="cd $HOME/code/SynClass && pip install -r requirements.txt && $PYTHON_CMD"
-      
-      SBATCH_CMD="sbatch \
-        --job-name=\"$JOB_NAME\" \
-        --partition=\"$PARTITION\" \
-        --time=\"$TIME\" \
-        --output=\"$OUTPUT_LOG\""
+        # Prepare the full command for --wrap
+        FULL_CMD="cd $HOME/code/SynClass && pip install -r requirements.txt && $PYTHON_CMD"
+        
+        SBATCH_CMD="sbatch \
+          --job-name=\"$JOB_NAME\" \
+          --partition=\"$PARTITION\" \
+          --time=\"$TIME\" \
+          --output=\"$OUTPUT_LOG\""
 
-      if [[ -n "$GRES" ]]; then
-        SBATCH_CMD="$SBATCH_CMD --gres=\"$GRES\""
-      fi
+        if [[ -n "$GRES" ]]; then
+          SBATCH_CMD="$SBATCH_CMD --gres=\"$GRES\""
+        fi
 
-      SBATCH_CMD="$SBATCH_CMD --wrap=\"$FULL_CMD\""
-      
-      # Execute the sbatch command
-      eval $SBATCH_CMD
-      
-      # Small delay to avoid overwhelming the SLURM scheduler
-      sleep 1
-      
+        SBATCH_CMD="$SBATCH_CMD --wrap=\"$FULL_CMD\""
+        
+        # Execute the sbatch command
+        eval $SBATCH_CMD
+        
+        # Small delay to avoid overwhelming the SLURM scheduler
+        sleep 1
+        
+      done
     done
   done
 done

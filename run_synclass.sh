@@ -12,9 +12,9 @@ git pull
 echo "---"
 
 # --- Hyperparameter Grid ---
-LEARNING_RATES=(1e-6 1e-7 1e-8 1e-9)
-DROPOUT_RATES=(0.3 0.5 0.7)
-WEIGHT_DECAYS=(1e-4 5e-4 1e-3)
+LEARNING_RATES=(5e-6 2e-6 1e-6)
+DROPOUT_RATES=(0.6 0.7 0.8)
+WEIGHT_DECAYS=(5e-4 1e-3 2e-3)
 
 # --- SLURM Configuration ---
 PARTITION="ss.gpu" # Set to "ss.gpu" to automatically request a GPU

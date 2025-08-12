@@ -478,7 +478,7 @@ def main():
     # Create sweep directory for this run
     master_sweep_dir = os.environ.get('SWEEP_MASTER_DIR')
     if master_sweep_dir:
-        SWEEP_DIR = os.path.join(master_sweep_dir, RUN_NAME)
+        SWEEP_DIR = master_sweep_dir  # Use the master sweep directory directly
         logger.info(f"Using master sweep directory: {master_sweep_dir}")
     else:
         SWEEP_DIR = f"sweep_{RUN_TIMESTAMP}"

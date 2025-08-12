@@ -465,6 +465,16 @@ def main():
     # Run start timestamp
     RUN_TIMESTAMP = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     
+    # Create a unique run name for file saving
+    if args.run_name:
+        RUN_NAME = args.run_name
+    else:
+        RUN_NAME = f"run_{RUN_TIMESTAMP}"
+    
+    # Add focal loss status to run name
+    if args.use_focal_loss:
+        RUN_NAME += "_focal"
+    
     # Create sweep directory for this run
     master_sweep_dir = os.environ.get('SWEEP_MASTER_DIR')
     if master_sweep_dir:
@@ -474,12 +484,6 @@ def main():
         SWEEP_DIR = f"sweep_{RUN_TIMESTAMP}"
     os.makedirs(SWEEP_DIR, exist_ok=True)
     logger.info(f"Created sweep directory: {SWEEP_DIR}")
-    
-    # Create a unique run name for file saving
-    if args.run_name:
-        RUN_NAME = args.run_name
-    else:
-        RUN_NAME = f"run_{RUN_TIMESTAMP}"
     
     # Add focal loss status to run name
     if args.use_focal_loss:

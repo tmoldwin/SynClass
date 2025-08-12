@@ -11,11 +11,11 @@ echo "Pulling latest changes from git..."
 git pull
 echo "---"
 
-# --- Hyperparameter Grid ---
-LEARNING_RATES=(5e-6 2e-6 1e-6)
-DROPOUT_RATES=(0.6 0.7 0.8)
-WEIGHT_DECAYS=(5e-4 1e-3 2e-3)
-USE_FOCAL_LOSS=(true false)
+# --- IMPROVED Hyperparameter Grid (based on analysis) ---
+LEARNING_RATES=(5e-6 2e-6 1e-6)  # Keep optimal LR from sweep
+DROPOUT_RATES=(0.3 0.4 0.5)      # REDUCED from 0.6-0.8 (less over-regularization)
+WEIGHT_DECAYS=(5e-4 1e-3 2e-3)   # Keep same range
+USE_FOCAL_LOSS=(true false)      # Test both loss functions
 
 # --- SLURM Configuration ---
 PARTITION="ss.gpu" # Set to "ss.gpu" to automatically request a GPU
@@ -31,8 +31,12 @@ else
 fi
 
 # --- Main Loop for Job Submission ---
-SWEEP_LOG_DIR="result_logs/sweep_$(date +"%Y%m%d_%H%M%S")"
+SWEEP_TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+SWEEP_LOG_DIR="result_logs/sweep_${SWEEP_TIMESTAMP}"
+MASTER_SWEEP_DIR="sweep_${SWEEP_TIMESTAMP}"
 mkdir -p "$SWEEP_LOG_DIR"
+mkdir -p "$MASTER_SWEEP_DIR"
+echo "Master sweep directory: $MASTER_SWEEP_DIR"
 echo "Log directory for this sweep: $SWEEP_LOG_DIR"
 
 for LR in "${LEARNING_RATES[@]}"; do
@@ -55,7 +59,7 @@ for LR in "${LEARNING_RATES[@]}"; do
           --lr ${LR} \
           --dropout_rate ${DROPOUT} \
           --weight_decay ${WEIGHT_DECAY} \
-          --epochs 100 \
+          --epochs 150 \
           --run_name ${RUN_NAME}"
           
         if [ "$FOCAL_LOSS" = true ]; then
@@ -66,7 +70,7 @@ for LR in "${LEARNING_RATES[@]}"; do
         echo "Submitting job: $JOB_NAME"
       
         # Prepare the full command for --wrap
-        FULL_CMD="cd $HOME/code/SynClass && pip install -r requirements.txt && $PYTHON_CMD"
+        FULL_CMD="cd $HOME/code/SynClass && pip install -r requirements.txt && SWEEP_MASTER_DIR=$MASTER_SWEEP_DIR $PYTHON_CMD"
         
         SBATCH_CMD="sbatch \
           --job-name=\"$JOB_NAME\" \
@@ -92,3 +96,9 @@ for LR in "${LEARNING_RATES[@]}"; do
 done
 
 echo "--- All hyperparameter jobs have been submitted. ---"
+echo ""
+echo "To analyze results after completion, run:"
+echo "python analyze_sweep_results.py $MASTER_SWEEP_DIR"
+echo ""
+echo "Or wait for all jobs to complete and then run:"
+echo "python analyze_sweep_results.py $MASTER_SWEEP_DIR"

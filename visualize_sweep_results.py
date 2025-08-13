@@ -11,7 +11,12 @@ plt.style.use('seaborn-v0_8')
 sns.set_palette("husl")
 
 # Load the data
-df = pd.read_csv(r'c:\Users\tmold\AppData\Roaming\MobaXterm\slash\RemoteFiles\68052_2_0\sweep_results.csv')
+import sys
+if len(sys.argv) > 1:
+    csv_file = sys.argv[1]
+else:
+    csv_file = 'sweep_results.csv'
+df = pd.read_csv(csv_file)
 
 # Extract hyperparameters from run_name
 def extract_params(run_name):
@@ -112,7 +117,7 @@ axes[1, 2].legend()
 axes[1, 2].grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.savefig('sweep_analysis_plots.png', dpi=300, bbox_inches='tight')
+plt.savefig('analysis/sweep_analysis_plots.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 # Create additional analysis plots
@@ -174,7 +179,7 @@ axes2[1, 1].set_title('Performance vs Model Complexity')
 axes2[1, 1].grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.savefig('detailed_analysis_plots.png', dpi=300, bbox_inches='tight')
+plt.savefig('analysis/detailed_analysis_plots.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 # Print summary statistics
@@ -196,4 +201,4 @@ print("4. Focal Loss: Standard loss outperforms focal loss")
 print("5. Overfitting: Many configurations show underfitting (negative gap)")
 print("6. Convergence: Some models may benefit from longer training")
 
-print(f"\nPlots saved as 'sweep_analysis_plots.png' and 'detailed_analysis_plots.png'")
+print(f"\nPlots saved as 'analysis/sweep_analysis_plots.png' and 'analysis/detailed_analysis_plots.png'")

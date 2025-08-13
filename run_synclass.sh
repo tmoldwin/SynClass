@@ -12,10 +12,10 @@ git pull
 echo "---"
 
 # --- IMPROVED Hyperparameter Grid (based on analysis) ---
-LEARNING_RATES=(5e-6 2e-6 1e-6)  # Keep optimal LR from sweep
-DROPOUT_RATES=(0.3 0.4 0.5)      # REDUCED from 0.6-0.8 (less over-regularization)
-WEIGHT_DECAYS=(5e-4 1e-3 2e-3)   # Keep same range
-USE_FOCAL_LOSS=(true false)      # Test both loss functions
+LEARNING_RATES=(3e-6 5e-6 7e-6 1e-5)  # Focus around optimal 5e-6, test higher rates
+DROPOUT_RATES=(0.2 0.3 0.4)           # Test lower dropout to reduce overfitting
+WEIGHT_DECAYS=(1e-3 2e-3 3e-3)       # Test higher weight decay for better regularization
+USE_FOCAL_LOSS=(true false)          # Test both loss functions
 
 # --- SLURM Configuration ---
 PARTITION="ss.gpu" # Set to "ss.gpu" to automatically request a GPU

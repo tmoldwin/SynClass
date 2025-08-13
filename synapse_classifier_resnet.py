@@ -241,7 +241,7 @@ class FocalLoss(nn.Module):
 
 # ------------------------- BIG RESNET MODEL --------------------------
 class ResNetClassifier(nn.Module):
-    """MUCH BIGGER model based on analysis findings - 50-100% bigger classifier"""
+    """MUCH BIGGER model based on analysis findings - 50-100% bigger classifier with attention"""
     def __init__(self, num_classes=2, pretrained=True, dropout_rate=0.3):
         super().__init__()
         # Load ResNet152 and remove the final layer
@@ -250,6 +250,14 @@ class ResNetClassifier(nn.Module):
         # Remove the final fully connected layer
         self.resnet = nn.Sequential(*list(self.resnet.children())[:-1])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        
+        # ATTENTION MECHANISM for better feature focus
+        self.attention = nn.Sequential(
+            nn.Linear(num_ftrs, num_ftrs // 4),
+            nn.ReLU(inplace=True),
+            nn.Linear(num_ftrs // 4, num_ftrs),
+            nn.Sigmoid()
+        )
         
         # MUCH BIGGER CLASSIFIER (50-100% bigger as recommended)
         self.classifier = nn.Sequential(
@@ -285,7 +293,12 @@ class ResNetClassifier(nn.Module):
         features = self.resnet(x)
         features = self.avgpool(features)
         features = torch.flatten(features, 1)
-        return self.classifier(features)
+        
+        # Apply attention mechanism
+        attention_weights = self.attention(features)
+        attended_features = features * attention_weights
+        
+        return self.classifier(attended_features)
 
 
 def log_epoch_to_csv(run_name, epoch, lr, dropout, weight_decay, train_acc, val_acc, overfitting_gap, use_focal_loss, sweep_dir=None):

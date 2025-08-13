@@ -1,0 +1,26 @@
+SWEEP ANALYSIS SUMMARY
+Total runs: 37
+Best accuracy: 70.82%
+Worst accuracy: 59.99%
+Mean accuracy: 68.32%
+Std accuracy: 2.74%
+
+Best run: lr5e-6_dr0.3_wd2e-3_focal_focal_focal
+Best epoch: 97
+Best learning rate: 5.0e-06
+Best dropout: 0.3
+Best weight decay: 2.0e-03
+Best focal loss: 1
+
+TOP 10 CONFIGURATIONS:
+------------------------------
+1. lr5e-6_dr0.3_wd2e-3_focal_focal_focal: 70.82% (epoch 97)
+2. lr5e-6_dr0.4_wd2e-3_focal_focal_focal: 70.64% (epoch 83)
+3. lr5e-6_dr0.3_wd5e-4_focal_focal_focal: 70.52% (epoch 72)
+4. lr5e-6_dr0.4_wd1e-3_focal_focal_focal: 70.52% (epoch 104)
+5. lr5e-6_dr0.5_wd2e-3_focal_focal_focal: 70.52% (epoch 101)
+6. lr5e-6_dr0.3_wd1e-3_focal_focal_focal: 70.36% (epoch 79)
+7. lr5e-6_dr0.5_wd1e-3_focal_focal_focal: 70.26% (epoch 84)
+8. lr5e-6_dr0.3_wd2e-3: 70.04% (epoch 65)
+9. lr5e-6_dr0.3_wd5e-4: 69.98% (epoch 57)
+10. lr5e-6_dr0.5_wd5e-4_focal_focal_focal: 69.96% (epoch 89)

@@ -13,6 +13,7 @@ MODEL_SAVE_PATHS = {
     'resnet': 'saved_models/best_synapse_model_resnet.pth',
     'masked': 'saved_models/best_synapse_model_masked.pth',
     'fast': 'saved_models/best_synapse_model_fast.pth',
+    '2dcnn': 'saved_models/best_synapse_model_2dcnn.pth',
     'default': 'saved_models/best_synapse_model.pth'
 }
 

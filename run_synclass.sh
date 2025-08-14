@@ -11,11 +11,9 @@ echo "Pulling latest changes from git..."
 git pull
 echo "---"
 
-# --- IMPROVED Hyperparameter Grid (based on analysis) ---
-LEARNING_RATES=(3e-6 5e-6 7e-6 1e-5)  # Focus around optimal 5e-6, test higher rates
-DROPOUT_RATES=(0.2 0.3 0.4)           # Test lower dropout to reduce overfitting
-WEIGHT_DECAYS=(1e-3 2e-3 3e-3)       # Test higher weight decay for better regularization
-USE_FOCAL_LOSS=(true false)          # Test both loss functions
+# --- Architecture hyperparameters for 2D CNN sweep ---
+CNN_DEPTHS=(3 4 5 6 7)                # Number of convolutional layers (3-7)
+CNN_WIDTHS=(32 64 128 256 512)        # Base width multiplier for channels
 
 # --- SLURM Configuration ---
 PARTITION="ss.gpu" # Set to "ss.gpu" to automatically request a GPU
@@ -39,32 +37,22 @@ mkdir -p "$MASTER_SWEEP_DIR"
 echo "Master sweep directory: $MASTER_SWEEP_DIR"
 echo "Log directory for this sweep: $SWEEP_LOG_DIR"
 
-for LR in "${LEARNING_RATES[@]}"; do
-  for DROPOUT in "${DROPOUT_RATES[@]}"; do
-    for WEIGHT_DECAY in "${WEIGHT_DECAYS[@]}"; do
-      for FOCAL_LOSS in "${USE_FOCAL_LOSS[@]}"; do
+for CNN_DEPTH in "${CNN_DEPTHS[@]}"; do
+  for CNN_WIDTH in "${CNN_WIDTHS[@]}"; do
       
-        # Define unique names for the job and its output files
-        RUN_NAME="lr${LR}_dr${DROPOUT}_wd${WEIGHT_DECAY}"
-        if [ "$FOCAL_LOSS" = true ]; then
-          RUN_NAME+="_focal"
-        fi
+    # Define unique names for the job and its output files
+    RUN_NAME="d${CNN_DEPTH}_w${CNN_WIDTH}"
         
         JOB_NAME="synclass_${RUN_NAME}"
         OUTPUT_LOG="${SWEEP_LOG_DIR}/${RUN_NAME}.out"
         
         # Construct the python command to be executed by SLURM
         # Note: The path to the script is now relative, assuming submission from project root
-        PYTHON_CMD="python synapse_classifier_resnet.py \
-          --lr ${LR} \
-          --dropout_rate ${DROPOUT} \
-          --weight_decay ${WEIGHT_DECAY} \
+        PYTHON_CMD="python synapse_classifier_2dcnn.py \
+          --cnn_depth ${CNN_DEPTH} \
+          --cnn_width ${CNN_WIDTH} \
           --epochs 150 \
           --run_name ${RUN_NAME}"
-          
-        if [ "$FOCAL_LOSS" = true ]; then
-          PYTHON_CMD+=" --use_focal_loss"
-        fi
 
         # Use sbatch with --wrap to submit the command as a job
         echo "Submitting job: $JOB_NAME"
@@ -92,8 +80,6 @@ for LR in "${LEARNING_RATES[@]}"; do
         
       done
     done
-  done
-done
 
 echo "--- All hyperparameter jobs have been submitted. ---"
 echo ""

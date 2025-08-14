@@ -202,16 +202,16 @@ class SynapseDataset2D(Dataset):
 
 # ------------------------- focal loss --------------------------
 class FocalLoss(nn.Module):
-    def __init__(self, alpha=1, gamma=2, reduction='mean'):
+    def __init__(self, alpha=None, gamma=2, reduction='mean'):
         super().__init__()
-        self.alpha = alpha
+        self.alpha = alpha  # Can be tensor of class weights
         self.gamma = gamma
         self.reduction = reduction
 
     def forward(self, inputs, targets):
-        ce_loss = F.cross_entropy(inputs, targets, reduction='none')
+        ce_loss = F.cross_entropy(inputs, targets, reduction='none', weight=self.alpha)
         pt = torch.exp(-ce_loss)
-        focal_loss = self.alpha * (1-pt)**self.gamma * ce_loss
+        focal_loss = (1-pt)**self.gamma * ce_loss
         
         if self.reduction == 'mean':
             return focal_loss.mean()
@@ -504,7 +504,28 @@ def load_and_prepare_data():
     train_dataset = SynapseDataset2D(train_files, synapse_type_map, DATA_DIR, is_training=True)
     test_dataset = SynapseDataset2D(test_files, synapse_type_map, DATA_DIR, is_training=False)
     
-    return train_dataset, test_dataset, synapse_type_map
+    # Calculate class distribution for imbalance handling
+    train_labels = [synapse_type_map[int(f.split('_')[0])] for f in train_files]
+    test_labels = [synapse_type_map[int(f.split('_')[0])] for f in test_files]
+    
+    train_e_count = sum(1 for label in train_labels if label == 'E')
+    train_i_count = sum(1 for label in train_labels if label == 'I')
+    test_e_count = sum(1 for label in test_labels if label == 'E')
+    test_i_count = sum(1 for label in test_labels if label == 'I')
+    
+    logger.info(f"Training set - E: {train_e_count}, I: {train_i_count}, Ratio: {train_e_count/train_i_count:.2f}:1")
+    logger.info(f"Test set - E: {test_e_count}, I: {test_i_count}, Ratio: {test_e_count/test_i_count:.2f}:1")
+    
+    # Calculate class weights for balanced loss
+    total_train = len(train_labels)
+    class_weights = torch.tensor([
+        total_train / (2 * train_e_count),  # Weight for E class
+        total_train / (2 * train_i_count)   # Weight for I class
+    ], dtype=torch.float32)
+    
+    logger.info(f"Class weights: E={class_weights[0]:.3f}, I={class_weights[1]:.3f}")
+    
+    return train_dataset, test_dataset, synapse_type_map, class_weights
 
 def train_model(model, train_loader, test_loader, criterion, optimizer, scheduler, num_epochs, run_name):
     """Train the model with comprehensive logging"""
@@ -614,11 +635,12 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
         # Overfitting gap
         overfitting_gap = train_acc - test_acc
         
-        # Print epoch summary
+        # Print epoch summary with class imbalance info
         print(f'\nEpoch {epoch+1}/{num_epochs}:')
         print(f'Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%')
         print(f'Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.2f}%')
-        print(f'E Acc: {e_acc:.2f}%, I Acc: {i_acc:.2f}%')
+        print(f'E Acc: {e_acc:.2f}% ({e_correct}/{e_total}), I Acc: {i_acc:.2f}% ({i_correct}/{i_total})')
+        print(f'Class Balance: E:I = {e_total}:{i_total} = {e_total/i_total:.2f}:1')
         print(f'Overfitting Gap: {overfitting_gap:.2f}%')
         print(f'Learning Rate: {current_lr:.2e}')
         
@@ -667,11 +689,15 @@ def main():
     print(f"  Input Size: {INPUT_XY}x{INPUT_XY}")
     
     # Load data
-    train_dataset, test_dataset, synapse_type_map = load_and_prepare_data()
+    train_dataset, test_dataset, synapse_type_map, class_weights = load_and_prepare_data()
     
     if train_dataset is None:
         print("Failed to load data. Exiting.")
         return
+    
+    # Move class weights to device
+    class_weights = class_weights.to(device)
+    print(f"Class weights (E, I): {class_weights.cpu().numpy()}")
     
     # Create data loaders
     print(f"Creating data loaders with {NUM_WORKERS} workers...")
@@ -706,13 +732,13 @@ def main():
     print(f"CNN Depth: {CNN_DEPTH}, CNN Width: {CNN_WIDTH}")
     print("Model initialized successfully!")
     
-    # Loss function and optimizer (using fixed optimal values)
+    # Loss function and optimizer (using fixed optimal values with class weights)
     if USE_FOCAL_LOSS:
-        criterion = FocalLoss()
-        print("Using Focal Loss (fixed)")
+        criterion = FocalLoss(alpha=class_weights)
+        print("Using Focal Loss with class weights (fixed)")
     else:
-        criterion = nn.CrossEntropyLoss(label_smoothing=LABEL_SMOOTHING)
-        print("Using CrossEntropyLoss with label smoothing (fixed)")
+        criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=LABEL_SMOOTHING)
+        print("Using CrossEntropyLoss with class weights and label smoothing (fixed)")
     
     optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=5)

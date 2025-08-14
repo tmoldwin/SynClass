@@ -362,13 +362,19 @@ def log_epoch_to_csv(run_name, epoch, train_acc, val_acc, overfitting_gap, cnn_d
         # If the lock is not acquired after multiple retries, log an error and move on
         print(f"Warning: Could not acquire lock to write to {log_file} for run {run_name}, epoch {epoch}. Skipping log entry.")
 
-def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_name=None, sweep_dir=None):
-    """Plot comprehensive learning curves and save to figures directory."""
+def plot_epoch_progress(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, 
+                       run_name=None, sweep_dir=None, cnn_depth=None, cnn_width=None, current_epoch=None):
+    """Plot current training progress and save with network size and accuracies in filename."""
     epochs = range(1, len(train_losses) + 1)
     
     # Create figure with subplots - 3x2 layout for comprehensive view
     fig, axes = plt.subplots(2, 3, figsize=(18, 12))
-    fig.suptitle(f'Training Curves - {run_name}', fontsize=16, fontweight='bold')
+    
+    # Create title with network info and current accuracies
+    current_train_acc = train_accs[-1] if train_accs else 0
+    current_val_acc = val_accs[-1] if val_accs else 0
+    title = f'Training Progress - {run_name} | Epoch {current_epoch} | Net: {cnn_depth}L-{cnn_width}W | Train: {current_train_acc:.1f}% | Val: {current_val_acc:.1f}%'
+    fig.suptitle(title, fontsize=14, fontweight='bold')
     
     # Loss curves
     axes[0, 0].plot(epochs, train_losses, 'b-', label='Train Loss', linewidth=2)
@@ -389,62 +395,72 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     axes[0, 1].grid(True, alpha=0.3)
     
     # Learning rate curve
-    axes[0, 2].plot(epochs, learning_rates, 'g-', linewidth=2)
-    axes[0, 2].set_title('Learning Rate Schedule', fontweight='bold')
-    axes[0, 2].set_xlabel('Epoch')
-    axes[0, 2].set_ylabel('Learning Rate')
-    axes[0, 2].set_yscale('log')
-    axes[0, 2].grid(True, alpha=0.3)
+    if learning_rates:
+        axes[0, 2].plot(epochs, learning_rates, 'g-', linewidth=2)
+        axes[0, 2].set_title('Learning Rate Schedule', fontweight='bold')
+        axes[0, 2].set_xlabel('Epoch')
+        axes[0, 2].set_ylabel('Learning Rate')
+        axes[0, 2].set_yscale('log')
+        axes[0, 2].grid(True, alpha=0.3)
     
     # Class-specific accuracies
-    axes[1, 0].plot(epochs, e_accs, 'b-', label='E Accuracy', linewidth=2)
-    axes[1, 0].plot(epochs, i_accs, 'r-', label='I Accuracy', linewidth=2)
-    axes[1, 0].set_title('Class-Specific Accuracies', fontweight='bold')
-    axes[1, 0].set_xlabel('Epoch')
-    axes[1, 0].set_ylabel('Accuracy (%)')
-    axes[1, 0].legend()
-    axes[1, 0].grid(True, alpha=0.3)
+    if e_accs and i_accs:
+        axes[1, 0].plot(epochs, e_accs, 'b-', label='E Accuracy', linewidth=2)
+        axes[1, 0].plot(epochs, i_accs, 'r-', label='I Accuracy', linewidth=2)
+        axes[1, 0].set_title('Class-Specific Accuracies', fontweight='bold')
+        axes[1, 0].set_xlabel('Epoch')
+        axes[1, 0].set_ylabel('Accuracy (%)')
+        axes[1, 0].legend()
+        axes[1, 0].grid(True, alpha=0.3)
     
     # Overfitting gap
-    overfitting_gaps = [train - val for train, val in zip(train_accs, val_accs)]
-    axes[1, 1].plot(epochs, overfitting_gaps, 'purple', linewidth=2)
-    axes[1, 1].axhline(y=0, color='black', linestyle='--', alpha=0.5)
-    axes[1, 1].set_title('Overfitting Gap (Train - Val)', fontweight='bold')
-    axes[1, 1].set_xlabel('Epoch')
-    axes[1, 1].set_ylabel('Accuracy Difference (%)')
-    axes[1, 1].grid(True, alpha=0.3)
+    if train_accs and val_accs:
+        overfitting_gaps = [train - val for train, val in zip(train_accs, val_accs)]
+        axes[1, 1].plot(epochs, overfitting_gaps, 'purple', linewidth=2)
+        axes[1, 1].axhline(y=0, color='black', linestyle='--', alpha=0.5)
+        axes[1, 1].set_title('Overfitting Gap (Train - Val)', fontweight='bold')
+        axes[1, 1].set_xlabel('Epoch')
+        axes[1, 1].set_ylabel('Accuracy Difference (%)')
+        axes[1, 1].grid(True, alpha=0.3)
     
-    # Final metrics summary
+    # Current metrics summary
     axes[1, 2].axis('off')
+    # Calculate best accuracies safely
+    best_val_acc = max(val_accs) if val_accs else 0
+    best_train_acc = max(train_accs) if train_accs else 0
+    
     summary_text = f"""
-    Final Results:
+    Current Progress (Epoch {current_epoch}):
     
-    Best Val Accuracy: {max(val_accs):.2f}%
-    Final Val Accuracy: {val_accs[-1]:.2f}%
-    Best Train Accuracy: {max(train_accs):.2f}%
-    Final Train Accuracy: {train_accs[-1]:.2f}%
+    Current Val Accuracy: {current_val_acc:.2f}%
+    Current Train Accuracy: {current_train_acc:.2f}%
+    Best Val Accuracy: {best_val_acc:.2f}%
+    Best Train Accuracy: {best_train_acc:.2f}%
     
-    Best E Accuracy: {max(e_accs):.2f}%
-    Best I Accuracy: {max(i_accs):.2f}%
-    
-    Final Overfitting Gap: {overfitting_gaps[-1]:.2f}%
+    Network: {cnn_depth} layers, {cnn_width} width
+    Overfitting Gap: {current_train_acc - current_val_acc:.2f}%
     """
     axes[1, 2].text(0.1, 0.5, summary_text, transform=axes[1, 2].transAxes, 
-                   fontsize=12, verticalalignment='center', fontfamily='monospace')
+                   fontsize=11, verticalalignment='center', fontfamily='monospace')
     
     plt.tight_layout()
+    
+    # Create filename with network size and current accuracies
+    filename = f"{run_name}_epoch{current_epoch:03d}_net{cnn_depth}L{cnn_width}W_train{current_train_acc:.1f}_val{current_val_acc:.1f}.png"
     
     # Save to figures directory
     if sweep_dir is None:
         os.makedirs('figures', exist_ok=True)
-        save_path = f'figures/2dcnn_training_curves.png'
+        save_path = f'figures/{filename}'
     else:
         os.makedirs(os.path.join(sweep_dir, 'figures'), exist_ok=True)
-        save_path = os.path.join(sweep_dir, 'figures', f'{run_name}_curves.png')
+        save_path = os.path.join(sweep_dir, 'figures', filename)
     
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
-    plt.show()
-    print(f"Training curves saved to: {save_path}")
+    plt.close()  # Close to free memory
+    print(f"Progress plot saved: {save_path}")
+    
+    return save_path
 
 def load_and_prepare_data():
     """Load and prepare the dataset"""
@@ -609,6 +625,12 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
         # Log to CSV
         log_epoch_to_csv(run_name, epoch+1, train_acc, test_acc, overfitting_gap, CNN_DEPTH, CNN_WIDTH)
         
+        # Plot progress after every epoch
+        sweep_dir = os.getenv('SWEEP_MASTER_DIR', None)
+        plot_epoch_progress(train_losses, train_accuracies, test_losses, test_accuracies, 
+                           learning_rates, e_accuracies, i_accuracies, run_name, sweep_dir, 
+                           CNN_DEPTH, CNN_WIDTH, epoch+1)
+        
         # Save best model
         if test_acc > best_test_acc:
             best_test_acc = test_acc
@@ -701,10 +723,11 @@ def main():
         model, train_loader, test_loader, criterion, optimizer, scheduler, EPOCHS, args.run_name
     )
     
-    # Plot training curves
+    # Final progress plot (already done every epoch, but this is the final one)
     sweep_dir = os.getenv('SWEEP_MASTER_DIR', None)
-    plot_learning_curves(train_losses, train_accuracies, test_losses, test_accuracies, 
-                        learning_rates, e_accuracies, i_accuracies, args.run_name, sweep_dir)
+    plot_epoch_progress(train_losses, train_accuracies, test_losses, test_accuracies, 
+                        learning_rates, e_accuracies, i_accuracies, args.run_name, sweep_dir, 
+                        CNN_DEPTH, CNN_WIDTH, EPOCHS)
     
     # Final evaluation
     print("\nFinal Results:")

@@ -85,13 +85,13 @@ if torch.cuda.is_available():
     
     # Optimize number of workers based on GPU
     if 'A100' in gpu_name or 'H100' in gpu_name:
-        NUM_WORKERS = 8
+        NUM_WORKERS = 4
         print(f'High-end GPU detected, using {NUM_WORKERS} workers')
     elif 'RTX' in gpu_name or 'V100' in gpu_name:
-        NUM_WORKERS = 6
+        NUM_WORKERS = 2
         print(f'Mid-range GPU detected, using {NUM_WORKERS} workers')
     else:
-        NUM_WORKERS = 4
+        NUM_WORKERS = 1
         print(f'Using {NUM_WORKERS} workers')
 
 # ------------------------- dataset -------------------------
@@ -322,11 +322,12 @@ class CNN2DClassifier(nn.Module):
 
 def log_epoch_to_csv(run_name, epoch, train_acc, val_acc, overfitting_gap, cnn_depth, cnn_width, sweep_dir=None):
     """Logs the metrics of a training epoch to a centralized CSV file with file locking."""
+    # Always use sweep directory if available
     if sweep_dir is None:
-        log_file = 'sweep_results.csv'
-    else:
-        os.makedirs(sweep_dir, exist_ok=True)
-        log_file = os.path.join(sweep_dir, 'sweep_results.csv')
+        sweep_dir = os.getenv('SWEEP_MASTER_DIR', '.')
+    
+    os.makedirs(sweep_dir, exist_ok=True)
+    log_file = os.path.join(sweep_dir, 'sweep_results.csv')
     lock_file = log_file + '.lock'
     
     # Retry logic for acquiring the lock
@@ -651,13 +652,14 @@ def main():
         return
     
     # Create data loaders
+    print(f"Creating data loaders with {NUM_WORKERS} workers...")
     train_loader = DataLoader(
         train_dataset, 
         batch_size=BATCH_SIZE, 
         shuffle=True, 
         num_workers=NUM_WORKERS,
         pin_memory=True if torch.cuda.is_available() else False,
-        persistent_workers=True if NUM_WORKERS > 0 else False,
+        persistent_workers=False,  # Disable persistent workers to avoid hanging
         prefetch_factor=2 if NUM_WORKERS > 0 else None
     )
     test_loader = DataLoader(
@@ -666,18 +668,21 @@ def main():
         shuffle=False, 
         num_workers=NUM_WORKERS,
         pin_memory=True if torch.cuda.is_available() else False,
-        persistent_workers=True if NUM_WORKERS > 0 else False,
+        persistent_workers=False,  # Disable persistent workers to avoid hanging
         prefetch_factor=2 if NUM_WORKERS > 0 else None
     )
+    print("Data loaders created successfully!")
     
     print(f"Train samples: {len(train_dataset)}")
     print(f"Test samples: {len(test_dataset)}")
     
     # Initialize model
+    print("Initializing model...")
     model = CNN2DClassifier(num_classes=2, dropout_rate=DROPOUT_RATE, 
                            cnn_depth=CNN_DEPTH, cnn_width=CNN_WIDTH).to(device)
     print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
     print(f"CNN Depth: {CNN_DEPTH}, CNN Width: {CNN_WIDTH}")
+    print("Model initialized successfully!")
     
     # Loss function and optimizer (using fixed optimal values)
     if USE_FOCAL_LOSS:
@@ -697,8 +702,9 @@ def main():
     )
     
     # Plot training curves
+    sweep_dir = os.getenv('SWEEP_MASTER_DIR', None)
     plot_learning_curves(train_losses, train_accuracies, test_losses, test_accuracies, 
-                        learning_rates, e_accuracies, i_accuracies, args.run_name)
+                        learning_rates, e_accuracies, i_accuracies, args.run_name, sweep_dir)
     
     # Final evaluation
     print("\nFinal Results:")

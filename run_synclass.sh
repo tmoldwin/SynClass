@@ -30,12 +30,9 @@ fi
 
 # --- Main Loop for Job Submission ---
 SWEEP_TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-SWEEP_LOG_DIR="result_logs/sweep_${SWEEP_TIMESTAMP}"
 MASTER_SWEEP_DIR="sweep_${SWEEP_TIMESTAMP}"
-mkdir -p "$SWEEP_LOG_DIR"
 mkdir -p "$MASTER_SWEEP_DIR"
 echo "Master sweep directory: $MASTER_SWEEP_DIR"
-echo "Log directory for this sweep: $SWEEP_LOG_DIR"
 
 for CNN_DEPTH in "${CNN_DEPTHS[@]}"; do
   for CNN_WIDTH in "${CNN_WIDTHS[@]}"; do
@@ -44,7 +41,7 @@ for CNN_DEPTH in "${CNN_DEPTHS[@]}"; do
     RUN_NAME="d${CNN_DEPTH}_w${CNN_WIDTH}"
         
         JOB_NAME="synclass_${RUN_NAME}"
-        OUTPUT_LOG="${SWEEP_LOG_DIR}/${RUN_NAME}.out"
+        OUTPUT_LOG="${MASTER_SWEEP_DIR}/${RUN_NAME}.out"
         
         # Construct the python command to be executed by SLURM
         # Note: The path to the script is now relative, assuming submission from project root

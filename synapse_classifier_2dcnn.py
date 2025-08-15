@@ -27,11 +27,11 @@ import time
 warnings.filterwarnings("ignore")
 
 # ------------------------- configuration -------------------------
-BATCH_SIZE = 16           # Smaller batch for stability
-INPUT_XY = 256            # Larger input for better features
+BATCH_SIZE = 8            # Reduced batch size for memory optimization
+INPUT_XY = 128            # Reduced input size for memory optimization
 EPOCHS = 150              # More epochs for convergence
 LR = 5e-6                 # Optimal LR from sweep analysis (fixed)
-NUM_WORKERS = 4           # Increased workers for GPU
+NUM_WORKERS = 2           # Reduced workers for memory optimization
 RNG_SEED = 42
 DROPOUT_RATE = 0.3        # Optimal dropout from sweep analysis (fixed)
 WEIGHT_DECAY = 2e-3       # Optimal weight decay from sweep analysis (fixed)
@@ -64,39 +64,43 @@ print(f'Using device: {device}')
 
 # GPU optimization based on hardware
 if torch.cuda.is_available():
-    gpu_name = torch.cuda.get_device_name(0)
-    gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3
-    gpu_memory_available = torch.cuda.memory_allocated(0) / 1024**3
-    gpu_memory_free = gpu_memory - gpu_memory_available
-    
-    print(f'GPU: {gpu_name}')
-    print(f'GPU Memory: {gpu_memory:.1f} GB')
-    print(f'GPU Memory Available: {gpu_memory_free:.1f} GB')
-    
-    # Optimize batch size based on GPU memory
-    if gpu_memory >= 24:  # High-end GPU (RTX 4090, A100, etc.)
-        BATCH_SIZE = 64
-        print(f'High-end GPU detected, using batch size: {BATCH_SIZE}')
-    elif gpu_memory >= 12:  # Mid-range GPU (RTX 3080, etc.)
-        BATCH_SIZE = 32
-        print(f'Mid-range GPU detected, using batch size: {BATCH_SIZE}')
-    elif gpu_memory >= 8:  # Lower-end GPU
-        BATCH_SIZE = 16
-        print(f'Lower-end GPU detected, using batch size: {BATCH_SIZE}')
-    else:  # Very limited GPU memory
-        BATCH_SIZE = 8
-        print(f'Limited GPU memory, using batch size: {BATCH_SIZE}')
-    
-    # Optimize number of workers based on GPU
-    if 'A100' in gpu_name or 'H100' in gpu_name:
-        NUM_WORKERS = 4
-        print(f'High-end GPU detected, using {NUM_WORKERS} workers')
-    elif 'RTX' in gpu_name or 'V100' in gpu_name:
-        NUM_WORKERS = 2
-        print(f'Mid-range GPU detected, using {NUM_WORKERS} workers')
-    else:
-        NUM_WORKERS = 1
-        print(f'Using {NUM_WORKERS} workers')
+        gpu_name = torch.cuda.get_device_name(0)
+        gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3
+        gpu_memory_available = torch.cuda.memory_allocated(0) / 1024**3
+        gpu_memory_free = gpu_memory - gpu_memory_available
+        
+        print(f'GPU: {gpu_name}')
+        print(f'GPU Memory: {gpu_memory:.1f} GB')
+        print(f'GPU Memory Available: {gpu_memory_free:.1f} GB')
+        
+        # More conservative memory optimization for deep models
+        if gpu_memory >= 24:  # High-end GPU (RTX 4090, A100, etc.)
+            BATCH_SIZE = 16
+            INPUT_XY = 256
+            print(f'High-end GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
+        elif gpu_memory >= 12:  # Mid-range GPU (RTX 3080, etc.)
+            BATCH_SIZE = 12
+            INPUT_XY = 192
+            print(f'Mid-range GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
+        elif gpu_memory >= 8:  # Lower-end GPU
+            BATCH_SIZE = 8
+            INPUT_XY = 128
+            print(f'Lower-end GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
+        else:  # Very limited GPU memory
+            BATCH_SIZE = 4
+            INPUT_XY = 96
+            print(f'Limited GPU memory, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
+        
+        # Optimize number of workers based on GPU
+        if 'A100' in gpu_name or 'H100' in gpu_name:
+            NUM_WORKERS = 4
+            print(f'High-end GPU detected, using {NUM_WORKERS} workers')
+        elif 'RTX' in gpu_name or 'V100' in gpu_name:
+            NUM_WORKERS = 2
+            print(f'Mid-range GPU detected, using {NUM_WORKERS} workers')
+        else:
+            NUM_WORKERS = 1
+            print(f'Using {NUM_WORKERS} workers')
 
 # ------------------------- dataset -------------------------
 class SynapseDataset2D(Dataset):
@@ -234,10 +238,12 @@ class CNN2DClassifier(nn.Module):
         self.cnn_width = cnn_width
         
         # Calculate channel progression based on width multiplier
-        # Base channels: 3 -> width -> width*2 -> width*4 -> width*8 -> width*16
+        # For very deep models, cap the maximum channels to prevent memory issues
         channels = [3]  # Start with 3 input channels
         for i in range(cnn_depth):
-            channels.append(cnn_width * (2 ** i))
+            # Cap maximum channels to prevent memory overflow
+            max_channels = min(cnn_width * (2 ** i), 1024)  # Cap at 1024 channels
+            channels.append(max_channels)
         
         # Create convolutional layers dynamically
         self.conv_layers = nn.ModuleList()
@@ -305,7 +311,7 @@ class CNN2DClassifier(nn.Module):
         self.classifier = nn.Sequential(*classifier_layers)
         
     def forward(self, x):
-        # x shape: [batch, 3, 256, 256]
+        # x shape: [batch, 3, H, W]
         
         # Convolutional layers with ReLU and batch norm
         for i in range(self.cnn_depth):
@@ -813,6 +819,10 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
         if scheduler is not None:
             scheduler.step(test_acc)
         
+        # Memory cleanup for deep models
+        if CNN_DEPTH >= 10:
+            torch.cuda.empty_cache()
+        
         print('-' * 50)
     
     return train_losses, test_losses, train_accuracies, test_accuracies, learning_rates, e_accuracies, i_accuracies, all_predictions, all_labels
@@ -878,6 +888,12 @@ def main():
     print("Initializing model...")
     model = CNN2DClassifier(num_classes=2, dropout_rate=DROPOUT_RATE, 
                            cnn_depth=CNN_DEPTH, cnn_width=CNN_WIDTH).to(device)
+    
+    # Enable gradient checkpointing for memory optimization on deep models
+    if CNN_DEPTH >= 10:
+        model.use_checkpoint = True
+        print("Gradient checkpointing enabled for deep model")
+    
     print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
     print(f"CNN Depth: {CNN_DEPTH}, CNN Width: {CNN_WIDTH}")
     print("Model initialized successfully!")

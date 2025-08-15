@@ -32,9 +32,9 @@ import os
 os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 
 BATCH_SIZE = 4            # Further reduced batch size for memory optimization
-INPUT_XY = 128            # Keep original input size to preserve image quality
+INPUT_XY = 256            # Use full resolution to preserve image quality
 EPOCHS = 150              # More epochs for convergence
-LR = 5e-6                 # Optimal LR from sweep analysis (fixed)
+LR = 1e-3                 # Much higher learning rate to fix plateauing
 NUM_WORKERS = 1           # Further reduced workers for memory optimization
 RNG_SEED = 42
 DROPOUT_RATE = 0.3        # Optimal dropout from sweep analysis (fixed)
@@ -77,26 +77,26 @@ if torch.cuda.is_available():
         print(f'GPU Memory: {gpu_memory:.1f} GB')
         print(f'GPU Memory Available: {gpu_memory_free:.1f} GB')
         
-        # Very conservative memory optimization for deep models
+        # Memory optimization for deep models - use larger sizes since we fixed the learning rate
         if gpu_memory >= 24:  # High-end GPU (RTX 4090, A100, etc.)
             BATCH_SIZE = 8
-            INPUT_XY = 192
+            INPUT_XY = 256
             print(f'High-end GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
         elif gpu_memory >= 16:  # High-mid GPU
             BATCH_SIZE = 6
-            INPUT_XY = 160
+            INPUT_XY = 256
             print(f'High-mid GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
         elif gpu_memory >= 12:  # Mid-range GPU (RTX 3080, etc.)
             BATCH_SIZE = 4
-            INPUT_XY = 128
+            INPUT_XY = 256
             print(f'Mid-range GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
         elif gpu_memory >= 8:  # Lower-end GPU
             BATCH_SIZE = 2
-            INPUT_XY = 96
+            INPUT_XY = 256
             print(f'Lower-end GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
         else:  # Very limited GPU memory
             BATCH_SIZE = 1
-            INPUT_XY = 64
+            INPUT_XY = 256
             print(f'Limited GPU memory, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
         
         # Optimize number of workers based on GPU
@@ -133,6 +133,15 @@ class SynapseDataset2D(Dataset):
         # Load raw data
         file_path = os.path.join(self.data_dir, file)
         raw_data = np.load(file_path)
+        
+        # Print original image size occasionally for verification
+        if hasattr(self, '_print_count'):
+            self._print_count += 1
+        else:
+            self._print_count = 0
+        
+        if self._print_count < 3:  # Print first 3 images
+            print(f"Original image size: {raw_data.shape[0]}x{raw_data.shape[1]}x{raw_data.shape[2]}")
         
         # Load masks
         pre_mask_path = os.path.join(self.data_dir, file.replace('syn.npy', 'pre_syn_n_mask.npy'))

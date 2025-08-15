@@ -109,14 +109,24 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
     # Add trend line
     z = np.polyfit(final_data['train_acc'], final_data['val_acc'], 1)
     p = np.poly1d(z)
-    ax3.plot(final_data['train_acc'], p(final_data['train_acc']), "r--", alpha=0.8)
+    ax3.plot(final_data['train_acc'], p(final_data['train_acc']), "r--", alpha=0.8, linewidth=2)
     
-    # Calculate correlation
+    # Calculate correlation and R-squared
     correlation = final_data['train_acc'].corr(final_data['val_acc'])
+    r_squared = correlation ** 2
+    
+    # Calculate regression equation
+    slope = z[0]
+    intercept = z[1]
     
     ax3.set_xlabel('Training Accuracy (%)')
     ax3.set_ylabel('Validation Accuracy (%)')
-    ax3.set_title(f'Train vs Val Correlation\nr={correlation:.3f}', fontsize=12, fontweight='bold')
+    ax3.set_title(f'Train vs Val Correlation\nr={correlation:.3f}, R²={r_squared:.3f}', fontsize=12, fontweight='bold')
+    
+    # Add regression equation annotation
+    ax3.text(0.05, 0.95, f'y = {slope:.3f}x + {intercept:.3f}', 
+             transform=ax3.transAxes, fontsize=10, verticalalignment='top',
+             bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
     
     # Add colorbar
     cbar = plt.colorbar(scatter, ax=ax3, shrink=0.8)
@@ -230,9 +240,18 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
         ax5.scatter(depth_data['cnn_width'], depth_data['val_acc'], 
                    label=f'Depth {depth}', s=100, alpha=0.7)
     
+    # Add overall regression line
+    z = np.polyfit(final_data['cnn_width'], final_data['val_acc'], 1)
+    p = np.poly1d(z)
+    ax5.plot(final_data['cnn_width'], p(final_data['cnn_width']), "r--", alpha=0.8, linewidth=2)
+    
+    # Calculate correlation and R-squared
+    correlation = final_data['cnn_width'].corr(final_data['val_acc'])
+    r_squared = correlation ** 2
+    
     ax5.set_xlabel('CNN Width')
     ax5.set_ylabel('Final Validation Accuracy (%)')
-    ax5.set_title('Width vs Validation Accuracy', fontsize=12, fontweight='bold')
+    ax5.set_title(f'Width vs Validation Accuracy\nr={correlation:.3f}, R²={r_squared:.3f}', fontsize=12, fontweight='bold')
     ax5.legend(fontsize=8)
     ax5.grid(True, alpha=0.3)
     
@@ -244,9 +263,18 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
         ax6.scatter(width_data['cnn_depth'], width_data['val_acc'], 
                    label=f'Width {width}', s=100, alpha=0.7)
     
+    # Add overall regression line
+    z = np.polyfit(final_data['cnn_depth'], final_data['val_acc'], 1)
+    p = np.poly1d(z)
+    ax6.plot(final_data['cnn_depth'], p(final_data['cnn_depth']), "r--", alpha=0.8, linewidth=2)
+    
+    # Calculate correlation and R-squared
+    correlation = final_data['cnn_depth'].corr(final_data['val_acc'])
+    r_squared = correlation ** 2
+    
     ax6.set_xlabel('CNN Depth')
     ax6.set_ylabel('Final Validation Accuracy (%)')
-    ax6.set_title('Depth vs Validation Accuracy', fontsize=12, fontweight='bold')
+    ax6.set_title(f'Depth vs Validation Accuracy\nr={correlation:.3f}, R²={r_squared:.3f}', fontsize=12, fontweight='bold')
     ax6.legend(fontsize=8)
     ax6.grid(True, alpha=0.3)
     
@@ -344,22 +372,37 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
              verticalalignment='top', fontfamily='monospace',
              bbox=dict(boxstyle="round,pad=0.3", facecolor="lightblue", alpha=0.8))
     
-    # Panel 12: Model efficiency (bottom right)
+    # Panel 12: Epochs completed heatmap (bottom right)
     ax12 = plt.subplot(3, 4, 12)
     
-    # Plot efficiency (performance vs model size)
-    final_data['model_size'] = final_data['cnn_depth'] * final_data['cnn_width']
+    # Calculate epochs completed for each model configuration
+    epochs_completed = df.groupby(['cnn_depth', 'cnn_width'])['epoch'].max().reset_index()
+    epochs_pivot = epochs_completed.pivot(index='cnn_depth', columns='cnn_width', values='epoch')
     
-    for depth in sorted(final_data['cnn_depth'].unique()):
-        depth_data = final_data[final_data['cnn_depth'] == depth]
-        ax12.scatter(depth_data['model_size'], depth_data['val_acc'], 
-                    label=f'Depth {depth}', s=100, alpha=0.7)
+    # Determine if models finished (assuming 150 epochs is the target)
+    target_epochs = 150  # This should match the EPOCHS setting in the training script
+    finished_models = epochs_completed[epochs_completed['epoch'] >= target_epochs]
     
-    ax12.set_xlabel('Model Size (Depth × Width)')
-    ax12.set_ylabel('Validation Accuracy (%)')
-    ax12.set_title('Performance vs Model Size', fontsize=12, fontweight='bold')
-    ax12.legend(fontsize=8)
-    ax12.grid(True, alpha=0.3)
+    # Create annotations with asterisks for finished models
+    annot_data = epochs_pivot.copy()
+    for depth in epochs_pivot.index:
+        for width in epochs_pivot.columns:
+            if not pd.isna(epochs_pivot.loc[depth, width]):
+                epochs = int(epochs_pivot.loc[depth, width])
+                # Check if this model finished
+                is_finished = len(finished_models[(finished_models['cnn_depth'] == depth) & 
+                                                (finished_models['cnn_width'] == width)]) > 0
+                if is_finished:
+                    annot_data.loc[depth, width] = f"{epochs}*"
+                else:
+                    annot_data.loc[depth, width] = f"{epochs}"
+    
+    # Create heatmap
+    sns.heatmap(epochs_pivot, annot=annot_data, fmt='', cmap='YlOrRd', ax=ax12, 
+                cbar_kws={'shrink': 0.8, 'label': 'Epochs Completed'})
+    ax12.set_title('Epochs Completed by Model\n(* = Finished Training)', fontsize=12, fontweight='bold')
+    ax12.set_xlabel('CNN Width')
+    ax12.set_ylabel('CNN Depth')
     
     plt.tight_layout()
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
@@ -394,10 +437,47 @@ def print_summary_statistics(df, best_runs_df, correlation):
     print(f"   • Std validation accuracy: {final_data['val_acc'].std():.2f}%")
     print(f"   • Train-Val correlation: {correlation:.3f}")
     
+    # Calculate regression statistics for all relationships
+    train_val_corr = final_data['train_acc'].corr(final_data['val_acc'])
+    train_val_r2 = train_val_corr ** 2
+    width_val_corr = final_data['cnn_width'].corr(final_data['val_acc'])
+    width_val_r2 = width_val_corr ** 2
+    depth_val_corr = final_data['cnn_depth'].corr(final_data['val_acc'])
+    depth_val_r2 = depth_val_corr ** 2
+    
+    print(f"\n📊 REGRESSION STATISTICS:")
+    print(f"   • Train vs Val: r={train_val_corr:.3f}, R²={train_val_r2:.3f}")
+    print(f"   • Width vs Val: r={width_val_corr:.3f}, R²={width_val_r2:.3f}")
+    print(f"   • Depth vs Val: r={depth_val_corr:.3f}, R²={depth_val_r2:.3f}")
+    
     print(f"\n🔍 DEPTH ANALYSIS:")
     depth_stats = final_data.groupby('cnn_depth')['val_acc'].agg(['mean', 'std', 'max']).round(2)
     for depth, stats in depth_stats.iterrows():
         print(f"   • Depth {depth}: Mean={stats['mean']}%, Std={stats['std']}%, Max={stats['max']}%")
+    
+    print(f"\n⏱️  TRAINING PROGRESS:")
+    # Calculate epochs completed for each model
+    epochs_completed = df.groupby(['cnn_depth', 'cnn_width'])['epoch'].max().reset_index()
+    target_epochs = 150  # Should match EPOCHS in training script
+    
+    finished_models = epochs_completed[epochs_completed['epoch'] >= target_epochs]
+    total_models = len(epochs_completed)
+    completed_models = len(finished_models)
+    
+    print(f"   • Total model configurations: {total_models}")
+    print(f"   • Completed training ({target_epochs} epochs): {completed_models} ({completed_models/total_models*100:.1f}%)")
+    print(f"   • Incomplete training: {total_models - completed_models}")
+    
+    if len(finished_models) > 0:
+        print(f"   • Completed models:")
+        for _, model in finished_models.iterrows():
+            print(f"     - d{model['cnn_depth']}_w{model['cnn_width']}: {model['epoch']} epochs")
+    
+    if len(epochs_completed[epochs_completed['epoch'] < target_epochs]) > 0:
+        print(f"   • Incomplete models:")
+        incomplete = epochs_completed[epochs_completed['epoch'] < target_epochs]
+        for _, model in incomplete.iterrows():
+            print(f"     - d{model['cnn_depth']}_w{model['cnn_width']}: {model['epoch']} epochs")
     
     print(f"\n🔍 WIDTH ANALYSIS:")
     width_stats = final_data.groupby('cnn_width')['val_acc'].agg(['mean', 'std', 'max']).round(2)

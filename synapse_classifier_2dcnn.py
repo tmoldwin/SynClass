@@ -32,9 +32,9 @@ import os
 os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 
 BATCH_SIZE = 4            # Further reduced batch size for memory optimization
-INPUT_XY = 256            # Use full resolution to preserve image quality
+INPUT_XY = 150            # Use original resolution - no unnecessary upscaling
 EPOCHS = 100              # More epochs for convergence
-LR = 5e-7                 # 
+LR = 5e-6                 # 
 NUM_WORKERS = 1           # Further reduced workers for memory optimization
 RNG_SEED = 42
 DROPOUT_RATE = 0.3        # Optimal dropout from sweep analysis (fixed)
@@ -134,14 +134,7 @@ class SynapseDataset2D(Dataset):
         file_path = os.path.join(self.data_dir, file)
         raw_data = np.load(file_path)
         
-        # Print original image size occasionally for verification
-        if hasattr(self, '_print_count'):
-            self._print_count += 1
-        else:
-            self._print_count = 0
-        
-        if self._print_count < 3:  # Print first 3 images
-            print(f"Original image size: {raw_data.shape[0]}x{raw_data.shape[1]}x{raw_data.shape[2]}")
+        # Debug print removed - no longer needed
         
         # Load masks
         pre_mask_path = os.path.join(self.data_dir, file.replace('syn.npy', 'pre_syn_n_mask.npy'))
@@ -162,10 +155,8 @@ class SynapseDataset2D(Dataset):
             pre_slice = pre_mask
             post_slice = post_mask
         
-        # Resize to fixed size (using cv2 for better interpolation)
-        data_slice = cv2.resize(data_slice, (INPUT_XY, INPUT_XY), interpolation=cv2.INTER_AREA)
-        pre_slice = cv2.resize(pre_slice.astype(float), (INPUT_XY, INPUT_XY), interpolation=cv2.INTER_NEAREST)
-        post_slice = cv2.resize(post_slice.astype(float), (INPUT_XY, INPUT_XY), interpolation=cv2.INTER_NEAREST)
+        # No resizing needed - use original 150x150 dimensions
+        # data_slice, pre_slice, post_slice are already 150x150
 
         # Augmentation
         if self.is_training:
@@ -178,7 +169,7 @@ class SynapseDataset2D(Dataset):
                 p5, p95 = np.percentile(data_slice[non_zero_mask], [5, 95])
                 data_slice = np.clip((data_slice - p5) / (p95 - p5 + 1e-8), 0, 1)
             else: # All zero
-                data_slice = np.zeros((INPUT_XY, INPUT_XY))
+                data_slice = np.zeros((150, 150))
         
         image = np.stack([data_slice, pre_slice, post_slice], axis=0)
         image = torch.from_numpy(image.astype(np.float32))
@@ -193,11 +184,11 @@ class SynapseDataset2D(Dataset):
         # Random rotation
         if random.random() > 0.5:
             angle = random.uniform(-30, 30)
-            center = (INPUT_XY // 2, INPUT_XY // 2)
+            center = (75, 75)  # Center of 150x150 image
             M = cv2.getRotationMatrix2D(center, angle, 1.0)
-            data_slice = cv2.warpAffine(data_slice, M, (INPUT_XY, INPUT_XY))
-            pre_slice = cv2.warpAffine(pre_slice, M, (INPUT_XY, INPUT_XY))
-            post_slice = cv2.warpAffine(post_slice, M, (INPUT_XY, INPUT_XY))
+            data_slice = cv2.warpAffine(data_slice, M, (150, 150))
+            pre_slice = cv2.warpAffine(pre_slice, M, (150, 150))
+            post_slice = cv2.warpAffine(post_slice, M, (150, 150))
         
         # Random horizontal flip
         if random.random() > 0.5:

@@ -12,8 +12,8 @@ git pull
 echo "---"
 
 # --- Architecture hyperparameters for 2D CNN sweep ---
-CNN_DEPTHS=(12 11 10 9 8)             # Number of convolutional layers (8-12), starting from deepest
-CNN_WIDTHS=(64 128 256)               # Base width multiplier for channels (fewer increments)
+CNN_DEPTHS=(7 8 9 10)                 # Focus on best previous: 7, plus 8,9,10
+CNN_WIDTHS=(32 64 128)                # Focus on best previous: 32, plus 64,128
 
 # --- SLURM Configuration ---
 PARTITION="ss.gpu" # Set to "ss.gpu" to automatically request a GPU
@@ -48,7 +48,7 @@ for CNN_DEPTH in "${CNN_DEPTHS[@]}"; do
         PYTHON_CMD="python synapse_classifier_2dcnn.py \
           --cnn_depth ${CNN_DEPTH} \
           --cnn_width ${CNN_WIDTH} \
-          --epochs 150 \
+          --epochs 50 \
           --run_name ${RUN_NAME}"
 
         # Use sbatch with --wrap to submit the command as a job

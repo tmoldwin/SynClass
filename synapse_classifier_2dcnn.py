@@ -33,8 +33,8 @@ os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 
 BATCH_SIZE = 4            # Further reduced batch size for memory optimization
 INPUT_XY = 256            # Use full resolution to preserve image quality
-EPOCHS = 150              # More epochs for convergence
-LR = 1e-5                 # Much higher learning rate to fix plateauing
+EPOCHS = 100              # More epochs for convergence
+LR = 5e-7                 # 
 NUM_WORKERS = 1           # Further reduced workers for memory optimization
 RNG_SEED = 42
 DROPOUT_RATE = 0.3        # Optimal dropout from sweep analysis (fixed)

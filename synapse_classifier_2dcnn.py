@@ -77,26 +77,21 @@ if torch.cuda.is_available():
         print(f'GPU Memory: {gpu_memory:.1f} GB')
         print(f'GPU Memory Available: {gpu_memory_free:.1f} GB')
         
-        # Memory optimization for deep models - use larger sizes since we fixed the learning rate
+        # Memory optimization for deep models - keep original 150x150 resolution
         if gpu_memory >= 24:  # High-end GPU (RTX 4090, A100, etc.)
             BATCH_SIZE = 8
-            INPUT_XY = 256
             print(f'High-end GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
         elif gpu_memory >= 16:  # High-mid GPU
             BATCH_SIZE = 6
-            INPUT_XY = 256
             print(f'High-mid GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
         elif gpu_memory >= 12:  # Mid-range GPU (RTX 3080, etc.)
             BATCH_SIZE = 4
-            INPUT_XY = 256
             print(f'Mid-range GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
         elif gpu_memory >= 8:  # Lower-end GPU
             BATCH_SIZE = 2
-            INPUT_XY = 256
             print(f'Lower-end GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
         else:  # Very limited GPU memory
             BATCH_SIZE = 1
-            INPUT_XY = 256
             print(f'Limited GPU memory, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
         
         # Optimize number of workers based on GPU
@@ -187,8 +182,9 @@ class SynapseDataset2D(Dataset):
             center = (75, 75)  # Center of 150x150 image
             M = cv2.getRotationMatrix2D(center, angle, 1.0)
             data_slice = cv2.warpAffine(data_slice, M, (150, 150))
-            pre_slice = cv2.warpAffine(pre_slice, M, (150, 150))
-            post_slice = cv2.warpAffine(post_slice, M, (150, 150))
+            # Ensure masks are float32 and handle any NaN/inf values
+            pre_slice = cv2.warpAffine(pre_slice.astype(np.float32), M, (150, 150))
+            post_slice = cv2.warpAffine(post_slice.astype(np.float32), M, (150, 150))
         
         # Random horizontal flip
         if random.random() > 0.5:

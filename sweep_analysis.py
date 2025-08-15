@@ -126,57 +126,78 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
     ax4 = plt.subplot(3, 4, 4)
     ax4.axis('off')
     
-    # Get real sample counts from the dataset
+    # Get real sample counts from the sweep results CSV if available
     import os
     import pandas as pd
-    from sklearn.model_selection import train_test_split
     
-    # Load the actual dataset to get real counts
-    CSV_PATH = 'Data/synpase_raw_em/synapse_data.csv'
-    DATA_DIR = 'Data/synpase_raw_em/'
-    
-    if os.path.exists(CSV_PATH) and os.path.exists(DATA_DIR):
-        synapse_data = pd.read_csv(CSV_PATH)
-        synapse_type_map = {row['id_']: row['pre_clf_type'] for _, row in synapse_data.iterrows()}
-        
-        all_files = [f for f in os.listdir(DATA_DIR) if f.endswith('syn.npy')]
-        valid_files = []
-        for file in all_files:
-            try:
-                synapse_id = int(file.split('_')[0])
-                if synapse_id in synapse_type_map and synapse_type_map[synapse_id] in ['E', 'I']:
-                    valid_files.append(file)
-            except (ValueError, IndexError):
-                continue
-        
-        # Split data to get real counts
-        train_files, test_files = train_test_split(valid_files, test_size=0.2, random_state=42, 
-                                                  stratify=[synapse_type_map[int(f.split('_')[0])] for f in valid_files])
-        
-        train_labels = [synapse_type_map[int(f.split('_')[0])] for f in train_files]
-        test_labels = [synapse_type_map[int(f.split('_')[0])] for f in test_files]
-        
-        train_e_count = sum(1 for label in train_labels if label == 'E')
-        train_i_count = sum(1 for label in train_labels if label == 'I')
-        test_e_count = sum(1 for label in test_labels if label == 'E')
-        test_i_count = sum(1 for label in test_labels if label == 'I')
-        
-        sample_info = f"""
+    # Try to get sample counts from sweep results CSV
+    sweep_csv_path = 'sweep_results.csv'
+    if os.path.exists(sweep_csv_path):
+        try:
+            sweep_df = pd.read_csv(sweep_csv_path)
+            # Check if the new columns exist
+            if 'train_e_total' in sweep_df.columns and 'train_i_total' in sweep_df.columns:
+                # Get the first row to extract sample counts
+                first_row = sweep_df.iloc[0]
+                train_e_count = int(first_row['train_e_total'])
+                train_i_count = int(first_row['train_i_total'])
+                val_e_count = int(first_row['val_e_total'])
+                val_i_count = int(first_row['val_i_total'])
+                
+                sample_info = f"""
     DATASET INFO:
     
     Training Set:
     • Excitatory (E): {train_e_count:,} samples
     • Inhibitory (I): {train_i_count:,} samples
-    • Total: {len(train_files):,} samples
+    • Total: {train_e_count + train_i_count:,} samples
     
-    Test Set:
-    • Excitatory (E): {test_e_count:,} samples  
-    • Inhibitory (I): {test_i_count:,} samples
-    • Total: {len(test_files):,} samples
+    Validation Set:
+    • Excitatory (E): {val_e_count:,} samples  
+    • Inhibitory (I): {val_i_count:,} samples
+    • Total: {val_e_count + val_i_count:,} samples
     
     Class Balance:
     • Training: {train_e_count/(train_e_count+train_i_count)*100:.1f}% E, {train_i_count/(train_e_count+train_i_count)*100:.1f}% I
-    • Test: {test_e_count/(test_e_count+test_i_count)*100:.1f}% E, {test_i_count/(test_e_count+test_i_count)*100:.1f}% I
+    • Validation: {val_e_count/(val_e_count+val_i_count)*100:.1f}% E, {val_i_count/(val_e_count+val_i_count)*100:.1f}% I
+    """
+            else:
+                sample_info = """
+    DATASET INFO:
+    
+    Training Set:
+    • Excitatory (E): [Data not found]
+    • Inhibitory (I): [Data not found]
+    • Total: [Data not found]
+    
+    Validation Set:
+    • Excitatory (E): [Data not found]  
+    • Inhibitory (I): [Data not found]
+    • Total: [Data not found]
+    
+    Class Balance:
+    • Training: [Data not found]
+    • Validation: [Data not found]
+    """
+        except Exception as e:
+            sample_info = f"""
+    DATASET INFO:
+    
+    Training Set:
+    • Excitatory (E): [Error reading data]
+    • Inhibitory (I): [Error reading data]
+    • Total: [Error reading data]
+    
+    Validation Set:
+    • Excitatory (E): [Error reading data]  
+    • Inhibitory (I): [Error reading data]
+    • Total: [Error reading data]
+    
+    Class Balance:
+    • Training: [Error reading data]
+    • Validation: [Error reading data]
+    
+    Error: {str(e)}
     """
     else:
         sample_info = """
@@ -187,14 +208,14 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
     • Inhibitory (I): [Data not found]
     • Total: [Data not found]
     
-    Test Set:
+    Validation Set:
     • Excitatory (E): [Data not found]  
     • Inhibitory (I): [Data not found]
     • Total: [Data not found]
     
     Class Balance:
     • Training: [Data not found]
-    • Test: [Data not found]
+    • Validation: [Data not found]
     """
     
     ax4.text(0.1, 0.9, sample_info, transform=ax4.transAxes, fontsize=10,

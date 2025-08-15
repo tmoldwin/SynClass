@@ -12,8 +12,8 @@ git pull
 echo "---"
 
 # --- Architecture hyperparameters for 2D CNN sweep ---
-CNN_DEPTHS=(3 4 5 6 7)                # Number of convolutional layers (3-7)
-CNN_WIDTHS=(32 64 128 256 512)        # Base width multiplier for channels
+CNN_DEPTHS=(12 11 10 9 8)             # Number of convolutional layers (8-12), starting from deepest
+CNN_WIDTHS=(64 128 256)               # Base width multiplier for channels (fewer increments)
 
 # --- SLURM Configuration ---
 PARTITION="ss.gpu" # Set to "ss.gpu" to automatically request a GPU

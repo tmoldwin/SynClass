@@ -169,13 +169,19 @@ def load_and_prepare_data():
     return train_dataset, test_dataset, synapse_type_map
 
 def train_model(model, train_loader, test_loader, criterion, optimizer, num_epochs):
-    """Train the model"""
+    """Train the model with early stopping"""
     train_losses = []
     test_losses = []
     train_accuracies = []
     test_accuracies = []
     
     best_test_acc = 0.0
+    
+    # Early stopping parameters
+    patience = 15  # Number of epochs to wait for improvement
+    min_delta = 0.1  # Minimum improvement required
+    patience_counter = 0
+    best_val_acc = 0.0
     
     for epoch in range(num_epochs):
         # Training phase
@@ -251,6 +257,22 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, num_epoc
             best_test_acc = test_acc
             torch.save(model.state_dict(), MODEL_SAVE_PATHS['fast'])
             logger.info(f'New best model saved! Test accuracy: {test_acc:.2f}%')
+        
+        # Early stopping logic
+        if test_acc > best_val_acc + min_delta:
+            best_val_acc = test_acc
+            patience_counter = 0
+            print(f'Validation accuracy improved to {test_acc:.2f}% - resetting patience counter')
+        else:
+            patience_counter += 1
+            print(f'No improvement for {patience_counter} epochs (patience: {patience})')
+        
+        # Check for early stopping
+        if patience_counter >= patience:
+            print(f'\nEarly stopping triggered after {epoch+1} epochs!')
+            print(f'Best validation accuracy: {best_val_acc:.2f}%')
+            print(f'No improvement for {patience} epochs')
+            break
         
         print('-' * 50)
     

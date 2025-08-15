@@ -43,12 +43,16 @@ parser = argparse.ArgumentParser(description='2D CNN-based synapse classifier')
 parser.add_argument('--resume', action='store_true', help='resume from checkpoint')
 parser.add_argument('--epochs', type=int, default=EPOCHS)
 parser.add_argument('--run_name', type=str, default=None, help='A unique name for the run for file naming')
-parser.add_argument('--cnn_depth', type=int, default=5, help='Number of convolutional layers (3-7)')
-parser.add_argument('--cnn_width', type=int, default=64, help='Base width multiplier for channels')
+parser.add_argument('--cnn_depth', type=int, default=8, help='Number of convolutional layers (8-12)')
+parser.add_argument('--cnn_width', type=int, default=128, help='Base width multiplier for channels')
 args = parser.parse_args()
 EPOCHS = args.epochs
 CNN_DEPTH = args.cnn_depth
 CNN_WIDTH = args.cnn_width
+
+# Validate depth range
+if CNN_DEPTH < 8 or CNN_DEPTH > 12:
+    print(f"Warning: CNN depth {CNN_DEPTH} is outside recommended range (8-12)")
 
 # ------------------------- reproducibility ----------------------
 random.seed(RNG_SEED)
@@ -320,7 +324,8 @@ class CNN2DClassifier(nn.Module):
         # Classifier
         return self.classifier(attended_features)
 
-def log_epoch_to_csv(run_name, epoch, train_acc, val_acc, overfitting_gap, cnn_depth, cnn_width, sweep_dir=None):
+def log_epoch_to_csv(run_name, epoch, train_acc, val_acc, overfitting_gap, cnn_depth, cnn_width, 
+                    train_confusion_matrix, val_confusion_matrix, sweep_dir=None):
     """Logs the metrics of a training epoch to a centralized CSV file with file locking."""
     # Always use sweep directory if available
     if sweep_dir is None:
@@ -337,8 +342,28 @@ def log_epoch_to_csv(run_name, epoch, train_acc, val_acc, overfitting_gap, cnn_d
             os.mkdir(lock_file)
             
             try:
-                header = ['run_name', 'epoch', 'train_acc', 'val_acc', 'overfitting_gap', 'cnn_depth', 'cnn_width', 'timestamp']
+                header = ['run_name', 'epoch', 'train_acc', 'val_acc', 'overfitting_gap', 'cnn_depth', 'cnn_width', 
+                         'train_e_correct', 'train_e_incorrect', 'train_i_correct', 'train_i_incorrect',
+                         'val_e_correct', 'val_e_incorrect', 'val_i_correct', 'val_i_incorrect',
+                         'train_e_total', 'train_i_total', 'val_e_total', 'val_i_total', 'timestamp']
                 file_exists = os.path.isfile(log_file)
+                
+                # Extract confusion matrix values
+                train_e_correct = train_confusion_matrix[0, 0] if train_confusion_matrix is not None else 0
+                train_e_incorrect = train_confusion_matrix[0, 1] if train_confusion_matrix is not None else 0
+                train_i_correct = train_confusion_matrix[1, 1] if train_confusion_matrix is not None else 0
+                train_i_incorrect = train_confusion_matrix[1, 0] if train_confusion_matrix is not None else 0
+                
+                val_e_correct = val_confusion_matrix[0, 0] if val_confusion_matrix is not None else 0
+                val_e_incorrect = val_confusion_matrix[0, 1] if val_confusion_matrix is not None else 0
+                val_i_correct = val_confusion_matrix[1, 1] if val_confusion_matrix is not None else 0
+                val_i_incorrect = val_confusion_matrix[1, 0] if val_confusion_matrix is not None else 0
+                
+                # Calculate totals
+                train_e_total = train_e_correct + train_e_incorrect
+                train_i_total = train_i_correct + train_i_incorrect
+                val_e_total = val_e_correct + val_e_incorrect
+                val_i_total = val_i_correct + val_i_incorrect
                 
                 with open(log_file, 'a', newline='') as f:
                     writer = csv.writer(f)
@@ -346,7 +371,10 @@ def log_epoch_to_csv(run_name, epoch, train_acc, val_acc, overfitting_gap, cnn_d
                         writer.writerow(header)
                     
                     timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    writer.writerow([run_name, epoch, f'{train_acc:.2f}', f'{val_acc:.2f}', f'{overfitting_gap:.2f}', cnn_depth, cnn_width, timestamp])
+                    writer.writerow([run_name, epoch, f'{train_acc:.2f}', f'{val_acc:.2f}', f'{overfitting_gap:.2f}', 
+                                   cnn_depth, cnn_width, train_e_correct, train_e_incorrect, train_i_correct, train_i_incorrect,
+                                   val_e_correct, val_e_incorrect, val_i_correct, val_i_incorrect,
+                                   train_e_total, train_i_total, val_e_total, val_i_total, timestamp])
                 
                 # Lock released, exit retry loop
                 break
@@ -363,12 +391,13 @@ def log_epoch_to_csv(run_name, epoch, train_acc, val_acc, overfitting_gap, cnn_d
         print(f"Warning: Could not acquire lock to write to {log_file} for run {run_name}, epoch {epoch}. Skipping log entry.")
 
 def plot_epoch_progress(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, 
-                       run_name=None, sweep_dir=None, cnn_depth=None, cnn_width=None, current_epoch=None):
+                       run_name=None, sweep_dir=None, cnn_depth=None, cnn_width=None, current_epoch=None,
+                       train_confusion_matrix=None, val_confusion_matrix=None):
     """Plot current training progress and save with network size and accuracies in filename."""
     epochs = range(1, len(train_losses) + 1)
     
-    # Create figure with subplots - 3x2 layout for comprehensive view
-    fig, axes = plt.subplots(2, 3, figsize=(18, 12))
+    # Create figure with subplots - 3x3 layout for comprehensive view including confusion matrices
+    fig, axes = plt.subplots(3, 3, figsize=(20, 16))
     
     # Create title with network info and current accuracies
     current_train_acc = train_accs[-1] if train_accs else 0
@@ -423,8 +452,50 @@ def plot_epoch_progress(train_losses, train_accs, val_losses, val_accs, learning
         axes[1, 1].set_ylabel('Accuracy Difference (%)')
         axes[1, 1].grid(True, alpha=0.3)
     
+    # Training Confusion Matrix
+    if train_confusion_matrix is not None:
+        im1 = axes[1, 2].imshow(train_confusion_matrix, interpolation='nearest', cmap=plt.cm.Blues)
+        axes[1, 2].set_title('Training Confusion Matrix', fontweight='bold')
+        axes[1, 2].set_xlabel('Predicted')
+        axes[1, 2].set_ylabel('Actual')
+        axes[1, 2].set_xticks([0, 1])
+        axes[1, 2].set_yticks([0, 1])
+        axes[1, 2].set_xticklabels(['E', 'I'])
+        axes[1, 2].set_yticklabels(['E', 'I'])
+        
+        # Add text annotations
+        total_train = train_confusion_matrix.sum()
+        for i in range(2):
+            for j in range(2):
+                count = train_confusion_matrix[i, j]
+                percentage = 100. * count / total_train
+                axes[1, 2].text(j, i, f'{count}\n({percentage:.1f}%)',
+                               ha='center', va='center', fontweight='bold',
+                               color='white' if count > total_train/4 else 'black')
+    
+    # Validation Confusion Matrix
+    if val_confusion_matrix is not None:
+        im2 = axes[2, 0].imshow(val_confusion_matrix, interpolation='nearest', cmap=plt.cm.Reds)
+        axes[2, 0].set_title('Validation Confusion Matrix', fontweight='bold')
+        axes[2, 0].set_xlabel('Predicted')
+        axes[2, 0].set_ylabel('Actual')
+        axes[2, 0].set_xticks([0, 1])
+        axes[2, 0].set_yticks([0, 1])
+        axes[2, 0].set_xticklabels(['E', 'I'])
+        axes[2, 0].set_yticklabels(['E', 'I'])
+        
+        # Add text annotations
+        total_val = val_confusion_matrix.sum()
+        for i in range(2):
+            for j in range(2):
+                count = val_confusion_matrix[i, j]
+                percentage = 100. * count / total_val
+                axes[2, 0].text(j, i, f'{count}\n({percentage:.1f}%)',
+                               ha='center', va='center', fontweight='bold',
+                               color='white' if count > total_val/4 else 'black')
+    
     # Current metrics summary
-    axes[1, 2].axis('off')
+    axes[2, 1].axis('off')
     # Calculate best accuracies safely
     best_val_acc = max(val_accs) if val_accs else 0
     best_train_acc = max(train_accs) if train_accs else 0
@@ -440,8 +511,36 @@ def plot_epoch_progress(train_losses, train_accs, val_losses, val_accs, learning
     Network: {cnn_depth} layers, {cnn_width} width
     Overfitting Gap: {current_train_acc - current_val_acc:.2f}%
     """
-    axes[1, 2].text(0.1, 0.5, summary_text, transform=axes[1, 2].transAxes, 
+    axes[2, 1].text(0.1, 0.5, summary_text, transform=axes[2, 1].transAxes, 
                    fontsize=11, verticalalignment='center', fontfamily='monospace')
+    
+    # Sample counts summary
+    axes[2, 2].axis('off')
+    if train_confusion_matrix is not None and val_confusion_matrix is not None:
+        train_e_total = train_confusion_matrix[0, :].sum()
+        train_i_total = train_confusion_matrix[1, :].sum()
+        val_e_total = val_confusion_matrix[0, :].sum()
+        val_i_total = val_confusion_matrix[1, :].sum()
+        
+        sample_text = f"""
+    Sample Counts:
+    
+    Training Set:
+    • E: {train_e_total} samples
+    • I: {train_i_total} samples
+    • Total: {train_e_total + train_i_total} samples
+    
+    Validation Set:
+    • E: {val_e_total} samples
+    • I: {val_i_total} samples
+    • Total: {val_e_total + val_i_total} samples
+    
+    Class Balance:
+    • Train: {train_e_total/(train_e_total+train_i_total)*100:.1f}% E, {train_i_total/(train_e_total+train_i_total)*100:.1f}% I
+    • Val: {val_e_total/(val_e_total+val_i_total)*100:.1f}% E, {val_i_total/(val_e_total+val_i_total)*100:.1f}% I
+    """
+        axes[2, 2].text(0.1, 0.5, sample_text, transform=axes[2, 2].transAxes, 
+                       fontsize=10, verticalalignment='center', fontfamily='monospace')
     
     plt.tight_layout()
     
@@ -452,9 +551,26 @@ def plot_epoch_progress(train_losses, train_accs, val_losses, val_accs, learning
     if sweep_dir is None:
         os.makedirs('figures', exist_ok=True)
         save_path = f'figures/{filename}'
+        figures_dir = 'figures'
     else:
         os.makedirs(os.path.join(sweep_dir, 'figures'), exist_ok=True)
         save_path = os.path.join(sweep_dir, 'figures', filename)
+        figures_dir = os.path.join(sweep_dir, 'figures')
+    
+    # Delete previous epoch figures for this run to save disk space
+    if current_epoch > 1:
+        import glob
+        # Find all previous epoch figures for this run
+        pattern = f"{run_name}_epoch*_net{cnn_depth}L{cnn_width}W_*.png"
+        previous_files = glob.glob(os.path.join(figures_dir, pattern))
+        
+        # Delete files from previous epochs (keep only current epoch)
+        for old_file in previous_files:
+            try:
+                os.remove(old_file)
+                print(f"Deleted previous epoch figure: {old_file}")
+            except OSError as e:
+                print(f"Could not delete {old_file}: {e}")
     
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()  # Close to free memory
@@ -528,7 +644,7 @@ def load_and_prepare_data():
     return train_dataset, test_dataset, synapse_type_map, class_weights
 
 def train_model(model, train_loader, test_loader, criterion, optimizer, scheduler, num_epochs, run_name):
-    """Train the model with comprehensive logging"""
+    """Train the model with comprehensive logging and early stopping"""
     train_losses = []
     test_losses = []
     train_accuracies = []
@@ -540,12 +656,20 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
     best_test_acc = 0.0
     best_model_path = MODEL_SAVE_PATHS.get('2dcnn', 'saved_models/best_synapse_model_2dcnn.pth')
     
+    # Early stopping parameters
+    patience = 15  # Number of epochs to wait for improvement
+    min_delta = 0.1  # Minimum improvement required
+    patience_counter = 0
+    best_val_acc = 0.0
+    
     for epoch in range(num_epochs):
         # Training phase
         model.train()
         train_loss = 0.0
         train_correct = 0
         train_total = 0
+        all_train_predictions = []
+        all_train_labels = []
         
         train_pbar = tqdm(train_loader, desc=f'Epoch {epoch+1}/{num_epochs} [Train]')
         for batch_idx, (data, labels, _) in enumerate(train_pbar):
@@ -561,6 +685,10 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
             _, predicted = torch.max(outputs.data, 1)
             train_total += labels.size(0)
             train_correct += (predicted == labels).sum().item()
+            
+            # Store predictions and labels for confusion matrix
+            all_train_predictions.extend(predicted.cpu().numpy())
+            all_train_labels.extend(labels.cpu().numpy())
             
             if batch_idx % 10 == 0:
                 train_pbar.set_postfix({
@@ -628,6 +756,11 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
         e_accuracies.append(e_acc)
         i_accuracies.append(i_acc)
         
+        # Calculate confusion matrices
+        from sklearn.metrics import confusion_matrix
+        val_confusion_matrix = confusion_matrix(all_labels, all_predictions)
+        train_confusion_matrix = confusion_matrix(all_train_labels, all_train_predictions)
+        
         # Learning rate
         current_lr = optimizer.param_groups[0]['lr']
         learning_rates.append(current_lr)
@@ -644,20 +777,37 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
         print(f'Overfitting Gap: {overfitting_gap:.2f}%')
         print(f'Learning Rate: {current_lr:.2e}')
         
-        # Log to CSV
-        log_epoch_to_csv(run_name, epoch+1, train_acc, test_acc, overfitting_gap, CNN_DEPTH, CNN_WIDTH)
+        # Log to CSV with confusion matrix data
+        log_epoch_to_csv(run_name, epoch+1, train_acc, test_acc, overfitting_gap, CNN_DEPTH, CNN_WIDTH,
+                        train_confusion_matrix, val_confusion_matrix)
         
         # Plot progress after every epoch
         sweep_dir = os.getenv('SWEEP_MASTER_DIR', None)
         plot_epoch_progress(train_losses, train_accuracies, test_losses, test_accuracies, 
                            learning_rates, e_accuracies, i_accuracies, run_name, sweep_dir, 
-                           CNN_DEPTH, CNN_WIDTH, epoch+1)
+                           CNN_DEPTH, CNN_WIDTH, epoch+1, train_confusion_matrix, val_confusion_matrix)
         
         # Save best model
         if test_acc > best_test_acc:
             best_test_acc = test_acc
             torch.save(model.state_dict(), best_model_path)
             print(f'New best model saved! Test accuracy: {test_acc:.2f}%')
+        
+        # Early stopping logic
+        if test_acc > best_val_acc + min_delta:
+            best_val_acc = test_acc
+            patience_counter = 0
+            print(f'Validation accuracy improved to {test_acc:.2f}% - resetting patience counter')
+        else:
+            patience_counter += 1
+            print(f'No improvement for {patience_counter} epochs (patience: {patience})')
+        
+        # Check for early stopping
+        if patience_counter >= patience:
+            print(f'\nEarly stopping triggered after {epoch+1} epochs!')
+            print(f'Best validation accuracy: {best_val_acc:.2f}%')
+            print(f'No improvement for {patience} epochs')
+            break
         
         # Update learning rate
         if scheduler is not None:
@@ -750,10 +900,11 @@ def main():
     )
     
     # Final progress plot (already done every epoch, but this is the final one)
+    # For the final plot, we'll use the last epoch's confusion matrices
     sweep_dir = os.getenv('SWEEP_MASTER_DIR', None)
     plot_epoch_progress(train_losses, train_accuracies, test_losses, test_accuracies, 
                         learning_rates, e_accuracies, i_accuracies, args.run_name, sweep_dir, 
-                        CNN_DEPTH, CNN_WIDTH, EPOCHS)
+                        CNN_DEPTH, CNN_WIDTH, EPOCHS, None, None)  # No confusion matrices for final plot
     
     # Final evaluation
     print("\nFinal Results:")

@@ -207,11 +207,16 @@ class BigSynapseDataset(Dataset):
 
 # ------------------------- ENHANCED TRAINING FUNCTION --------------------------
 def train_big_model(model, train_loader, val_loader, criterion, optimizer, scheduler, epochs, run_name):
-    """Enhanced training with better optimization"""
+    """Enhanced training with better optimization and early stopping"""
     best_val_acc = 0.0
     train_losses, val_losses = [], []
     train_accs, val_accs = [], []
     e_accs, i_accs = [], []
+    
+    # Early stopping parameters
+    patience = 15  # Number of epochs to wait for improvement
+    min_delta = 0.1  # Minimum improvement required
+    patience_counter = 0
     
     for epoch in range(epochs):
         # Training phase
@@ -318,6 +323,21 @@ def train_big_model(model, train_loader, val_loader, criterion, optimizer, sched
             best_val_acc = val_acc
             torch.save(model.state_dict(), f'best_big_model_{run_name}.pth' if run_name else 'best_big_model.pth')
             print(f'  New best model saved! Val Acc: {best_val_acc:.2f}%')
+        
+        # Early stopping logic
+        if val_acc > best_val_acc + min_delta:
+            patience_counter = 0
+            print(f'  Validation accuracy improved to {val_acc:.2f}% - resetting patience counter')
+        else:
+            patience_counter += 1
+            print(f'  No improvement for {patience_counter} epochs (patience: {patience})')
+        
+        # Check for early stopping
+        if patience_counter >= patience:
+            print(f'\nEarly stopping triggered after {epoch+1} epochs!')
+            print(f'Best validation accuracy: {best_val_acc:.2f}%')
+            print(f'No improvement for {patience} epochs')
+            break
     
     return train_losses, val_losses, train_accs, val_accs, e_accs, i_accs
 

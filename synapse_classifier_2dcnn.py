@@ -493,26 +493,26 @@ def plot_epoch_progress(train_losses, train_accs, val_losses, val_accs, learning
         axes[1, 1].set_ylabel('Accuracy Difference (%)')
         axes[1, 1].grid(True, alpha=0.3)
     
-     # Training Confusion Matrix
-     if train_confusion_matrix is not None:
-         im1 = axes[1, 2].imshow(train_confusion_matrix, interpolation='nearest', cmap=plt.cm.Reds)
-         axes[1, 2].set_title('Training Confusion Matrix', fontweight='bold')
-         axes[1, 2].set_xlabel('Predicted')
-         axes[1, 2].set_ylabel('Actual')
-         axes[1, 2].set_xticks([0, 1])
-         axes[1, 2].set_yticks([0, 1])
-         axes[1, 2].set_xticklabels(['E', 'I'])
-         axes[1, 2].set_yticklabels(['E', 'I'])
-         
-         # Add text annotations
-         total_train = train_confusion_matrix.sum()
-         for i in range(2):
-             for j in range(2):
-                 count = train_confusion_matrix[i, j]
-                 percentage = 100. * count / total_train
-                 axes[1, 2].text(j, i, f'{count}\n({percentage:.1f}%)',
-                                ha='center', va='center', fontweight='bold',
-                                color='white' if count > total_train/4 else 'black')
+    # Training Confusion Matrix
+    if train_confusion_matrix is not None:
+        im1 = axes[1, 2].imshow(train_confusion_matrix, interpolation='nearest', cmap=plt.cm.Reds)
+        axes[1, 2].set_title('Training Confusion Matrix', fontweight='bold')
+        axes[1, 2].set_xlabel('Predicted')
+        axes[1, 2].set_ylabel('Actual')
+        axes[1, 2].set_xticks([0, 1])
+        axes[1, 2].set_yticks([0, 1])
+        axes[1, 2].set_xticklabels(['E', 'I'])
+        axes[1, 2].set_yticklabels(['E', 'I'])
+        
+        # Add text annotations
+        total_train = train_confusion_matrix.sum()
+        for i in range(2):
+            for j in range(2):
+                count = train_confusion_matrix[i, j]
+                percentage = 100. * count / total_train
+                axes[1, 2].text(j, i, f'{count}\n({percentage:.1f}%)',
+                               ha='center', va='center', fontweight='bold',
+                               color='white' if count > total_train/4 else 'black')
     
     # Validation Confusion Matrix
     if val_confusion_matrix is not None:

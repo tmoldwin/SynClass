@@ -132,7 +132,7 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
     cbar = plt.colorbar(scatter, ax=ax3, shrink=0.8)
     cbar.set_label('CNN Width')
     
-    # Panel 4: Sample counts (top right)
+    # Panel 4: Combined Dataset Info and Summary (top right)
     ax4 = plt.subplot(3, 4, 4)
     ax4.axis('off')
     
@@ -154,81 +154,95 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
                 val_e_count = int(first_row['val_e_total'])
                 val_i_count = int(first_row['val_i_total'])
                 
-                sample_info = f"""
-    DATASET INFO:
+                # Get best overall performance
+                best_overall = final_data.loc[final_data['val_acc'].idxmax()]
+                min_overfitting = final_data.loc[final_data['overfitting_gap'].idxmin()]
+                
+                combined_info = f"""
+    DATASET & PERFORMANCE SUMMARY:
     
-    Training Set:
-    • Excitatory (E): {train_e_count:,} samples
-    • Inhibitory (I): {train_i_count:,} samples
-    • Total: {train_e_count + train_i_count:,} samples
+    📊 Dataset:
+    • Train: {train_e_count:,}E + {train_i_count:,}I = {train_e_count + train_i_count:,} total
+    • Val: {val_e_count:,}E + {val_i_count:,}I = {val_e_count + val_i_count:,} total
+    • Balance: {train_e_count/(train_e_count+train_i_count)*100:.1f}%E/{train_i_count/(train_e_count+train_i_count)*100:.1f}%I
     
-    Validation Set:
-    • Excitatory (E): {val_e_count:,} samples  
-    • Inhibitory (I): {val_i_count:,} samples
-    • Total: {val_e_count + val_i_count:,} samples
+    🏆 Best Overall:
+    d{best_overall['cnn_depth']}_w{best_overall['cnn_width']}
+    {best_overall['val_acc']:.2f}% validation
     
-    Class Balance:
-    • Training: {train_e_count/(train_e_count+train_i_count)*100:.1f}% E, {train_i_count/(train_e_count+train_i_count)*100:.1f}% I
-    • Validation: {val_e_count/(val_e_count+val_i_count)*100:.1f}% E, {val_i_count/(val_e_count+val_i_count)*100:.1f}% I
+    ⚖️ Best Generalization:
+    d{min_overfitting['cnn_depth']}_w{min_overfitting['cnn_width']}
+    Gap: {min_overfitting['overfitting_gap']:.2f}%
+    
+    📈 Statistics:
+    • Mean Val Acc: {final_data['val_acc'].mean():.1f}%
+    • Std Val Acc: {final_data['val_acc'].std():.1f}%
+    • Train-Val r: {correlation:.3f}
     """
             else:
-                sample_info = """
-    DATASET INFO:
+                combined_info = """
+    DATASET & PERFORMANCE SUMMARY:
     
-    Training Set:
-    • Excitatory (E): [Data not found]
-    • Inhibitory (I): [Data not found]
-    • Total: [Data not found]
+    📊 Dataset:
+    • Training Set: [Data not found]
+    • Validation Set: [Data not found]
+    • Class Balance: [Data not found]
     
-    Validation Set:
-    • Excitatory (E): [Data not found]  
-    • Inhibitory (I): [Data not found]
-    • Total: [Data not found]
+    🏆 Best Overall:
+    [Data not found]
     
-    Class Balance:
-    • Training: [Data not found]
-    • Validation: [Data not found]
+    ⚖️ Best Generalization:
+    [Data not found]
+    
+    📈 Statistics:
+    • Mean Val Acc: [Data not found]
+    • Std Val Acc: [Data not found]
+    • Train-Val r: [Data not found]
     """
         except Exception as e:
-            sample_info = f"""
-    DATASET INFO:
+            combined_info = f"""
+    DATASET & PERFORMANCE SUMMARY:
     
-    Training Set:
-    • Excitatory (E): [Error reading data]
-    • Inhibitory (I): [Error reading data]
-    • Total: [Error reading data]
+    📊 Dataset:
+    • Training Set: [Error reading data]
+    • Validation Set: [Error reading data]
+    • Class Balance: [Error reading data]
     
-    Validation Set:
-    • Excitatory (E): [Error reading data]  
-    • Inhibitory (I): [Error reading data]
-    • Total: [Error reading data]
+    🏆 Best Overall:
+    [Error reading data]
     
-    Class Balance:
-    • Training: [Error reading data]
-    • Validation: [Error reading data]
+    ⚖️ Best Generalization:
+    [Error reading data]
+    
+    📈 Statistics:
+    • Mean Val Acc: [Error reading data]
+    • Std Val Acc: [Error reading data]
+    • Train-Val r: [Error reading data]
     
     Error: {str(e)}
     """
     else:
-        sample_info = """
-    DATASET INFO:
+        combined_info = """
+    DATASET & PERFORMANCE SUMMARY:
     
-    Training Set:
-    • Excitatory (E): [Data not found]
-    • Inhibitory (I): [Data not found]
-    • Total: [Data not found]
+    📊 Dataset:
+    • Training Set: [Data not found]
+    • Validation Set: [Data not found]
+    • Class Balance: [Data not found]
     
-    Validation Set:
-    • Excitatory (E): [Data not found]  
-    • Inhibitory (I): [Data not found]
-    • Total: [Data not found]
+    🏆 Best Overall:
+    [Data not found]
     
-    Class Balance:
-    • Training: [Data not found]
-    • Validation: [Data not found]
+    ⚖️ Best Generalization:
+    [Data not found]
+    
+    📈 Statistics:
+    • Mean Val Acc: [Data not found]
+    • Std Val Acc: [Data not found]
+    • Train-Val r: [Data not found]
     """
     
-    ax4.text(0.1, 0.9, sample_info, transform=ax4.transAxes, fontsize=10,
+    ax4.text(0.1, 0.9, combined_info, transform=ax4.transAxes, fontsize=9,
              verticalalignment='top', fontfamily='monospace',
              bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgray", alpha=0.8))
     
@@ -309,66 +323,189 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
     ax8.set_xlabel('CNN Width')
     ax8.set_ylabel('CNN Depth')
     
-    # Panel 9: Box plot by width (bottom left)
+    # Panel 9: Training Confusion Matrix (bottom left)
     ax9 = plt.subplot(3, 4, 9)
     
-    width_groups = []
-    width_labels = []
-    for width in sorted(final_data['cnn_width'].unique()):
-        width_data = final_data[final_data['cnn_width'] == width]
-        width_groups.append(width_data['val_acc'].values)
-        width_labels.append(f'W{width}')
+    # Get confusion matrix data for the best run
+    best_run_name = best_runs_df.iloc[0]['run_name']
+    best_run_data = df[df['run_name'] == best_run_name]
     
-    ax9.boxplot(width_groups, labels=width_labels)
-    ax9.set_xlabel('CNN Width')
-    ax9.set_ylabel('Validation Accuracy (%)')
-    ax9.set_title('Validation Accuracy by Width', fontsize=12, fontweight='bold')
-    ax9.grid(True, alpha=0.3)
-    ax9.tick_params(axis='x', rotation=45)
+    # Try to get confusion matrix from the final epoch
+    final_epoch = best_run_data['epoch'].max()
+    final_epoch_data = best_run_data[best_run_data['epoch'] == final_epoch]
     
-    # Panel 10: Box plot by depth (bottom center)
+    if len(final_epoch_data) > 0 and 'train_cm_str' in final_epoch_data.columns:
+        try:
+            # Parse the confusion matrix string
+            train_cm_str = final_epoch_data.iloc[0]['train_cm_str']
+            if train_cm_str and train_cm_str != 'nan':
+                # Parse the string format "[[a, b], [c, d]]"
+                import ast
+                train_cm = ast.literal_eval(train_cm_str)
+                train_cm = np.array(train_cm)
+                
+                # Create heatmap
+                sns.heatmap(train_cm, annot=True, fmt='d', cmap='Reds', ax=ax9,
+                           xticklabels=['E', 'I'], yticklabels=['E', 'I'])
+                ax9.set_title(f'Training Confusion Matrix\nBest Model (d{best_runs_df.iloc[0]["depth"]}_w{best_runs_df.iloc[0]["width"]})', 
+                             fontsize=10, fontweight='bold')
+                ax9.set_xlabel('Predicted')
+                ax9.set_ylabel('Actual')
+            else:
+                ax9.text(0.5, 0.5, 'No confusion matrix\ndata available', 
+                        transform=ax9.transAxes, ha='center', va='center',
+                        bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgray", alpha=0.8))
+                ax9.set_title('Training Confusion Matrix\n(Data Not Available)', fontsize=10, fontweight='bold')
+        except:
+            ax9.text(0.5, 0.5, 'Error parsing\nconfusion matrix', 
+                    transform=ax9.transAxes, ha='center', va='center',
+                    bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgray", alpha=0.8))
+            ax9.set_title('Training Confusion Matrix\n(Parse Error)', fontsize=10, fontweight='bold')
+    else:
+        ax9.text(0.5, 0.5, 'No confusion matrix\ndata available', 
+                transform=ax9.transAxes, ha='center', va='center',
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgray", alpha=0.8))
+        ax9.set_title('Training Confusion Matrix\n(Data Not Available)', fontsize=10, fontweight='bold')
+    
+    # Panel 10: Validation Confusion Matrix (bottom center)
     ax10 = plt.subplot(3, 4, 10)
     
-    depth_groups = []
-    depth_labels = []
-    for depth in sorted(final_data['cnn_depth'].unique()):
-        depth_data = final_data[final_data['cnn_depth'] == depth]
-        depth_groups.append(depth_data['val_acc'].values)
-        depth_labels.append(f'D{depth}')
+    if len(final_epoch_data) > 0 and 'val_cm_str' in final_epoch_data.columns:
+        try:
+            # Parse the confusion matrix string
+            val_cm_str = final_epoch_data.iloc[0]['val_cm_str']
+            if val_cm_str and val_cm_str != 'nan':
+                # Parse the string format "[[a, b], [c, d]]"
+                import ast
+                val_cm = ast.literal_eval(val_cm_str)
+                val_cm = np.array(val_cm)
+                
+                # Create heatmap
+                sns.heatmap(val_cm, annot=True, fmt='d', cmap='Blues', ax=ax10,
+                           xticklabels=['E', 'I'], yticklabels=['E', 'I'])
+                ax10.set_title(f'Validation Confusion Matrix\nBest Model (d{best_runs_df.iloc[0]["depth"]}_w{best_runs_df.iloc[0]["width"]})', 
+                              fontsize=10, fontweight='bold')
+                ax10.set_xlabel('Predicted')
+                ax10.set_ylabel('Actual')
+            else:
+                ax10.text(0.5, 0.5, 'No confusion matrix\ndata available', 
+                         transform=ax10.transAxes, ha='center', va='center',
+                         bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgray", alpha=0.8))
+                ax10.set_title('Validation Confusion Matrix\n(Data Not Available)', fontsize=10, fontweight='bold')
+        except:
+            ax10.text(0.5, 0.5, 'Error parsing\nconfusion matrix', 
+                     transform=ax10.transAxes, ha='center', va='center',
+                     bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgray", alpha=0.8))
+            ax10.set_title('Validation Confusion Matrix\n(Parse Error)', fontsize=10, fontweight='bold')
+    else:
+        ax10.text(0.5, 0.5, 'No confusion matrix\ndata available', 
+                 transform=ax10.transAxes, ha='center', va='center',
+                 bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgray", alpha=0.8))
+        ax10.set_title('Validation Confusion Matrix\n(Data Not Available)', fontsize=10, fontweight='bold')
     
-    ax10.boxplot(depth_groups, labels=depth_labels)
-    ax10.set_xlabel('CNN Depth')
-    ax10.set_ylabel('Validation Accuracy (%)')
-    ax10.set_title('Validation Accuracy by Depth', fontsize=12, fontweight='bold')
-    ax10.grid(True, alpha=0.3)
-    ax10.tick_params(axis='x', rotation=45)
-    
-    # Panel 11: Performance summary (bottom right)
+    # Panel 11: Confusion Matrix Statistics (bottom right)
     ax11 = plt.subplot(3, 4, 11)
     ax11.axis('off')
     
-    # Add performance summary
-    best_overall = final_data.loc[final_data['val_acc'].idxmax()]
-    min_overfitting = final_data.loc[final_data['overfitting_gap'].idxmin()]
+    # Calculate confusion matrix statistics for the best model
+    if len(final_epoch_data) > 0 and 'train_cm_str' in final_epoch_data.columns and 'val_cm_str' in final_epoch_data.columns:
+        try:
+            train_cm_str = final_epoch_data.iloc[0]['train_cm_str']
+            val_cm_str = final_epoch_data.iloc[0]['val_cm_str']
+            
+            if train_cm_str and val_cm_str and train_cm_str != 'nan' and val_cm_str != 'nan':
+                import ast
+                train_cm = np.array(ast.literal_eval(train_cm_str))
+                val_cm = np.array(ast.literal_eval(val_cm_str))
+                
+                # Calculate metrics
+                train_tp, train_fp, train_fn, train_tn = train_cm[0,0], train_cm[0,1], train_cm[1,0], train_cm[1,1]
+                val_tp, val_fp, val_fn, val_tn = val_cm[0,0], val_cm[0,1], val_cm[1,0], val_cm[1,1]
+                
+                train_precision = train_tp / (train_tp + train_fp) if (train_tp + train_fp) > 0 else 0
+                train_recall = train_tp / (train_tp + train_fn) if (train_tp + train_fn) > 0 else 0
+                train_f1 = 2 * (train_precision * train_recall) / (train_precision + train_recall) if (train_precision + train_recall) > 0 else 0
+                
+                val_precision = val_tp / (val_tp + val_fp) if (val_tp + val_fp) > 0 else 0
+                val_recall = val_tp / (val_tp + val_fn) if (val_tp + val_fn) > 0 else 0
+                val_f1 = 2 * (val_precision * val_recall) / (val_precision + val_recall) if (val_precision + val_recall) > 0 else 0
+                
+                cm_stats = f"""
+    CONFUSION MATRIX STATISTICS:
+    Best Model: d{best_runs_df.iloc[0]["depth"]}_w{best_runs_df.iloc[0]["width"]}
     
-    performance_summary = f"""
-    PERFORMANCE SUMMARY:
+    📊 Training Metrics:
+    • Precision: {train_precision:.3f}
+    • Recall: {train_recall:.3f}
+    • F1-Score: {train_f1:.3f}
     
-    🏆 Best Overall:
-    d{best_overall['cnn_depth']}_w{best_overall['cnn_width']}
-    {best_overall['val_acc']:.2f}% validation
+    📊 Validation Metrics:
+    • Precision: {val_precision:.3f}
+    • Recall: {val_recall:.3f}
+    • F1-Score: {val_f1:.3f}
     
-    ⚖️ Best Generalization:
-    d{min_overfitting['cnn_depth']}_w{min_overfitting['cnn_width']}
-    Gap: {min_overfitting['overfitting_gap']:.2f}%
+    📈 Raw Counts:
+    • Train TP: {train_tp}, FP: {train_fp}
+    • Train FN: {train_fn}, TN: {train_tn}
+    • Val TP: {val_tp}, FP: {val_fp}
+    • Val FN: {val_fn}, TN: {val_tn}
+    """
+            else:
+                cm_stats = """
+    CONFUSION MATRIX STATISTICS:
+    Best Model: d{best_runs_df.iloc[0]["depth"]}_w{best_runs_df.iloc[0]["width"]}
     
-    📊 Statistics:
-    • Mean Val Acc: {final_data['val_acc'].mean():.1f}%
-    • Std Val Acc: {final_data['val_acc'].std():.1f}%
-    • Correlation: {correlation:.3f}
+    📊 Training Metrics:
+    • Precision: [Data not available]
+    • Recall: [Data not available]
+    • F1-Score: [Data not available]
+    
+    📊 Validation Metrics:
+    • Precision: [Data not available]
+    • Recall: [Data not available]
+    • F1-Score: [Data not available]
+    
+    📈 Raw Counts:
+    • [Data not available]
+    """
+        except:
+            cm_stats = """
+    CONFUSION MATRIX STATISTICS:
+    Best Model: d{best_runs_df.iloc[0]["depth"]}_w{best_runs_df.iloc[0]["width"]}
+    
+    📊 Training Metrics:
+    • Precision: [Parse error]
+    • Recall: [Parse error]
+    • F1-Score: [Parse error]
+    
+    📊 Validation Metrics:
+    • Precision: [Parse error]
+    • Recall: [Parse error]
+    • F1-Score: [Parse error]
+    
+    📈 Raw Counts:
+    • [Parse error]
+    """
+    else:
+        cm_stats = """
+    CONFUSION MATRIX STATISTICS:
+    Best Model: d{best_runs_df.iloc[0]["depth"]}_w{best_runs_df.iloc[0]["width"]}
+    
+    📊 Training Metrics:
+    • Precision: [Data not available]
+    • Recall: [Data not available]
+    • F1-Score: [Data not available]
+    
+    📊 Validation Metrics:
+    • Precision: [Data not available]
+    • Recall: [Data not available]
+    • F1-Score: [Data not available]
+    
+    📈 Raw Counts:
+    • [Data not available]
     """
     
-    ax11.text(0.1, 0.9, performance_summary, transform=ax11.transAxes, fontsize=10,
+    ax11.text(0.1, 0.9, cm_stats, transform=ax11.transAxes, fontsize=9,
              verticalalignment='top', fontfamily='monospace',
              bbox=dict(boxstyle="round,pad=0.3", facecolor="lightblue", alpha=0.8))
     

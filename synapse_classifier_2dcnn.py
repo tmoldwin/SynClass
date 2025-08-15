@@ -27,11 +27,15 @@ import time
 warnings.filterwarnings("ignore")
 
 # ------------------------- configuration -------------------------
-BATCH_SIZE = 8            # Reduced batch size for memory optimization
-INPUT_XY = 128            # Reduced input size for memory optimization
+# Set PyTorch memory optimization
+import os
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
+
+BATCH_SIZE = 4            # Further reduced batch size for memory optimization
+INPUT_XY = 128            # Keep original input size to preserve image quality
 EPOCHS = 150              # More epochs for convergence
 LR = 5e-6                 # Optimal LR from sweep analysis (fixed)
-NUM_WORKERS = 2           # Reduced workers for memory optimization
+NUM_WORKERS = 1           # Further reduced workers for memory optimization
 RNG_SEED = 42
 DROPOUT_RATE = 0.3        # Optimal dropout from sweep analysis (fixed)
 WEIGHT_DECAY = 2e-3       # Optimal weight decay from sweep analysis (fixed)
@@ -73,22 +77,26 @@ if torch.cuda.is_available():
         print(f'GPU Memory: {gpu_memory:.1f} GB')
         print(f'GPU Memory Available: {gpu_memory_free:.1f} GB')
         
-        # More conservative memory optimization for deep models
+        # Very conservative memory optimization for deep models
         if gpu_memory >= 24:  # High-end GPU (RTX 4090, A100, etc.)
-            BATCH_SIZE = 16
-            INPUT_XY = 256
-            print(f'High-end GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
-        elif gpu_memory >= 12:  # Mid-range GPU (RTX 3080, etc.)
-            BATCH_SIZE = 12
+            BATCH_SIZE = 8
             INPUT_XY = 192
+            print(f'High-end GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
+        elif gpu_memory >= 16:  # High-mid GPU
+            BATCH_SIZE = 6
+            INPUT_XY = 160
+            print(f'High-mid GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
+        elif gpu_memory >= 12:  # Mid-range GPU (RTX 3080, etc.)
+            BATCH_SIZE = 4
+            INPUT_XY = 128
             print(f'Mid-range GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
         elif gpu_memory >= 8:  # Lower-end GPU
-            BATCH_SIZE = 8
-            INPUT_XY = 128
+            BATCH_SIZE = 2
+            INPUT_XY = 96
             print(f'Lower-end GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
         else:  # Very limited GPU memory
-            BATCH_SIZE = 4
-            INPUT_XY = 96
+            BATCH_SIZE = 1
+            INPUT_XY = 64
             print(f'Limited GPU memory, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
         
         # Optimize number of workers based on GPU
@@ -255,9 +263,26 @@ class CNN2DClassifier(nn.Module):
             self.conv_layers.append(conv)
             self.bn_layers.append(bn)
         
-        # Pooling
-        self.pool = nn.MaxPool2d(2, 2)
-        self.adaptive_pool = nn.AdaptiveAvgPool2d((1, 1))
+        # Calculate expected feature map size after all pooling operations
+        # Starting with INPUT_XY x INPUT_XY, each pooling reduces by factor of 2
+        expected_size = INPUT_XY // (2 ** cnn_depth)
+        
+        # Adjust pooling strategy based on expected size
+        if expected_size < 1:
+            # For very deep models, use adaptive pooling after fewer layers
+            self.pool = nn.MaxPool2d(2, 2, ceil_mode=True)
+            self.adaptive_pool = nn.AdaptiveAvgPool2d((1, 1))
+            self.pool_every_n_layers = max(1, cnn_depth // 8)  # Pool every N layers instead of every layer
+        elif expected_size < 4:
+            # For moderately deep models
+            self.pool = nn.MaxPool2d(2, 2, ceil_mode=True)
+            self.adaptive_pool = nn.AdaptiveAvgPool2d((1, 1))
+            self.pool_every_n_layers = 1  # Pool every layer
+        else:
+            # For shallow models
+            self.pool = nn.MaxPool2d(2, 2)
+            self.adaptive_pool = nn.AdaptiveAvgPool2d((1, 1))
+            self.pool_every_n_layers = 1  # Pool every layer
         
         # Final feature size is the last channel count
         final_features = channels[-1]
@@ -316,9 +341,19 @@ class CNN2DClassifier(nn.Module):
         # Convolutional layers with ReLU and batch norm
         for i in range(self.cnn_depth):
             x = F.relu(self.bn_layers[i](self.conv_layers[i](x)))
-            x = self.pool(x)
+            
+            # Apply pooling based on the adaptive strategy
+            if (i + 1) % self.pool_every_n_layers == 0:
+                x = self.pool(x)
+            
+            # Safety check: if feature maps become too small, apply adaptive pooling
+            if x.shape[2] <= 1 or x.shape[3] <= 1:
+                x = self.adaptive_pool(x)
+                break
         
-        x = self.adaptive_pool(x)
+        # Final adaptive pooling if not already applied
+        if x.shape[2] > 1 or x.shape[3] > 1:
+            x = self.adaptive_pool(x)
         
         # Flatten
         x = torch.flatten(x, 1)
@@ -458,11 +493,11 @@ def plot_epoch_progress(train_losses, train_accs, val_losses, val_accs, learning
         axes[1, 1].set_ylabel('Accuracy Difference (%)')
         axes[1, 1].grid(True, alpha=0.3)
     
-    # Training Confusion Matrix
-    if train_confusion_matrix is not None:
-        im1 = axes[1, 2].imshow(train_confusion_matrix, interpolation='nearest', cmap=plt.cm.Blues)
-        axes[1, 2].set_title('Training Confusion Matrix', fontweight='bold')
-        axes[1, 2].set_xlabel('Predicted')
+         # Training Confusion Matrix
+     if train_confusion_matrix is not None:
+         im1 = axes[1, 2].imshow(train_confusion_matrix, interpolation='nearest', cmap=plt.cm.Reds)
+         axes[1, 2].set_title('Training Confusion Matrix', fontweight='bold')
+         axes[1, 2].set_xlabel('Predicted')
         axes[1, 2].set_ylabel('Actual')
         axes[1, 2].set_xticks([0, 1])
         axes[1, 2].set_yticks([0, 1])

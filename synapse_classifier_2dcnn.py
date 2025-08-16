@@ -31,7 +31,7 @@ warnings.filterwarnings("ignore")
 import os
 os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 
-BATCH_SIZE = 4            # Further reduced batch size for memory optimization
+BATCH_SIZE = 8            # Increased for more stable learning
 INPUT_XY = 150            # Use original resolution - no unnecessary upscaling
 EPOCHS = 150              # Full 150 epochs - no early stopping
 LR = 3e-6                 # Slightly lower learning rate

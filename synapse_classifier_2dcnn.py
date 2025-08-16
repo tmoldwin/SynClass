@@ -18,6 +18,7 @@ from tqdm import tqdm
 import cv2
 import matplotlib.pyplot as plt
 import seaborn as sns
+from scipy.ndimage import zoom
 from constants import DATA_DIR, CSV_PATH, MODEL_SAVE_PATHS, setup_logging
 import datetime
 import glob
@@ -106,38 +107,43 @@ class SynapseDataset2D(Dataset):
         pre_mask = np.load(pre_mask_path)
         post_mask = np.load(post_mask_path)
         
-        # Create 2D representation by taking the middle slice or max projection
+        # Prepare 3D data - normalize Z dimension to fixed size
+        target_z = 25  # Fixed Z depth for all samples
+        
         if raw_data.ndim == 3:
-            # Take middle slice for 2D representation
-            z_middle = raw_data.shape[2] // 2
-            data_slice = raw_data[:, :, z_middle]
-            pre_slice = pre_mask[:, :, z_middle]
-            post_slice = post_mask[:, :, z_middle]
+            # Resize Z dimension to target_z using interpolation
+            current_z = raw_data.shape[2]
+            if current_z != target_z:
+                # Resize Z dimension using scipy
+                from scipy.ndimage import zoom
+                zoom_factor = target_z / current_z
+                raw_data = zoom(raw_data, (1, 1, zoom_factor), order=1)
+                pre_mask = zoom(pre_mask, (1, 1, zoom_factor), order=0)  # Nearest neighbor for masks
+                post_mask = zoom(post_mask, (1, 1, zoom_factor), order=0)
+            
+            # Stack as 3D input: (3, H, W, Z)
+            image = np.stack([raw_data, pre_mask, post_mask], axis=0)
         else:
-            # Already 2D
-            data_slice = raw_data
-            pre_slice = pre_mask
-            post_slice = post_mask
-        
-        # Resize to 256x256 for better performance
-        data_slice = cv2.resize(data_slice, (INPUT_XY, INPUT_XY), interpolation=cv2.INTER_AREA)
-        pre_slice = cv2.resize(pre_slice.astype(float), (INPUT_XY, INPUT_XY), interpolation=cv2.INTER_NEAREST)
-        post_slice = cv2.resize(post_slice.astype(float), (INPUT_XY, INPUT_XY), interpolation=cv2.INTER_NEAREST)
+            # Already 2D - expand to 3D
+            image = np.stack([raw_data, pre_mask, post_mask], axis=0)
+            image = np.expand_dims(image, axis=-1)  # Add Z dimension
+            image = np.repeat(image, target_z, axis=-1)  # Repeat to target_z
 
-        # Augmentation
+        # Augmentation for 3D data
         if self.is_training:
-            data_slice, pre_slice, post_slice = self._augment(data_slice, pre_slice, post_slice)
+            image = self._augment_3d(image)
 
-        # Percentile normalisation
-        if data_slice.max() > data_slice.min():
-            non_zero_mask = data_slice > 0
+        # Percentile normalisation for 3D data (only on data channel, not masks)
+        data_channel = image[0]  # Raw data channel
+        if data_channel.max() > data_channel.min():
+            non_zero_mask = data_channel > 0
             if np.any(non_zero_mask):
-                p5, p95 = np.percentile(data_slice[non_zero_mask], [5, 95])
-                data_slice = np.clip((data_slice - p5) / (p95 - p5 + 1e-8), 0, 1)
+                p5, p95 = np.percentile(data_channel[non_zero_mask], [5, 95])
+                data_channel = np.clip((data_channel - p5) / (p95 - p5 + 1e-8), 0, 1)
             else: # All zero
-                data_slice = np.zeros((INPUT_XY, INPUT_XY))
+                data_channel = np.zeros((INPUT_XY, INPUT_XY, target_z))
         
-        image = np.stack([data_slice, pre_slice, post_slice], axis=0)
+        image[0] = data_channel  # Update data channel
         image = torch.from_numpy(image.astype(np.float32))
 
         # Label: 0 for E, 1 for I
@@ -145,43 +151,43 @@ class SynapseDataset2D(Dataset):
         
         return image, label, synapse_id
     
-    def _augment(self, data_slice, pre_slice, post_slice):
-        """Apply data augmentation"""
-        # Random rotation
+    def _augment_3d(self, image):
+        """Apply 3D data augmentation"""
+        # image shape: (3, H, W, Z)
+        
+        # Random rotation (apply to all Z slices)
         if random.random() > 0.5:
             angle = random.uniform(-30, 30)
-            center = (INPUT_XY // 2, INPUT_XY // 2)  # Center of image
+            center = (INPUT_XY // 2, INPUT_XY // 2)
             M = cv2.getRotationMatrix2D(center, angle, 1.0)
-            data_slice = cv2.warpAffine(data_slice, M, (INPUT_XY, INPUT_XY))
-            # Ensure masks are float32 and handle any NaN/inf values
-            pre_slice = cv2.warpAffine(pre_slice.astype(np.float32), M, (INPUT_XY, INPUT_XY))
-            post_slice = cv2.warpAffine(post_slice.astype(np.float32), M, (INPUT_XY, INPUT_XY))
+            
+            for z in range(image.shape[3]):
+                image[0, :, :, z] = cv2.warpAffine(image[0, :, :, z], M, (INPUT_XY, INPUT_XY))
+                image[1, :, :, z] = cv2.warpAffine(image[1, :, :, z].astype(np.float32), M, (INPUT_XY, INPUT_XY))
+                image[2, :, :, z] = cv2.warpAffine(image[2, :, :, z].astype(np.float32), M, (INPUT_XY, INPUT_XY))
         
         # Random horizontal flip
         if random.random() > 0.5:
-            data_slice = cv2.flip(data_slice, 1)
-            pre_slice = cv2.flip(pre_slice, 1)
-            post_slice = cv2.flip(post_slice, 1)
+            image = np.flip(image, axis=2)  # Flip W dimension
         
         # Random vertical flip
         if random.random() > 0.5:
-            data_slice = cv2.flip(data_slice, 0)
-            pre_slice = cv2.flip(pre_slice, 0)
-            post_slice = cv2.flip(post_slice, 0)
+            image = np.flip(image, axis=1)  # Flip H dimension
         
-        # Random brightness/contrast adjustment
+        # Random brightness/contrast adjustment (only on data channel)
         if random.random() > 0.5:
             alpha = random.uniform(0.8, 1.2)  # Contrast
             beta = random.uniform(-0.1, 0.1)  # Brightness
-            data_slice = cv2.convertScaleAbs(data_slice, alpha=alpha, beta=beta)
-            data_slice = np.clip(data_slice, 0, 1)
+            for z in range(image.shape[3]):
+                image[0, :, :, z] = cv2.convertScaleAbs(image[0, :, :, z], alpha=alpha, beta=beta)
+                image[0, :, :, z] = np.clip(image[0, :, :, z], 0, 1)
         
-        # Random noise
+        # Random noise (only on data channel)
         if random.random() > 0.7:
-            noise = np.random.normal(0, 0.02, data_slice.shape)
-            data_slice = np.clip(data_slice + noise, 0, 1)
+            noise = np.random.normal(0, 0.02, image[0].shape)
+            image[0] = np.clip(image[0] + noise, 0, 1)
         
-        return data_slice, pre_slice, post_slice
+        return image
 
 # ------------------------- focal loss --------------------------
 class FocalLoss(nn.Module):
@@ -203,9 +209,9 @@ class FocalLoss(nn.Module):
         else:
             return focal_loss
 
-# ------------------------- 2D CNN MODEL --------------------------
-class CNN2DClassifier(nn.Module):
-    """2D CNN classifier with attention mechanism and enhanced classifier head"""
+# ------------------------- 3D CNN MODEL --------------------------
+class CNN3DClassifier(nn.Module):
+    """3D CNN classifier for full Z-stack data"""
     def __init__(self, num_classes=2, dropout_rate=0.3, cnn_depth=5, cnn_width=64):
         super().__init__()
         
@@ -213,48 +219,29 @@ class CNN2DClassifier(nn.Module):
         self.cnn_width = cnn_width
         
         # Calculate channel progression based on width multiplier
-        # For very deep models, cap the maximum channels to prevent memory issues
-        channels = [3]  # Start with 3 input channels
+        channels = [3]  # Start with 3 input channels (data, pre_mask, post_mask)
         for i in range(cnn_depth):
-            # Cap maximum channels to prevent memory overflow
-            max_channels = min(cnn_width * (2 ** i), 1024)  # Cap at 1024 channels
+            max_channels = min(cnn_width * (2 ** i), 512)  # Cap at 512 for 3D
             channels.append(max_channels)
         
-        # Create convolutional layers dynamically
+        # Create 3D convolutional layers
         self.conv_layers = nn.ModuleList()
         self.bn_layers = nn.ModuleList()
         
         for i in range(cnn_depth):
-            conv = nn.Conv2d(channels[i], channels[i+1], kernel_size=3, padding=1)
-            bn = nn.BatchNorm2d(channels[i+1])
+            conv = nn.Conv3d(channels[i], channels[i+1], kernel_size=3, padding=1)
+            bn = nn.BatchNorm3d(channels[i+1])
             self.conv_layers.append(conv)
             self.bn_layers.append(bn)
         
-        # Calculate expected feature map size after all pooling operations
-        # Starting with INPUT_XY x INPUT_XY, each pooling reduces by factor of 2
-        expected_size = INPUT_XY // (2 ** cnn_depth)
+        # 3D pooling
+        self.pool = nn.MaxPool3d(2, 2)
+        self.adaptive_pool = nn.AdaptiveAvgPool3d((1, 1, 1))
         
-        # Adjust pooling strategy based on expected size
-        if expected_size < 1:
-            # For very deep models, use adaptive pooling after fewer layers
-            self.pool = nn.MaxPool2d(2, 2, ceil_mode=True)
-            self.adaptive_pool = nn.AdaptiveAvgPool2d((1, 1))
-            self.pool_every_n_layers = max(1, cnn_depth // 8)  # Pool every N layers instead of every layer
-        elif expected_size < 4:
-            # For moderately deep models
-            self.pool = nn.MaxPool2d(2, 2, ceil_mode=True)
-            self.adaptive_pool = nn.AdaptiveAvgPool2d((1, 1))
-            self.pool_every_n_layers = 1  # Pool every layer
-        else:
-            # For shallow models
-            self.pool = nn.MaxPool2d(2, 2)
-            self.adaptive_pool = nn.AdaptiveAvgPool2d((1, 1))
-            self.pool_every_n_layers = 1  # Pool every layer
-        
-        # Final feature size is the last channel count
+        # Final feature size
         final_features = channels[-1]
         
-        # ATTENTION MECHANISM for better feature focus
+        # Attention mechanism
         self.attention = nn.Sequential(
             nn.Linear(final_features, final_features // 4),
             nn.ReLU(inplace=True),
@@ -262,10 +249,8 @@ class CNN2DClassifier(nn.Module):
             nn.Sigmoid()
         )
         
-        # ENHANCED CLASSIFIER HEAD (similar to ResNet version)
+        # Classifier head
         classifier_layers = []
-        
-        # First layer: final_features -> final_features//2
         classifier_layers.extend([
             nn.Linear(final_features, final_features // 2),
             nn.BatchNorm1d(final_features // 2),
@@ -273,7 +258,6 @@ class CNN2DClassifier(nn.Module):
             nn.Dropout(dropout_rate)
         ])
         
-        # Second layer: final_features//2 -> final_features//4
         classifier_layers.extend([
             nn.Linear(final_features // 2, final_features // 4),
             nn.BatchNorm1d(final_features // 4),
@@ -281,7 +265,6 @@ class CNN2DClassifier(nn.Module):
             nn.Dropout(dropout_rate)
         ])
         
-        # Third layer: final_features//4 -> final_features//8
         classifier_layers.extend([
             nn.Linear(final_features // 4, final_features // 8),
             nn.BatchNorm1d(final_features // 8),
@@ -289,43 +272,34 @@ class CNN2DClassifier(nn.Module):
             nn.Dropout(dropout_rate * 0.5)
         ])
         
-        # Fourth layer: final_features//8 -> final_features//16
-        classifier_layers.extend([
-            nn.Linear(final_features // 8, final_features // 16),
-            nn.BatchNorm1d(final_features // 16),
-            nn.ReLU(inplace=True),
-            nn.Dropout(dropout_rate * 0.25)
-        ])
-        
-        # Final layer: final_features//16 -> num_classes
-        classifier_layers.append(nn.Linear(final_features // 16, num_classes))
+        classifier_layers.append(nn.Linear(final_features // 8, num_classes))
         
         self.classifier = nn.Sequential(*classifier_layers)
         
     def forward(self, x):
-        # x shape: [batch, 3, H, W]
+        # x shape: [batch, 3, H, W, Z]
         
-        # Convolutional layers with ReLU and batch norm
+        # 3D convolutional layers
         for i in range(self.cnn_depth):
             x = F.relu(self.bn_layers[i](self.conv_layers[i](x)))
             
-            # Apply pooling based on the adaptive strategy
-            if (i + 1) % self.pool_every_n_layers == 0:
+            # Apply pooling every 2 layers to prevent too much reduction
+            if (i + 1) % 2 == 0:
                 x = self.pool(x)
             
-            # Safety check: if feature maps become too small, apply adaptive pooling
-            if x.shape[2] <= 1 or x.shape[3] <= 1:
+            # Safety check for small feature maps
+            if x.shape[2] <= 2 or x.shape[3] <= 2 or x.shape[4] <= 2:
                 x = self.adaptive_pool(x)
                 break
         
-        # Final adaptive pooling if not already applied
-        if x.shape[2] > 1 or x.shape[3] > 1:
+        # Final adaptive pooling if needed
+        if x.shape[2] > 1 or x.shape[3] > 1 or x.shape[4] > 1:
             x = self.adaptive_pool(x)
         
         # Flatten
         x = torch.flatten(x, 1)
         
-        # Apply attention mechanism
+        # Attention
         attention_weights = self.attention(x)
         attended_features = x * attention_weights
         
@@ -868,9 +842,9 @@ def main():
     print(f"Train samples: {len(train_dataset)}")
     print(f"Test samples: {len(test_dataset)}")
     
-    # Initialize model
-    print("Initializing model...")
-    model = CNN2DClassifier(num_classes=2, dropout_rate=DROPOUT_RATE, 
+    # Initialize 3D model
+    print("Initializing 3D CNN model...")
+    model = CNN3DClassifier(num_classes=2, dropout_rate=DROPOUT_RATE, 
                            cnn_depth=CNN_DEPTH, cnn_width=CNN_WIDTH).to(device)
     
     # Enable gradient checkpointing for memory optimization on deep models

@@ -33,11 +33,11 @@ os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 
 BATCH_SIZE = 4            # Further reduced batch size for memory optimization
 INPUT_XY = 150            # Use original resolution - no unnecessary upscaling
-EPOCHS = 100              # More epochs for convergence
-LR = 5e-6                 # 
+EPOCHS = 150              # Full 150 epochs - no early stopping
+LR = 3e-6                 # Slightly lower learning rate
 NUM_WORKERS = 1           # Further reduced workers for memory optimization
 RNG_SEED = 42
-DROPOUT_RATE = 0.3        # Optimal dropout from sweep analysis (fixed)
+DROPOUT_RATE = 0.2        # Lower dropout rate
 WEIGHT_DECAY = 2e-3       # Optimal weight decay from sweep analysis (fixed)
 LABEL_SMOOTHING = 0.1     # Label smoothing instead of high dropout
 USE_FOCAL_LOSS = True     # Optimal loss function from sweep analysis (fixed)
@@ -693,11 +693,7 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
     best_test_acc = 0.0
     best_model_path = MODEL_SAVE_PATHS.get('2dcnn', 'saved_models/best_synapse_model_2dcnn.pth')
     
-    # Early stopping parameters
-    patience = 15  # Number of epochs to wait for improvement
-    min_delta = 0.1  # Minimum improvement required
-    patience_counter = 0
-    best_val_acc = 0.0
+    # No early stopping - run full 150 epochs
     
     for epoch in range(num_epochs):
         # Training phase
@@ -830,21 +826,7 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
             torch.save(model.state_dict(), best_model_path)
             print(f'New best model saved! Test accuracy: {test_acc:.2f}%')
         
-        # Early stopping logic
-        if test_acc > best_val_acc + min_delta:
-            best_val_acc = test_acc
-            patience_counter = 0
-            print(f'Validation accuracy improved to {test_acc:.2f}% - resetting patience counter')
-        else:
-            patience_counter += 1
-            print(f'No improvement for {patience_counter} epochs (patience: {patience})')
-        
-        # Check for early stopping
-        if patience_counter >= patience:
-            print(f'\nEarly stopping triggered after {epoch+1} epochs!')
-            print(f'Best validation accuracy: {best_val_acc:.2f}%')
-            print(f'No improvement for {patience} epochs')
-            break
+        # No early stopping - continue for full 150 epochs
         
         # Update learning rate
         if scheduler is not None:

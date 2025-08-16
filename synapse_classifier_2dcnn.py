@@ -66,44 +66,13 @@ torch.manual_seed(RNG_SEED)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Using device: {device}')
 
-# GPU optimization based on hardware
+# GPU info (no optimization needed with 150x150 images)
 if torch.cuda.is_available():
         gpu_name = torch.cuda.get_device_name(0)
         gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3
-        gpu_memory_available = torch.cuda.memory_allocated(0) / 1024**3
-        gpu_memory_free = gpu_memory - gpu_memory_available
-        
         print(f'GPU: {gpu_name}')
         print(f'GPU Memory: {gpu_memory:.1f} GB')
-        print(f'GPU Memory Available: {gpu_memory_free:.1f} GB')
-        
-        # Memory optimization for deep models - keep original 150x150 resolution
-        if gpu_memory >= 24:  # High-end GPU (RTX 4090, A100, etc.)
-            BATCH_SIZE = 8
-            print(f'High-end GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
-        elif gpu_memory >= 16:  # High-mid GPU
-            BATCH_SIZE = 6
-            print(f'High-mid GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
-        elif gpu_memory >= 12:  # Mid-range GPU (RTX 3080, etc.)
-            BATCH_SIZE = 4
-            print(f'Mid-range GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
-        elif gpu_memory >= 8:  # Lower-end GPU
-            BATCH_SIZE = 2
-            print(f'Lower-end GPU detected, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
-        else:  # Very limited GPU memory
-            BATCH_SIZE = 1
-            print(f'Limited GPU memory, using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
-        
-        # Optimize number of workers based on GPU
-        if 'A100' in gpu_name or 'H100' in gpu_name:
-            NUM_WORKERS = 4
-            print(f'High-end GPU detected, using {NUM_WORKERS} workers')
-        elif 'RTX' in gpu_name or 'V100' in gpu_name:
-            NUM_WORKERS = 2
-            print(f'Mid-range GPU detected, using {NUM_WORKERS} workers')
-        else:
-            NUM_WORKERS = 1
-            print(f'Using {NUM_WORKERS} workers')
+        print(f'Using batch size: {BATCH_SIZE}, input size: {INPUT_XY}')
 
 # ------------------------- dataset -------------------------
 class SynapseDataset2D(Dataset):

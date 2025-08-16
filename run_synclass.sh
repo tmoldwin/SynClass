@@ -45,7 +45,7 @@ for CNN_DEPTH in "${CNN_DEPTHS[@]}"; do
         
         # Construct the python command to be executed by SLURM
         # Note: The path to the script is now relative, assuming submission from project root
-        PYTHON_CMD="python synapse_classifier_2dcnn.py \
+        PYTHON_CMD="python -W ignore synapse_classifier_2dcnn.py \
           --cnn_depth ${CNN_DEPTH} \
           --cnn_width ${CNN_WIDTH} \
           --epochs 150 \

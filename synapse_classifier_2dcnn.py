@@ -152,19 +152,8 @@ class SynapseDataset2D(Dataset):
         return image, label, synapse_id
     
     def _augment_3d(self, image):
-        """Apply 3D data augmentation"""
+        """Apply 3D data augmentation (simplified to avoid OpenCV issues)"""
         # image shape: (3, H, W, Z)
-        
-        # Random rotation (apply to all Z slices)
-        if random.random() > 0.5:
-            angle = random.uniform(-30, 30)
-            center = (INPUT_XY // 2, INPUT_XY // 2)
-            M = cv2.getRotationMatrix2D(center, angle, 1.0)
-            
-            for z in range(image.shape[3]):
-                image[0, :, :, z] = cv2.warpAffine(image[0, :, :, z], M, (INPUT_XY, INPUT_XY))
-                image[1, :, :, z] = cv2.warpAffine(image[1, :, :, z].astype(np.float32), M, (INPUT_XY, INPUT_XY))
-                image[2, :, :, z] = cv2.warpAffine(image[2, :, :, z].astype(np.float32), M, (INPUT_XY, INPUT_XY))
         
         # Random horizontal flip
         if random.random() > 0.5:
@@ -178,9 +167,8 @@ class SynapseDataset2D(Dataset):
         if random.random() > 0.5:
             alpha = random.uniform(0.8, 1.2)  # Contrast
             beta = random.uniform(-0.1, 0.1)  # Brightness
-            for z in range(image.shape[3]):
-                image[0, :, :, z] = cv2.convertScaleAbs(image[0, :, :, z], alpha=alpha, beta=beta)
-                image[0, :, :, z] = np.clip(image[0, :, :, z], 0, 1)
+            image[0] = alpha * image[0] + beta
+            image[0] = np.clip(image[0], 0, 1)
         
         # Random noise (only on data channel)
         if random.random() > 0.7:

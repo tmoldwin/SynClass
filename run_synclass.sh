@@ -48,7 +48,7 @@ for CNN_DEPTH in "${CNN_DEPTHS[@]}"; do
         PYTHON_CMD="python synapse_classifier_2dcnn.py \
           --cnn_depth ${CNN_DEPTH} \
           --cnn_width ${CNN_WIDTH} \
-          --epochs 50 \
+          --epochs 150 \
           --run_name ${RUN_NAME}"
 
         # Use sbatch with --wrap to submit the command as a job

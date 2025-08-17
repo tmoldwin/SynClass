@@ -248,6 +248,31 @@ class FocalLoss(nn.Module):
         else:
             return focal_loss
 
+# ------------------------- enhanced focal loss --------------------------
+class EnhancedFocalLoss(nn.Module):
+    """Enhanced focal loss with class-specific gamma for E/I balance"""
+    def __init__(self, alpha=1.0, gamma_e=2.0, gamma_i=3.0, label_smoothing=0.1):
+        super().__init__()
+        self.alpha = alpha
+        self.gamma_e = gamma_e  # Lower gamma for E class (easier)
+        self.gamma_i = gamma_i  # Higher gamma for I class (harder)
+        self.label_smoothing = label_smoothing
+        
+    def forward(self, inputs, targets):
+        # Standard cross-entropy loss
+        ce_loss = F.cross_entropy(inputs, targets, label_smoothing=self.label_smoothing, reduction='none')
+        
+        # Calculate pt (probability of correct class)
+        pt = torch.exp(-ce_loss)
+        
+        # Apply different gamma for E vs I classes
+        gamma = torch.where(targets == 0, self.gamma_e, self.gamma_i)  # E=0, I=1
+        
+        # Focal loss with class-specific gamma
+        focal_loss = self.alpha * (1 - pt) ** gamma * ce_loss
+        
+        return focal_loss.mean()
+
 # ------------------------- CONFIGURABLE RESNET MODEL --------------------------
 class ResNetClassifier(nn.Module):
     """Configurable ResNet model with proper depth/width parameters"""
@@ -588,22 +613,20 @@ def main():
         print('Sample batch labels:', y.tolist())
         break
 
-    # ENHANCED CLASS BALANCING - Fix E/I bias
+    # GAP PENALTY APPROACH - Directly penalize E/I performance gap
     labels_train = [1 if map_type[int(f.split('_')[0])] == 'I' else 0 for f in train_f]
     
-    # Calculate class distribution
+    # Calculate class distribution (should be balanced)
     e_count = labels_train.count(0)
     i_count = labels_train.count(1)
     total_count = len(labels_train)
     
     print(f'Class distribution - E: {e_count}, I: {i_count}, Total: {total_count}')
-    print(f'E/I ratio: {e_count/i_count:.3f}:1')
+    print(f'E/I ratio: {e_count/i_count:.3f}:1 (should be ~1.0 for balanced dataset)')
     
-    # Use sklearn's compute_class_weight for proper balanced weights
-    cls_w = compute_class_weight('balanced', classes=np.array([0,1]), y=labels_train)
-    cls_w = torch.tensor(cls_w, dtype=torch.float32, device=device)
-    print(f'Balanced class weights - E: {cls_w[0]:.3f}, I: {cls_w[1]:.3f}')
-    print(f'Weight ratio (I/E): {cls_w[1]/cls_w[0]:.3f}')
+    # Use standard balanced sampling since dataset is already balanced
+    train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=True, persistent_workers=True)
+    val_loader   = DataLoader(val_ds,   batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=True, persistent_workers=True)
 
     model = ResNetClassifier(dropout_rate=DROPOUT_RATE, resnet_depth=RESNET_DEPTH, classifier_width=CLASSIFIER_WIDTH).to(device)
     save_path = os.path.join(SWEEP_DIR, 'best_model.pth')
@@ -631,13 +654,13 @@ def main():
         print('Install torchinfo for a model summary (pip install torchinfo)')
 
     if args.use_focal_loss:
-        # Enhanced Focal Loss with stronger class balancing
-        criterion = FocalLoss(alpha=cls_w, gamma=2.5)  # Higher gamma for harder examples
-        logger.info("Using Enhanced FocalLoss with stronger class balancing.")
+        # Enhanced Focal Loss with class-specific gamma
+        criterion = EnhancedFocalLoss(alpha=1.0, gamma_e=2.0, gamma_i=3.0, label_smoothing=LABEL_SMOOTHING)
+        logger.info("Using Enhanced Focal Loss with higher gamma for I-class (harder examples).")
     else:
-        # Enhanced CrossEntropyLoss with stronger I-class focus
-        criterion = nn.CrossEntropyLoss(weight=cls_w, label_smoothing=LABEL_SMOOTHING)
-        logger.info("Using Enhanced CrossEntropyLoss with class balancing.")
+        # Standard CrossEntropyLoss with label smoothing
+        criterion = nn.CrossEntropyLoss(label_smoothing=LABEL_SMOOTHING)
+        logger.info("Using CrossEntropyLoss with label smoothing.")
         
     # ENHANCED OPTIMIZER (AdamW as recommended)
     optimizer = optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)

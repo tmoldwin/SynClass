@@ -608,7 +608,8 @@ def main():
     # Print model summary
     try:
         from torchinfo import summary
-        print(summary(model, input_size=(BATCH_SIZE, 3, INPUT_XY, INPUT_XY)))
+        # Removed torchinfo summary due to ResNet complexity causing crashes
+        print("Model summary disabled for ResNet (too complex for torchinfo)")
     except ImportError:
         print('Install torchinfo for a model summary (pip install torchinfo)')
 

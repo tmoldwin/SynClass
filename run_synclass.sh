@@ -13,7 +13,7 @@ echo "---"
 
 # --- Architecture hyperparameters for ResNet sweep ---
 RESNET_DEPTHS=(50 101 152)            # 3 deepest ResNet variants
-CLASSIFIER_WIDTHS=(64 128)            # 2 widest classifier widths
+CLASSIFIER_WIDTHS=(64 128 256)        # 3 widest classifier widths
 
 # --- SLURM Configuration ---
 PARTITION="ss.gpu" # Set to "ss.gpu" to automatically request a GPU

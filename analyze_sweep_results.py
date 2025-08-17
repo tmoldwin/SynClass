@@ -190,8 +190,8 @@ def create_detailed_plots(best_results, analysis_dir, df):
         run_name = row['run_name']
         run_data = df[df['run_name'] == run_name].sort_values('epoch')
         
-        ax.plot(run_data['epoch'], run_data['train_acc'], 'b-', label='Train', alpha=0.7, linewidth=2)
-        ax.plot(run_data['epoch'], run_data['val_acc'], 'r-', label='Val', alpha=0.7, linewidth=2)
+        ax.plot(run_data['epoch'], run_data['train_acc'], 'orange', label='Train', alpha=0.7, linewidth=2)
+        ax.plot(run_data['epoch'], run_data['val_acc'], 'purple', label='Val', alpha=0.7, linewidth=2)
         ax.set_title(f'{run_name}\nBest: {row["val_acc"]:.2f}%')
         ax.set_xlabel('Epoch')
         ax.set_ylabel('Accuracy (%)')

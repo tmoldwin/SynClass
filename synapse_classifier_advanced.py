@@ -661,8 +661,8 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     
     # Plot 1: Training and validation loss
     ax1 = plt.subplot(3, 2, 1)
-    ax1.plot(epochs, train_losses, 'b-', label='Training Loss', linewidth=2, alpha=0.8)
-    ax1.plot(epochs, val_losses, 'r-', label='Validation Loss', linewidth=2, alpha=0.8)
+    ax1.plot(epochs, train_losses, 'orange', label='Training Loss', linewidth=2, alpha=0.8)
+    ax1.plot(epochs, val_losses, 'purple', label='Validation Loss', linewidth=2, alpha=0.8)
     ax1.set_title('Training and Validation Loss', fontsize=14, fontweight='bold')
     ax1.set_xlabel('Epoch')
     ax1.set_ylabel('Loss')
@@ -671,8 +671,8 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     
     # Plot 2: Training and validation accuracy
     ax2 = plt.subplot(3, 2, 2)
-    ax2.plot(epochs, train_accs, 'b-', label='Training Accuracy', linewidth=2, alpha=0.8)
-    ax2.plot(epochs, val_accs, 'r-', label='Validation Accuracy', linewidth=2, alpha=0.8)
+    ax2.plot(epochs, train_accs, 'orange', label='Training Accuracy', linewidth=2, alpha=0.8)
+    ax2.plot(epochs, val_accs, 'purple', label='Validation Accuracy', linewidth=2, alpha=0.8)
     ax2.set_title('Training and Validation Accuracy', fontsize=14, fontweight='bold')
     ax2.set_xlabel('Epoch')
     ax2.set_ylabel('Accuracy (%)')
@@ -682,8 +682,8 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     # Plot 3: E and I class accuracies
     ax3 = plt.subplot(3, 2, 3)
     if len(e_accs) > 0:
-        ax3.plot(epochs, e_accs, 'g-', label='E (Excitatory) Accuracy', linewidth=2, alpha=0.8)
-        ax3.plot(epochs, i_accs, 'm-', label='I (Inhibitory) Accuracy', linewidth=2, alpha=0.8)
+        ax3.plot(epochs, e_accs, 'red', label='E (Excitatory) Accuracy', linewidth=2, alpha=0.8)
+        ax3.plot(epochs, i_accs, 'blue', label='I (Inhibitory) Accuracy', linewidth=2, alpha=0.8)
         ax3.set_title('Per-Class Validation Accuracy', fontsize=14, fontweight='bold')
         ax3.set_xlabel('Epoch')
         ax3.set_ylabel('Accuracy (%)')

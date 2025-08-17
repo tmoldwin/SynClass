@@ -300,8 +300,8 @@ def plot_training_curves(train_losses, test_losses, train_accuracies, test_accur
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
     
     # Loss curves
-    ax1.plot(train_losses, label='Train Loss')
-    ax1.plot(test_losses, label='Test Loss')
+    ax1.plot(train_losses, 'orange', label='Train Loss', linewidth=2)
+    ax1.plot(test_losses, 'purple', label='Test Loss', linewidth=2)
     ax1.set_title('Training and Test Loss')
     ax1.set_xlabel('Epoch')
     ax1.set_ylabel('Loss')
@@ -309,8 +309,8 @@ def plot_training_curves(train_losses, test_losses, train_accuracies, test_accur
     ax1.grid(True)
     
     # Accuracy curves
-    ax2.plot(train_accuracies, label='Train Accuracy')
-    ax2.plot(test_accuracies, label='Test Accuracy')
+    ax2.plot(train_accuracies, 'orange', label='Train Accuracy', linewidth=2)
+    ax2.plot(test_accuracies, 'purple', label='Test Accuracy', linewidth=2)
     ax2.set_title('Training and Test Accuracy')
     ax2.set_xlabel('Epoch')
     ax2.set_ylabel('Accuracy (%)')

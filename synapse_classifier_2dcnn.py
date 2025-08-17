@@ -376,8 +376,8 @@ def plot_epoch_progress(train_losses, train_accs, val_losses, val_accs, learning
     fig.suptitle(title, fontsize=14, fontweight='bold')
     
     # Loss curves
-    axes[0, 0].plot(epochs, train_losses, 'b-', label='Train Loss', linewidth=2)
-    axes[0, 0].plot(epochs, val_losses, 'r-', label='Val Loss', linewidth=2)
+    axes[0, 0].plot(epochs, train_losses, 'orange', label='Train Loss', linewidth=2)
+    axes[0, 0].plot(epochs, val_losses, 'purple', label='Val Loss', linewidth=2)
     axes[0, 0].set_title('Loss Curves', fontweight='bold')
     axes[0, 0].set_xlabel('Epoch')
     axes[0, 0].set_ylabel('Loss')
@@ -385,8 +385,8 @@ def plot_epoch_progress(train_losses, train_accs, val_losses, val_accs, learning
     axes[0, 0].grid(True, alpha=0.3)
     
     # Accuracy curves
-    axes[0, 1].plot(epochs, train_accs, 'b-', label='Train Acc', linewidth=2)
-    axes[0, 1].plot(epochs, val_accs, 'r-', label='Val Acc', linewidth=2)
+    axes[0, 1].plot(epochs, train_accs, 'orange', label='Train Acc', linewidth=2)
+    axes[0, 1].plot(epochs, val_accs, 'purple', label='Val Acc', linewidth=2)
     axes[0, 1].set_title('Accuracy Curves', fontweight='bold')
     axes[0, 1].set_xlabel('Epoch')
     axes[0, 1].set_ylabel('Accuracy (%)')
@@ -395,7 +395,7 @@ def plot_epoch_progress(train_losses, train_accs, val_losses, val_accs, learning
     
     # Learning rate curve
     if learning_rates:
-        axes[0, 2].plot(epochs, learning_rates, 'g-', linewidth=2)
+        axes[0, 2].plot(epochs, learning_rates, 'orange', linewidth=2)
         axes[0, 2].set_title('Learning Rate Schedule', fontweight='bold')
         axes[0, 2].set_xlabel('Epoch')
         axes[0, 2].set_ylabel('Learning Rate')
@@ -404,8 +404,8 @@ def plot_epoch_progress(train_losses, train_accs, val_losses, val_accs, learning
     
     # Class-specific accuracies
     if e_accs and i_accs:
-        axes[1, 0].plot(epochs, e_accs, 'b-', label='E Accuracy', linewidth=2)
-        axes[1, 0].plot(epochs, i_accs, 'r-', label='I Accuracy', linewidth=2)
+        axes[1, 0].plot(epochs, e_accs, 'red', label='E Accuracy', linewidth=2)
+        axes[1, 0].plot(epochs, i_accs, 'blue', label='I Accuracy', linewidth=2)
         axes[1, 0].set_title('Class-Specific Accuracies', fontweight='bold')
         axes[1, 0].set_xlabel('Epoch')
         axes[1, 0].set_ylabel('Accuracy (%)')

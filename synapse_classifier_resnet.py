@@ -34,9 +34,9 @@ EPOCHS = 150              # More epochs for convergence
 LR = 5e-6                 # Optimal LR from sweep analysis
 NUM_WORKERS = 4           # Increased workers for GPU
 RNG_SEED = 42
-DROPOUT_RATE = 0.3        # REDUCED from 0.8 (analysis showed over-regularization)
-WEIGHT_DECAY = 1e-3       # REDUCED from 0.002
-LABEL_SMOOTHING = 0.1     # Label smoothing instead of high dropout
+DROPOUT_RATE = 0.5        # INCREASED to combat overfitting
+WEIGHT_DECAY = 2e-3       # INCREASED for stronger regularization
+LABEL_SMOOTHING = 0.2     # Increased label smoothing for regularization
 
 # ------------------------- argparse ------------------------------
 parser = argparse.ArgumentParser(description='ResNet-based synapse classifier')
@@ -149,15 +149,20 @@ class Synapse2DDataset(Dataset):
             pre_slice = np.rot90(pre_slice, k)
             post_slice = np.rot90(post_slice, k)
         
-        # Random brightness/contrast adjustment
-        if random.random() > 0.5:
-            factor = random.uniform(0.8, 1.2)
+        # Random brightness/contrast adjustment (more aggressive)
+        if random.random() > 0.3:
+            factor = random.uniform(0.7, 1.3)
             data = np.clip(data * factor, 0, 1)
         
-        # Random noise addition
-        if random.random() > 0.3:
-            noise = np.random.normal(0, 0.02, data.shape)
+        # Random noise addition (more aggressive)
+        if random.random() > 0.2:
+            noise = np.random.normal(0, 0.03, data.shape)
             data = np.clip(data + noise, 0, 1)
+        
+        # Random blur for regularization
+        if random.random() > 0.7:
+            kernel_size = random.choice([3, 5])
+            data = cv2.GaussianBlur(data, (kernel_size, kernel_size), 0)
         
         return data.copy(), pre_slice.copy(), post_slice.copy()
 
@@ -583,10 +588,22 @@ def main():
         print('Sample batch labels:', y.tolist())
         break
 
+    # ENHANCED CLASS BALANCING - Fix E/I bias
     labels_train = [1 if map_type[int(f.split('_')[0])] == 'I' else 0 for f in train_f]
+    
+    # Calculate class distribution
+    e_count = labels_train.count(0)
+    i_count = labels_train.count(1)
+    total_count = len(labels_train)
+    
+    print(f'Class distribution - E: {e_count}, I: {i_count}, Total: {total_count}')
+    print(f'E/I ratio: {e_count/i_count:.3f}:1')
+    
+    # Use sklearn's compute_class_weight for proper balanced weights
     cls_w = compute_class_weight('balanced', classes=np.array([0,1]), y=labels_train)
     cls_w = torch.tensor(cls_w, dtype=torch.float32, device=device)
-    print('Class weights:', cls_w)
+    print(f'Balanced class weights - E: {cls_w[0]:.3f}, I: {cls_w[1]:.3f}')
+    print(f'Weight ratio (I/E): {cls_w[1]/cls_w[0]:.3f}')
 
     model = ResNetClassifier(dropout_rate=DROPOUT_RATE, resnet_depth=RESNET_DEPTH, classifier_width=CLASSIFIER_WIDTH).to(device)
     save_path = os.path.join(SWEEP_DIR, 'best_model.pth')
@@ -614,26 +631,28 @@ def main():
         print('Install torchinfo for a model summary (pip install torchinfo)')
 
     if args.use_focal_loss:
-        criterion = FocalLoss(alpha=cls_w[1], gamma=2)
-        logger.info("Using FocalLoss as the loss function.")
+        # Enhanced Focal Loss with stronger class balancing
+        criterion = FocalLoss(alpha=cls_w, gamma=2.5)  # Higher gamma for harder examples
+        logger.info("Using Enhanced FocalLoss with stronger class balancing.")
     else:
+        # Enhanced CrossEntropyLoss with stronger I-class focus
         criterion = nn.CrossEntropyLoss(weight=cls_w, label_smoothing=LABEL_SMOOTHING)
-        logger.info("Using CrossEntropyLoss as the loss function.")
+        logger.info("Using Enhanced CrossEntropyLoss with class balancing.")
         
     # ENHANCED OPTIMIZER (AdamW as recommended)
     optimizer = optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
     
-    # ENHANCED SCHEDULER (cosine annealing as recommended)
-    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(
-        optimizer, T_0=20, T_mult=2, eta_min=LR/100
+    # ENHANCED SCHEDULER with early stopping for overfitting
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode='max', factor=0.5, patience=5, min_lr=LR/1000
     )
 
     # ------------------------- training loop ------------------------
     best_acc = 0
     best_loss = float('inf')
-    patience = 15  # Increased patience for better convergence
+    patience = 10  # Reduced patience to stop overfitting earlier
     patience_counter = 0
-    min_epochs = 20  # Minimum training epochs
+    min_epochs = 30  # Minimum training epochs
     
     # Track learning curves
     train_losses = []
@@ -656,8 +675,8 @@ def main():
             loss = criterion(out, y)
             loss.backward()
             
-            # Gradient clipping
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            # Gradient clipping (more aggressive for overfitting)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.5)
             
             optimizer.step()
             tot_loss += loss.item() * x.size(0)
@@ -686,8 +705,8 @@ def main():
         val_loss = v_tot_loss / v_tot
         val_acc = 100*v_corr/v_tot
         
-        # Update learning rate with cosine annealing
-        scheduler.step()
+        # Update learning rate based on validation accuracy
+        scheduler.step(val_acc)
         
         # Track metrics
         train_losses.append(train_loss)

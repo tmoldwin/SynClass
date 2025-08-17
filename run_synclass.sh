@@ -11,9 +11,9 @@ echo "Pulling latest changes from git..."
 git pull
 echo "---"
 
-# --- Architecture hyperparameters for 2D CNN sweep ---
-CNN_DEPTHS=(7 8 9 10)                 # Focus on best previous: 7, plus 8,9,10
-CNN_WIDTHS=(32 64 128)                # Focus on best previous: 32, plus 64,128
+# --- Architecture hyperparameters for ResNet sweep ---
+RESNET_DEPTHS=(50 101 152)            # 3 deepest ResNet variants
+CLASSIFIER_WIDTHS=(64 128)            # 2 widest classifier widths
 
 # --- SLURM Configuration ---
 PARTITION="ss.gpu" # Set to "ss.gpu" to automatically request a GPU
@@ -34,20 +34,20 @@ MASTER_SWEEP_DIR="sweep_${SWEEP_TIMESTAMP}"
 mkdir -p "$MASTER_SWEEP_DIR"
 echo "Master sweep directory: $MASTER_SWEEP_DIR"
 
-for CNN_DEPTH in "${CNN_DEPTHS[@]}"; do
-  for CNN_WIDTH in "${CNN_WIDTHS[@]}"; do
+for RESNET_DEPTH in "${RESNET_DEPTHS[@]}"; do
+    for CLASSIFIER_WIDTH in "${CLASSIFIER_WIDTHS[@]}"; do
       
     # Define unique names for the job and its output files
-    RUN_NAME="d${CNN_DEPTH}_w${CNN_WIDTH}"
+    RUN_NAME="resnet_d${RESNET_DEPTH}_w${CLASSIFIER_WIDTH}"
         
         JOB_NAME="synclass_${RUN_NAME}"
         OUTPUT_LOG="${MASTER_SWEEP_DIR}/${RUN_NAME}.out"
         
         # Construct the python command to be executed by SLURM
         # Note: The path to the script is now relative, assuming submission from project root
-        PYTHON_CMD="python -W ignore synapse_classifier_2dcnn.py \
-          --cnn_depth ${CNN_DEPTH} \
-          --cnn_width ${CNN_WIDTH} \
+                  PYTHON_CMD="python -W ignore synapse_classifier_resnet.py \
+                      --resnet_depth ${RESNET_DEPTH} \
+            --classifier_width ${CLASSIFIER_WIDTH} \
           --epochs 150 \
           --run_name ${RUN_NAME}"
 

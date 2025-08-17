@@ -48,12 +48,16 @@ parser.add_argument('--weight_decay', type=float, default=WEIGHT_DECAY, help='We
 parser.add_argument('--label_smoothing', type=float, default=LABEL_SMOOTHING, help='Label smoothing for the loss function')
 parser.add_argument('--run_name', type=str, default=None, help='A unique name for the run for file naming')
 parser.add_argument('--use_focal_loss', action='store_true', help='Use FocalLoss instead of CrossEntropyLoss')
+parser.add_argument('--resnet_depth', type=int, default=152, help='ResNet depth: 18, 34, 50, 101, 152')
+parser.add_argument('--classifier_width', type=int, default=128, help='Classifier width multiplier')
 args = parser.parse_args()
 EPOCHS = args.epochs
 LR = args.lr
 DROPOUT_RATE = args.dropout_rate
 WEIGHT_DECAY = args.weight_decay
 LABEL_SMOOTHING = args.label_smoothing
+RESNET_DEPTH = args.resnet_depth
+CLASSIFIER_WIDTH = args.classifier_width
 
 # ------------------------- reproducibility ----------------------
 random.seed(RNG_SEED)
@@ -239,55 +243,86 @@ class FocalLoss(nn.Module):
         else:
             return focal_loss
 
-# ------------------------- BIG RESNET MODEL --------------------------
+# ------------------------- CONFIGURABLE RESNET MODEL --------------------------
 class ResNetClassifier(nn.Module):
-    """MUCH BIGGER model based on analysis findings - 50-100% bigger classifier with attention"""
-    def __init__(self, num_classes=2, pretrained=True, dropout_rate=0.3):
+    """Configurable ResNet model with proper depth/width parameters"""
+    def __init__(self, num_classes=2, pretrained=True, dropout_rate=0.3, resnet_depth=152, classifier_width=128):
         super().__init__()
-        # Load ResNet152 and remove the final layer
-        self.resnet = models.resnet152(pretrained=pretrained)
+        
+        # Choose ResNet variant based on depth
+        if resnet_depth == 18:
+            self.resnet = models.resnet18(pretrained=pretrained)
+            base_features = 512
+        elif resnet_depth == 34:
+            self.resnet = models.resnet34(pretrained=pretrained)
+            base_features = 512
+        elif resnet_depth == 50:
+            self.resnet = models.resnet50(pretrained=pretrained)
+            base_features = 2048
+        elif resnet_depth == 101:
+            self.resnet = models.resnet101(pretrained=pretrained)
+            base_features = 2048
+        elif resnet_depth == 152:
+            self.resnet = models.resnet152(pretrained=pretrained)
+            base_features = 2048
+        else:
+            raise ValueError(f"Unsupported ResNet depth: {resnet_depth}. Use 18, 34, 50, 101, or 152")
+        
+        # Remove the final layer
         num_ftrs = self.resnet.fc.in_features
-        # Remove the final fully connected layer
         self.resnet = nn.Sequential(*list(self.resnet.children())[:-1])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         
+        # Scale classifier features based on width parameter
+        scaled_features = min(base_features * classifier_width // 128, 4096)  # Cap at 4096
+        
         # ATTENTION MECHANISM for better feature focus
         self.attention = nn.Sequential(
-            nn.Linear(num_ftrs, num_ftrs // 4),
+            nn.Linear(num_ftrs, scaled_features // 4),
             nn.ReLU(inplace=True),
-            nn.Linear(num_ftrs // 4, num_ftrs),
+            nn.Linear(scaled_features // 4, scaled_features),
             nn.Sigmoid()
         )
         
-        # MUCH BIGGER CLASSIFIER (50-100% bigger as recommended)
-        self.classifier = nn.Sequential(
-            # First layer: 2048 -> 1024 (bigger than 128!)
-            nn.Linear(num_ftrs, 1024),
-            nn.BatchNorm1d(1024),
+        # CONFIGURABLE CLASSIFIER based on width
+        classifier_layers = []
+        
+        # First layer: num_ftrs -> scaled_features
+        classifier_layers.extend([
+            nn.Linear(num_ftrs, scaled_features),
+            nn.BatchNorm1d(scaled_features),
             nn.ReLU(inplace=True),
-            nn.Dropout(dropout_rate),
-            
-            # Second layer: 1024 -> 512
-            nn.Linear(1024, 512),
-            nn.BatchNorm1d(512),
+            nn.Dropout(dropout_rate)
+        ])
+        
+        # Second layer: scaled_features -> scaled_features//2
+        classifier_layers.extend([
+            nn.Linear(scaled_features, scaled_features // 2),
+            nn.BatchNorm1d(scaled_features // 2),
             nn.ReLU(inplace=True),
-            nn.Dropout(dropout_rate),
-            
-            # Third layer: 512 -> 256
-            nn.Linear(512, 256),
-            nn.BatchNorm1d(256),
+            nn.Dropout(dropout_rate)
+        ])
+        
+        # Third layer: scaled_features//2 -> scaled_features//4
+        classifier_layers.extend([
+            nn.Linear(scaled_features // 2, scaled_features // 4),
+            nn.BatchNorm1d(scaled_features // 4),
             nn.ReLU(inplace=True),
-            nn.Dropout(dropout_rate * 0.5),  # Reduced dropout
-            
-            # Fourth layer: 256 -> 128
-            nn.Linear(256, 128),
-            nn.BatchNorm1d(128),
+            nn.Dropout(dropout_rate * 0.5)
+        ])
+        
+        # Fourth layer: scaled_features//4 -> scaled_features//8
+        classifier_layers.extend([
+            nn.Linear(scaled_features // 4, scaled_features // 8),
+            nn.BatchNorm1d(scaled_features // 8),
             nn.ReLU(inplace=True),
-            nn.Dropout(dropout_rate * 0.25),  # Further reduced dropout
-            
-            # Final layer: 128 -> num_classes
-            nn.Linear(128, num_classes)
-        )
+            nn.Dropout(dropout_rate * 0.25)
+        ])
+        
+        # Final layer: scaled_features//8 -> num_classes
+        classifier_layers.append(nn.Linear(scaled_features // 8, num_classes))
+        
+        self.classifier = nn.Sequential(*classifier_layers)
         
     def forward(self, x):
         features = self.resnet(x)
@@ -553,7 +588,7 @@ def main():
     cls_w = torch.tensor(cls_w, dtype=torch.float32, device=device)
     print('Class weights:', cls_w)
 
-    model = ResNetClassifier(dropout_rate=DROPOUT_RATE).to(device)
+    model = ResNetClassifier(dropout_rate=DROPOUT_RATE, resnet_depth=RESNET_DEPTH, classifier_width=CLASSIFIER_WIDTH).to(device)
     save_path = os.path.join(SWEEP_DIR, 'best_model.pth')
     if args.resume and os.path.exists(save_path):
         logger.info(f'Resuming from checkpoint {save_path}')

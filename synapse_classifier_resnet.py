@@ -332,6 +332,15 @@ class ResNetClassifier(nn.Module):
         else:
             raise ValueError(f"Unsupported ResNet depth: {resnet_depth}. Use 18, 34, 50, 101, or 152")
         
+        # Modify first conv layer to accept 2 channels instead of 3
+        # ResNet models have conv1 as the first layer
+        old_conv = self.resnet.conv1
+        new_conv = nn.Conv2d(2, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        # Initialize with the first 2 channels of the original weights
+        with torch.no_grad():
+            new_conv.weight = old_conv.weight[:, :2, :, :]  # Just take the first 2 channels
+        self.resnet.conv1 = new_conv
+        
         # Remove the final layer
         num_ftrs = self.resnet.fc.in_features
         self.resnet = nn.Sequential(*list(self.resnet.children())[:-1])

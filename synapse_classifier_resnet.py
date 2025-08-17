@@ -34,7 +34,7 @@ EPOCHS = 150              # More epochs for convergence
 LR = 5e-6                 # Optimal LR from sweep analysis
 NUM_WORKERS = 4           # Increased workers for GPU
 RNG_SEED = 42
-DROPOUT_RATE = 0.3       # INCREASED to combat overfitting
+DROPOUT_RATE = 0.5       # INCREASED to combat overfitting
 WEIGHT_DECAY = 2e-3       # INCREASED for stronger regularization
 LABEL_SMOOTHING = 0.2     # Increased label smoothing for regularization
 

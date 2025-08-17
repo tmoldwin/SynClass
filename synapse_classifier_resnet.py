@@ -196,7 +196,7 @@ class Synapse2DDataset(Dataset):
         post_slice = post_mask[:, :, z_best]
         
         # Bounding box and crop (this part is less important with large resize, but can help focus)
-        synapse_pixels = np.where(combined_mask[:, :, z_mid])
+        synapse_pixels = np.where(combined_mask[:, :, z_best])
         if len(synapse_pixels[0]) > 0:
             min_h, max_h = synapse_pixels[0].min(), synapse_pixels[0].max()
             min_w, max_w = synapse_pixels[1].min(), synapse_pixels[1].max()

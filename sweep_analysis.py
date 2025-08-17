@@ -481,7 +481,6 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
                 
                 cm_stats = f"""
     CONFUSION MATRIX STATISTICS:
-    Best Model: d{best_runs_df.iloc[0]["depth"]}_w{best_runs_df.iloc[0]["width"]}
     
     📊 Training Metrics:
     • Precision: {train_precision:.3f}
@@ -502,7 +501,6 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
             else:
                 cm_stats = """
     CONFUSION MATRIX STATISTICS:
-    Best Model: d{best_runs_df.iloc[0]["depth"]}_w{best_runs_df.iloc[0]["width"]}
     
     📊 Training Metrics:
     • Precision: [Data not available]
@@ -520,7 +518,6 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
         except:
             cm_stats = """
     CONFUSION MATRIX STATISTICS:
-    Best Model: d{best_runs_df.iloc[0]["depth"]}_w{best_runs_df.iloc[0]["width"]}
     
     📊 Training Metrics:
     • Precision: [Parse error]
@@ -538,7 +535,6 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
     else:
         cm_stats = """
     CONFUSION MATRIX STATISTICS:
-    Best Model: d{best_runs_df.iloc[0]["depth"]}_w{best_runs_df.iloc[0]["width"]}
     
     📊 Training Metrics:
     • Precision: [Data not available]

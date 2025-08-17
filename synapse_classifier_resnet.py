@@ -235,16 +235,29 @@ class Synapse2DDataset(Dataset):
         # Augmentation
         data_slice, pre_slice, post_slice = self._augment(data_slice, pre_slice, post_slice)
 
-        # Percentile normalisation
-        if data_slice.max() > data_slice.min():
-            non_zero_mask = data_slice > 0
-            if np.any(non_zero_mask):
-                p5, p95 = np.percentile(data_slice[non_zero_mask], [5, 95])
-                data_slice = np.clip((data_slice - p5) / (p95 - p5 + 1e-8), 0, 1)
-            else: # All zero
-                data_slice = np.zeros((INPUT_XY, INPUT_XY))
+        # Create pre-masked and post-masked images
+        pre_masked_image = data_slice * pre_slice
+        post_masked_image = data_slice * post_slice
         
-        image = np.stack([data_slice, pre_slice, post_slice], axis=0)
+        # Percentile normalisation for each masked image
+        if pre_masked_image.max() > pre_masked_image.min():
+            non_zero_mask = pre_masked_image > 0
+            if np.any(non_zero_mask):
+                p5, p95 = np.percentile(pre_masked_image[non_zero_mask], [5, 95])
+                pre_masked_image = np.clip((pre_masked_image - p5) / (p95 - p5 + 1e-8), 0, 1)
+            else:
+                pre_masked_image = np.zeros((INPUT_XY, INPUT_XY))
+        
+        if post_masked_image.max() > post_masked_image.min():
+            non_zero_mask = post_masked_image > 0
+            if np.any(non_zero_mask):
+                p5, p95 = np.percentile(post_masked_image[non_zero_mask], [5, 95])
+                post_masked_image = np.clip((post_masked_image - p5) / (p95 - p5 + 1e-8), 0, 1)
+            else:
+                post_masked_image = np.zeros((INPUT_XY, INPUT_XY))
+        
+        # Stack as 2-channel input: [pre_masked, post_masked]
+        image = np.stack([pre_masked_image, post_masked_image], axis=0)
         image = torch.from_numpy(image.astype(np.float32))
 
         return image, label

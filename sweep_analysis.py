@@ -59,6 +59,14 @@ def load_and_prepare_data(csv_file):
     df['cnn_depth'] = [dw[0] for dw in depth_width]
     df['cnn_width'] = [dw[1] for dw in depth_width]
     
+    # Add E/I performance analysis if columns exist
+    if 'val_e_acc' in df.columns and 'val_i_acc' in df.columns:
+        df['e_i_gap'] = df['val_e_acc'] - df['val_i_acc']
+        print(f"E/I performance gap range: {df['e_i_gap'].min():.2f}% to {df['e_i_gap'].max():.2f}%")
+        print(f"Average E/I gap: {df['e_i_gap'].mean():.2f}%")
+    else:
+        print("E/I performance columns not found in CSV")
+    
     print(f"Loaded {len(df)} data points from {df['run_name'].nunique()} unique runs")
     if df['cnn_depth'].max() > 0:
         print(f"Depth range: {df['cnn_depth'].min()}-{df['cnn_depth'].max()}")

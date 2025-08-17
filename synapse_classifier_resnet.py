@@ -387,7 +387,8 @@ class ResNetClassifier(nn.Module):
         return self.classifier(attended_features)
 
 
-def log_epoch_to_csv(run_name, epoch, lr, dropout, weight_decay, train_acc, val_acc, overfitting_gap, use_focal_loss, sweep_dir=None):
+def log_epoch_to_csv(run_name, epoch, lr, dropout, weight_decay, train_acc, val_acc, overfitting_gap, use_focal_loss, 
+                    train_e_acc, train_i_acc, val_e_acc, val_i_acc, sweep_dir=None):
     """Logs the metrics of a training epoch to a centralized CSV file with file locking."""
     if sweep_dir is None:
         log_file = 'sweep_results.csv'
@@ -403,7 +404,8 @@ def log_epoch_to_csv(run_name, epoch, lr, dropout, weight_decay, train_acc, val_
             os.mkdir(lock_file)
             
             try:
-                header = ['run_name', 'epoch', 'lr', 'dropout', 'weight_decay', 'train_acc', 'val_acc', 'overfitting_gap', 'use_focal_loss', 'timestamp']
+                header = ['run_name', 'epoch', 'lr', 'dropout', 'weight_decay', 'train_acc', 'val_acc', 'overfitting_gap', 
+                         'use_focal_loss', 'train_e_acc', 'train_i_acc', 'val_e_acc', 'val_i_acc', 'timestamp']
                 file_exists = os.path.isfile(log_file)
                 
                 with open(log_file, 'a', newline='') as f:
@@ -412,7 +414,9 @@ def log_epoch_to_csv(run_name, epoch, lr, dropout, weight_decay, train_acc, val_
                         writer.writerow(header)
                     
                     timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    writer.writerow([run_name, epoch, lr, dropout, weight_decay, f'{train_acc:.2f}', f'{val_acc:.2f}', f'{overfitting_gap:.2f}', use_focal_loss, timestamp])
+                    writer.writerow([run_name, epoch, lr, dropout, weight_decay, f'{train_acc:.2f}', f'{val_acc:.2f}', 
+                                   f'{overfitting_gap:.2f}', use_focal_loss, f'{train_e_acc:.2f}', f'{train_i_acc:.2f}', 
+                                   f'{val_e_acc:.2f}', f'{val_i_acc:.2f}', timestamp])
                 
                 # Lock released, exit retry loop
                 break
@@ -731,6 +735,24 @@ def main():
         train_loss = tot_loss / tot
         train_acc = 100*tot_corr/tot
 
+        # Calculate training confusion matrix
+        model.eval()
+        train_preds, train_lbls = [], []
+        with torch.no_grad():
+            for x, y in train_loader:
+                x, y = x.to(device), y.to(device)
+                out = model(x)
+                preds = out.argmax(1)
+                train_preds.extend(preds.cpu().numpy())
+                train_lbls.extend(y.cpu().numpy())
+        
+        train_cm = confusion_matrix(train_lbls, train_preds)
+        if train_cm.shape == (2, 2):
+            train_e_acc = train_cm[0,0]/train_cm[0].sum() * 100 if train_cm[0].sum() > 0 else 0
+            train_i_acc = train_cm[1,1]/train_cm[1].sum() * 100 if train_cm[1].sum() > 0 else 0
+        else:
+            train_e_acc = train_i_acc = 0
+
         # ---- validation ----
         model.eval()
         v_tot_loss = v_tot = v_corr = 0
@@ -779,7 +801,8 @@ def main():
         # Log to centralized CSV
         overfitting_gap = train_acc - val_acc
         focal_status = 1 if args.use_focal_loss else 0
-        log_epoch_to_csv(RUN_NAME, epoch, LR, DROPOUT_RATE, WEIGHT_DECAY, train_acc, val_acc, overfitting_gap, focal_status, SWEEP_DIR)
+        log_epoch_to_csv(RUN_NAME, epoch, LR, DROPOUT_RATE, WEIGHT_DECAY, train_acc, val_acc, overfitting_gap, focal_status, 
+                        train_e_acc, train_i_acc, e_acc, i_acc, SWEEP_DIR)
         
         # Update visualization every epoch
         plot_learning_curves(train_losses, train_accs, val_losses, val_accs, 

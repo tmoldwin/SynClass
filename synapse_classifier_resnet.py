@@ -184,11 +184,16 @@ class Synapse2DDataset(Dataset):
         combined_mask = np.logical_or(pre_mask, post_mask)
         masked_data = raw * combined_mask
 
-        # Take middle Z slice
-        z_mid = masked_data.shape[2] // 2
-        data_slice = masked_data[:, :, z_mid]
-        pre_slice = pre_mask[:, :, z_mid]
-        post_slice = post_mask[:, :, z_mid]
+        # Take the slice with the largest mask area (most informative)
+        mask_areas = []
+        for z in range(masked_data.shape[2]):
+            combined_mask_2d = np.logical_or(pre_mask[:, :, z], post_mask[:, :, z])
+            mask_areas.append(np.sum(combined_mask_2d))
+        
+        z_best = np.argmax(mask_areas)  # Index of slice with largest mask area
+        data_slice = masked_data[:, :, z_best]
+        pre_slice = pre_mask[:, :, z_best]
+        post_slice = post_mask[:, :, z_best]
         
         # Bounding box and crop (this part is less important with large resize, but can help focus)
         synapse_pixels = np.where(combined_mask[:, :, z_mid])

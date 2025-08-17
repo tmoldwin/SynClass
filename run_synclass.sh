@@ -4,7 +4,7 @@
 # Usage: ./run_synclass.sh
 # --> EDIT THE PARTITION VARIABLE أدناه TO SWITCH BETWEEN CPU AND GPU <--
 
-echo "--- Starting Hyperparameter Sweep Job Submission ---"
+echo "--- Starting SMALLEST ResNet Models Hyperparameter Sweep ---"
 
 # --- Update codebase ---
 echo "Pulling latest changes from git..."
@@ -12,8 +12,8 @@ git pull
 echo "---"
 
 # --- Architecture hyperparameters for ResNet sweep ---
-RESNET_DEPTHS=(50 101 152)            # 3 deepest ResNet variants
-CLASSIFIER_WIDTHS=(64 128 256)        # 3 widest classifier widths
+RESNET_DEPTHS=(18 34 50)              # 3 smallest ResNet variants
+CLASSIFIER_WIDTHS=(32 64 128)         # 3 smallest classifier widths
 
 # --- SLURM Configuration ---
 PARTITION="ss.gpu" # Set to "ss.gpu" to automatically request a GPU

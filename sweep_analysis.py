@@ -21,9 +21,50 @@ def load_and_prepare_data(csv_file):
     # Create a unique identifier for each run
     df['run_id'] = df['run_name']
     
+    # Extract depth and width from run_name (e.g., "resnet_d101_w256" -> depth=101, width=256)
+    def extract_depth_width(run_name):
+        try:
+            # Handle different naming patterns
+            if 'resnet_d' in run_name and '_w' in run_name:
+                # Format: resnet_d101_w256
+                parts = run_name.split('_')
+                depth_part = [p for p in parts if p.startswith('d')][0]
+                width_part = [p for p in parts if p.startswith('w')][0]
+                depth = int(depth_part[1:])
+                width = int(width_part[1:])
+            elif 'cnn_d' in run_name and '_w' in run_name:
+                # Format: cnn_d7_w32
+                parts = run_name.split('_')
+                depth_part = [p for p in parts if p.startswith('d')][0]
+                width_part = [p for p in parts if p.startswith('w')][0]
+                depth = int(depth_part[1:])
+                width = int(width_part[1:])
+            else:
+                # Fallback: try to extract any numbers
+                import re
+                numbers = re.findall(r'\d+', run_name)
+                if len(numbers) >= 2:
+                    depth = int(numbers[0])
+                    width = int(numbers[1])
+                else:
+                    depth = 0
+                    width = 0
+        except:
+            depth = 0
+            width = 0
+        return depth, width
+    
+    # Extract depth and width for each run
+    depth_width = df['run_name'].apply(extract_depth_width)
+    df['cnn_depth'] = [dw[0] for dw in depth_width]
+    df['cnn_width'] = [dw[1] for dw in depth_width]
+    
     print(f"Loaded {len(df)} data points from {df['run_name'].nunique()} unique runs")
-    print(f"Depth range: {df['cnn_depth'].min()}-{df['cnn_depth'].max()}")
-    print(f"Width range: {df['cnn_width'].min()}-{df['cnn_width'].max()}")
+    if df['cnn_depth'].max() > 0:
+        print(f"Depth range: {df['cnn_depth'].min()}-{df['cnn_depth'].max()}")
+        print(f"Width range: {df['cnn_width'].min()}-{df['cnn_width'].max()}")
+    else:
+        print("Could not extract depth/width from run names")
     
     return df
 

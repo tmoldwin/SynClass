@@ -338,7 +338,7 @@ class ResNetClassifier(nn.Module):
         new_conv = nn.Conv2d(2, 64, kernel_size=7, stride=2, padding=3, bias=False)
         # Initialize with the first 2 channels of the original weights
         with torch.no_grad():
-            new_conv.weight = old_conv.weight[:, :2, :, :]  # Just take the first 2 channels
+            new_conv.weight.data = old_conv.weight.data[:, :2, :, :]  # Just take the first 2 channels
         self.resnet.conv1 = new_conv
         
         # Remove the final layer

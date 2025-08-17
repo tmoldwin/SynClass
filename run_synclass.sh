@@ -55,7 +55,7 @@ for RESNET_DEPTH in "${RESNET_DEPTHS[@]}"; do
         echo "Submitting job: $JOB_NAME"
       
         # Prepare the full command for --wrap
-        FULL_CMD="cd $HOME/code/SynClass && pip install -r requirements.txt && SWEEP_MASTER_DIR=$MASTER_SWEEP_DIR $PYTHON_CMD"
+        FULL_CMD="cd $HOME/code/SynClass && SWEEP_MASTER_DIR=$MASTER_SWEEP_DIR $PYTHON_CMD"
         
         SBATCH_CMD="sbatch \
           --job-name=\"$JOB_NAME\" \

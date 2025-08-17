@@ -278,9 +278,9 @@ class ResNetClassifier(nn.Module):
         
         # ATTENTION MECHANISM for better feature focus
         self.attention = nn.Sequential(
-            nn.Linear(num_ftrs, scaled_features // 4),
+            nn.Linear(num_ftrs, num_ftrs // 4),
             nn.ReLU(inplace=True),
-            nn.Linear(scaled_features // 4, scaled_features),
+            nn.Linear(num_ftrs // 4, num_ftrs),
             nn.Sigmoid()
         )
         

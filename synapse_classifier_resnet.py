@@ -184,28 +184,13 @@ class Synapse2DDataset(Dataset):
         combined_mask = np.logical_or(pre_mask, post_mask)
         masked_data = raw * combined_mask
 
-        # RANDOM Z-SLICE AUGMENTATION - Take random slice for training diversity
-        if self.augment:
-            # For training: take random slice from valid slices (with mask area > 0)
-            mask_areas = []
-            for z in range(masked_data.shape[2]):
-                combined_mask_2d = np.logical_or(pre_mask[:, :, z], post_mask[:, :, z])
-                mask_areas.append(np.sum(combined_mask_2d))
-            
-            # Find valid slices (with some mask content)
-            valid_slices = [z for z, area in enumerate(mask_areas) if area > 0]
-            if valid_slices:
-                z_chosen = random.choice(valid_slices)  # Random valid slice
-            else:
-                z_chosen = masked_data.shape[2] // 2  # Fallback to middle slice
-        else:
-            # For validation: take the slice with largest mask area (most informative)
-            mask_areas = []
-            for z in range(masked_data.shape[2]):
-                combined_mask_2d = np.logical_or(pre_mask[:, :, z], post_mask[:, :, z])
-                mask_areas.append(np.sum(combined_mask_2d))
-            
-            z_chosen = np.argmax(mask_areas)  # Index of slice with largest mask area
+        # BEST SLICE STRATEGY - Use slice with largest mask area for both training and validation
+        mask_areas = []
+        for z in range(masked_data.shape[2]):
+            combined_mask_2d = np.logical_or(pre_mask[:, :, z], post_mask[:, :, z])
+            mask_areas.append(np.sum(combined_mask_2d))
+        
+        z_chosen = np.argmax(mask_areas)  # Index of slice with largest mask area
         
         data_slice = masked_data[:, :, z_chosen]
         pre_slice = pre_mask[:, :, z_chosen]

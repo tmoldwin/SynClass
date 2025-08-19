@@ -449,7 +449,7 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     fig = plt.figure(figsize=(24, 18))
     
     # Plot 1: Training and validation loss
-    ax1 = plt.subplot(3, 2, 1)
+    ax1 = plt.subplot(3, 3, 1)
     ax1.plot(epochs, train_losses, 'orange', label='Training Loss', linewidth=2, alpha=0.8)
     ax1.plot(epochs, val_losses, 'purple', label='Validation Loss', linewidth=2, alpha=0.8)
     ax1.set_title('Training and Validation Loss', fontsize=14, fontweight='bold')
@@ -459,7 +459,7 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     ax1.grid(True, alpha=0.3)
     
     # Plot 2: Training and validation accuracy
-    ax2 = plt.subplot(3, 2, 2)
+    ax2 = plt.subplot(3, 3, 2)
     ax2.plot(epochs, train_accs, 'orange', label='Training Accuracy', linewidth=2, alpha=0.8)
     ax2.plot(epochs, val_accs, 'purple', label='Validation Accuracy', linewidth=2, alpha=0.8)
     ax2.set_title('Training and Validation Accuracy', fontsize=14, fontweight='bold')
@@ -469,7 +469,7 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     ax2.grid(True, alpha=0.3)
     
     # Plot 3: E and I class accuracies
-    ax3 = plt.subplot(3, 2, 3)
+    ax3 = plt.subplot(3, 3, 3)
     if len(e_accs) > 0:
         ax3.plot(epochs, e_accs, 'red', label='E (Excitatory) Accuracy', linewidth=2, alpha=0.8)
         ax3.plot(epochs, i_accs, 'blue', label='I (Inhibitory) Accuracy', linewidth=2, alpha=0.8)
@@ -480,7 +480,7 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
         ax3.grid(True, alpha=0.3)
     
     # Plot 4: Learning rate schedule
-    ax4 = plt.subplot(3, 2, 4)
+    ax4 = plt.subplot(3, 3, 4)
     ax4.plot(epochs, learning_rates, 'orange', linewidth=2, alpha=0.8)
     ax4.set_title('Learning Rate Schedule', fontsize=14, fontweight='bold')
     ax4.set_xlabel('Epoch')
@@ -489,7 +489,7 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     ax4.grid(True, alpha=0.3)
     
     # Plot 5: Overfitting indicator
-    ax5 = plt.subplot(3, 2, 5)
+    ax5 = plt.subplot(3, 3, 5)
     overfitting_gap = [t - v for t, v in zip(train_accs, val_accs)]
     ax5.plot(epochs, overfitting_gap, 'purple', linewidth=2, alpha=0.8)
     ax5.axhline(y=0, color='black', linestyle='--', alpha=0.5)
@@ -502,7 +502,7 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     ax5.grid(True, alpha=0.3)
     
     # Plot 6: Training progress summary
-    ax6 = plt.subplot(3, 2, 6)
+    ax6 = plt.subplot(3, 3, 6)
     # Create a summary table
     current_epoch = len(epochs)
     best_val_acc = max(val_accs) if val_accs else 0

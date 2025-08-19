@@ -31,7 +31,7 @@ warnings.filterwarnings("ignore")
 BATCH_SIZE = 8           # Smaller batch for stability (analysis showed high LR sensitivity)
 INPUT_XY = 256            # Larger input for better features
 EPOCHS = 150              # More epochs for convergence
-LR = 5e-6                 # Optimal LR from sweep analysis
+LR = 1e-5                 # INCREASED LR for larger models
 NUM_WORKERS = 4           # Increased workers for GPU
 RNG_SEED = 42
 DROPOUT_RATE = 0.5       # INCREASED to combat overfitting
@@ -332,7 +332,7 @@ class ResNetClassifier(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         
         # Scale classifier features based on width parameter
-        scaled_features = min(base_features * classifier_width // 128, 4096)  # Cap at 4096
+        scaled_features = min(base_features * classifier_width // 128, 8192)  # Cap at 8192 for larger models
         
         # ATTENTION MECHANISM for better feature focus
         self.attention = nn.Sequential(

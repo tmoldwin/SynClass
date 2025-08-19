@@ -4,7 +4,7 @@
 # Usage: ./run_synclass.sh
 # --> EDIT THE PARTITION VARIABLE أدناه TO SWITCH BETWEEN CPU AND GPU <--
 
-echo "--- Starting SMALLEST ResNet Models Hyperparameter Sweep ---"
+echo "--- Starting LARGEST ResNet Models Hyperparameter Sweep ---"
 
 # --- Update codebase ---
 echo "Pulling latest changes from git..."
@@ -12,8 +12,8 @@ git pull
 echo "---"
 
 # --- Architecture hyperparameters for ResNet sweep ---
-RESNET_DEPTHS=(18 34 50)              # 3 smallest ResNet variants
-CLASSIFIER_WIDTHS=(32 64 128)         # 3 smallest classifier widths
+RESNET_DEPTHS=(50 101 152)            # 3 largest ResNet variants
+CLASSIFIER_WIDTHS=(128 256 512)       # 3 largest classifier widths
 
 # --- SLURM Configuration ---
 PARTITION="ss.gpu" # Set to "ss.gpu" to automatically request a GPU
@@ -48,6 +48,7 @@ for RESNET_DEPTH in "${RESNET_DEPTHS[@]}"; do
                   PYTHON_CMD="python -W ignore synapse_classifier_resnet.py \
                       --resnet_depth ${RESNET_DEPTH} \
             --classifier_width ${CLASSIFIER_WIDTH} \
+          --lr 2e-5 \
           --epochs 150 \
           --run_name ${RUN_NAME}"
 

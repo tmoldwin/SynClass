@@ -48,7 +48,7 @@ for RESNET_DEPTH in "${RESNET_DEPTHS[@]}"; do
                   PYTHON_CMD="python -W ignore synapse_classifier_resnet.py \
                       --resnet_depth ${RESNET_DEPTH} \
             --classifier_width ${CLASSIFIER_WIDTH} \
-          --lr 2e-5 \
+          --lr 1e-4 \
           --epochs 150 \
           --run_name ${RUN_NAME}"
 

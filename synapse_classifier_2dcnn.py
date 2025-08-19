@@ -362,7 +362,8 @@ def log_epoch_to_csv(run_name, epoch, train_acc, val_acc, overfitting_gap, cnn_d
 
 def plot_epoch_progress(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, 
                        run_name=None, sweep_dir=None, cnn_depth=None, cnn_width=None, current_epoch=None,
-                       train_confusion_matrix=None, val_confusion_matrix=None):
+                       train_confusion_matrix=None, val_confusion_matrix=None, 
+                       train_confidences=None, val_confidences=None, train_confidence_accuracies=None, val_confidence_accuracies=None):
     """Plot current training progress and save with network size and accuracies in filename."""
     epochs = range(1, len(train_losses) + 1)
     
@@ -484,15 +485,55 @@ def plot_epoch_progress(train_losses, train_accs, val_losses, val_accs, learning
     axes[2, 1].text(0.1, 0.5, summary_text, transform=axes[2, 1].transAxes, 
                    fontsize=11, verticalalignment='center', fontfamily='monospace')
     
-    # Sample counts summary
-    axes[2, 2].axis('off')
-    if train_confusion_matrix is not None and val_confusion_matrix is not None:
-        train_e_total = train_confusion_matrix[0, :].sum()
-        train_i_total = train_confusion_matrix[1, :].sum()
-        val_e_total = val_confusion_matrix[0, :].sum()
-        val_i_total = val_confusion_matrix[1, :].sum()
+    # Confidence vs Accuracy scatterplot (binned)
+    if val_confidences is not None and val_confidence_accuracies is not None:
+        axes[2, 2].scatter(val_confidences, val_confidence_accuracies, alpha=0.6, s=30, color='purple', label='Validation')
         
-        sample_text = f"""
+        # Add binned regression line
+        if len(val_confidences) > 10:  # Only bin if we have enough data
+            # Create bins
+            confidence_bins = np.linspace(0.5, 1.0, 11)  # 10 bins from 0.5 to 1.0
+            bin_centers = []
+            bin_accuracies = []
+            
+            for i in range(len(confidence_bins) - 1):
+                mask = (val_confidences >= confidence_bins[i]) & (val_confidences < confidence_bins[i + 1])
+                if np.sum(mask) > 0:
+                    bin_centers.append((confidence_bins[i] + confidence_bins[i + 1]) / 2)
+                    bin_accuracies.append(np.mean(np.array(val_confidence_accuracies)[mask]))
+            
+            if len(bin_centers) > 1:
+                # Fit linear regression to binned data
+                z = np.polyfit(bin_centers, bin_accuracies, 1)
+                p = np.poly1d(z)
+                x_line = np.linspace(0.5, 1.0, 100)
+                axes[2, 2].plot(x_line, p(x_line), 'r--', linewidth=2, alpha=0.8, label='Binned Regression')
+        
+        axes[2, 2].set_xlabel('Model Confidence')
+        axes[2, 2].set_ylabel('Accuracy')
+        axes[2, 2].set_title('Confidence vs Accuracy (Validation)', fontweight='bold')
+        axes[2, 2].legend()
+        axes[2, 2].grid(True, alpha=0.3)
+        axes[2, 2].set_xlim(0.5, 1.0)
+        axes[2, 2].set_ylim(0, 1.0)
+        
+        # Add correlation coefficient
+        if len(val_confidences) > 1:
+            correlation = np.corrcoef(val_confidences, val_confidence_accuracies)[0, 1]
+            if not np.isnan(correlation):
+                axes[2, 2].text(0.05, 0.95, f'Correlation: {correlation:.3f}', 
+                               transform=axes[2, 2].transAxes, fontsize=10,
+                               bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+    else:
+        # Fallback to sample counts summary if no confidence data
+        axes[2, 2].axis('off')
+        if train_confusion_matrix is not None and val_confusion_matrix is not None:
+            train_e_total = train_confusion_matrix[0, :].sum()
+            train_i_total = train_confusion_matrix[1, :].sum()
+            val_e_total = val_confusion_matrix[0, :].sum()
+            val_i_total = val_confusion_matrix[1, :].sum()
+            
+            sample_text = f"""
     Sample Counts:
     
     Training Set:
@@ -509,8 +550,8 @@ def plot_epoch_progress(train_losses, train_accs, val_losses, val_accs, learning
     • Train: {train_e_total/(train_e_total+train_i_total)*100:.1f}% E, {train_i_total/(train_e_total+train_i_total)*100:.1f}% I
     • Val: {val_e_total/(val_e_total+val_i_total)*100:.1f}% E, {val_i_total/(val_e_total+val_i_total)*100:.1f}% I
     """
-        axes[2, 2].text(0.1, 0.5, sample_text, transform=axes[2, 2].transAxes, 
-                       fontsize=10, verticalalignment='center', fontfamily='monospace')
+            axes[2, 2].text(0.1, 0.5, sample_text, transform=axes[2, 2].transAxes, 
+                           fontsize=10, verticalalignment='center', fontfamily='monospace')
     
     plt.tight_layout()
     
@@ -679,6 +720,8 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
         i_total = 0
         all_predictions = []
         all_labels = []
+        all_confidences = []
+        all_confidence_accuracies = []
         
         with torch.no_grad():
             test_pbar = tqdm(test_loader, desc=f'Epoch {epoch+1}/{num_epochs} [Test]')
@@ -688,9 +731,21 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
                 loss = criterion(outputs, labels)
                 
                 test_loss += loss.item()
-                _, predicted = torch.max(outputs.data, 1)
+                
+                # Calculate confidence scores using softmax
+                import torch.nn.functional as F
+                confidence_scores = F.softmax(outputs, dim=1)
+                max_confidences, predicted = torch.max(confidence_scores, 1)
+                
                 test_total += labels.size(0)
                 test_correct += (predicted == labels).sum().item()
+                
+                # Store confidence scores and corresponding accuracies
+                for i, label in enumerate(labels):
+                    confidence = max_confidences[i].item()
+                    accuracy = 1.0 if predicted[i] == label else 0.0
+                    all_confidences.append(confidence)
+                    all_confidence_accuracies.append(accuracy)
                 
                 # Class-specific accuracy
                 for i, label in enumerate(labels):
@@ -751,7 +806,8 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
         sweep_dir = os.getenv('SWEEP_MASTER_DIR', None)
         plot_epoch_progress(train_losses, train_accuracies, test_losses, test_accuracies, 
                            learning_rates, e_accuracies, i_accuracies, run_name, sweep_dir, 
-                           CNN_DEPTH, CNN_WIDTH, epoch+1, train_confusion_matrix, val_confusion_matrix)
+                           CNN_DEPTH, CNN_WIDTH, epoch+1, train_confusion_matrix, val_confusion_matrix,
+                           None, all_confidences, None, all_confidence_accuracies)
         
         # Save best model
         if test_acc > best_test_acc:

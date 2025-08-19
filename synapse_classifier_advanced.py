@@ -652,12 +652,13 @@ def test_time_augmentation(model, data, num_tta=TTA_FLIPS):
         return final_pred
 
 # ------------------------- enhanced plotting --------------------------
-def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_timestamp=None):
+def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_timestamp=None,
+                        val_confidences=None, val_confidence_accuracies=None):
     """Plot comprehensive learning curves and save to figures directory."""
     epochs = range(1, len(train_losses) + 1)
     
-    # Create figure with subplots - 3x2 layout for comprehensive view
-    fig = plt.figure(figsize=(20, 15))
+    # Create figure with subplots - 3x3 layout for comprehensive view including confidence plot
+    fig = plt.figure(figsize=(24, 18))
     
     # Plot 1: Training and validation loss
     ax1 = plt.subplot(3, 2, 1)
@@ -740,6 +741,60 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     ax6.set_title('Training Summary', fontsize=14, fontweight='bold')
     ax6.axis('off')
     
+    # Plot 7: Confidence vs Accuracy scatterplot (binned)
+    ax7 = plt.subplot(3, 3, 7)
+    if val_confidences is not None and val_confidence_accuracies is not None:
+        ax7.scatter(val_confidences, val_confidence_accuracies, alpha=0.6, s=30, color='purple', label='Validation')
+        
+        # Add binned regression line
+        if len(val_confidences) > 10:  # Only bin if we have enough data
+            # Create bins
+            confidence_bins = np.linspace(0.5, 1.0, 11)  # 10 bins from 0.5 to 1.0
+            bin_centers = []
+            bin_accuracies = []
+            
+            for i in range(len(confidence_bins) - 1):
+                mask = (val_confidences >= confidence_bins[i]) & (val_confidences < confidence_bins[i + 1])
+                if np.sum(mask) > 0:
+                    bin_centers.append((confidence_bins[i] + confidence_bins[i + 1]) / 2)
+                    bin_accuracies.append(np.mean(np.array(val_confidence_accuracies)[mask]))
+            
+            if len(bin_centers) > 1:
+                # Fit linear regression to binned data
+                z = np.polyfit(bin_centers, bin_accuracies, 1)
+                p = np.poly1d(z)
+                x_line = np.linspace(0.5, 1.0, 100)
+                ax7.plot(x_line, p(x_line), 'r--', linewidth=2, alpha=0.8, label='Binned Regression')
+        
+        ax7.set_xlabel('Model Confidence')
+        ax7.set_ylabel('Accuracy')
+        ax7.set_title('Confidence vs Accuracy (Validation)', fontsize=14, fontweight='bold')
+        ax7.legend()
+        ax7.grid(True, alpha=0.3)
+        ax7.set_xlim(0.5, 1.0)
+        ax7.set_ylim(0, 1.0)
+        
+        # Add correlation coefficient
+        if len(val_confidences) > 1:
+            correlation = np.corrcoef(val_confidences, val_confidence_accuracies)[0, 1]
+            if not np.isnan(correlation):
+                ax7.text(0.05, 0.95, f'Correlation: {correlation:.3f}', 
+                        transform=ax7.transAxes, fontsize=10,
+                        bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+    else:
+        ax7.text(0.5, 0.5, 'No confidence data available', transform=ax7.transAxes, 
+                fontsize=12, ha='center', va='center', alpha=0.5)
+        ax7.set_title('Confidence vs Accuracy', fontsize=14, fontweight='bold')
+        ax7.axis('off')
+    
+    # Plot 8: Empty subplot for future use
+    ax8 = plt.subplot(3, 3, 8)
+    ax8.axis('off')
+    
+    # Plot 9: Empty subplot for future use  
+    ax9 = plt.subplot(3, 3, 9)
+    ax9.axis('off')
+    
     plt.tight_layout()
     
     # Save plot
@@ -820,6 +875,8 @@ def validate_epoch(model, val_loader, criterion, epoch, use_tta=False):
     total_samples = 0
     all_preds = []
     all_targets = []
+    all_confidences = []
+    all_confidence_accuracies = []
     
     with torch.no_grad():
         pbar = tqdm(val_loader, desc=f'Epoch {epoch} [Val]')
@@ -838,12 +895,19 @@ def validate_epoch(model, val_loader, criterion, epoch, use_tta=False):
             total_loss += loss.item() * data.size(0)
             total_samples += data.size(0)
             
-            if use_tta and epoch % 10 == 0:
-                pred = output.argmax(dim=1)
-            else:
-                pred = output.argmax(dim=1)
+            # Calculate confidence scores using softmax
+            import torch.nn.functional as F
+            confidence_scores = F.softmax(output, dim=1)
+            max_confidences, pred = torch.max(confidence_scores, 1)
             
             total_correct += pred.eq(target).sum().item()
+            
+            # Store confidence scores and corresponding accuracies
+            for i, label in enumerate(target):
+                confidence = max_confidences[i].item()
+                accuracy = 1.0 if pred[i] == label else 0.0
+                all_confidences.append(confidence)
+                all_confidence_accuracies.append(accuracy)
             
             all_preds.extend(pred.cpu().numpy())
             all_targets.extend(target.cpu().numpy())
@@ -856,7 +920,7 @@ def validate_epoch(model, val_loader, criterion, epoch, use_tta=False):
     avg_loss = total_loss / total_samples
     accuracy = 100.0 * total_correct / total_samples
     
-    return avg_loss, accuracy, all_preds, all_targets
+    return avg_loss, accuracy, all_preds, all_targets, all_confidences, all_confidence_accuracies
 
 # Ensemble training functions
 def train_epoch_ensemble(models, train_loader, criterion, optimizers, epoch):
@@ -1142,9 +1206,11 @@ def main():
         if isinstance(model, list):
             # Ensemble validation
             val_loss, val_acc, val_preds, val_targets = validate_epoch_ensemble(model, val_loader, criterion, epoch)
+            val_confidences = None
+            val_confidence_accuracies = None
         else:
             # Single model validation with optional TTA
-            val_loss, val_acc, val_preds, val_targets = validate_epoch(model, val_loader, criterion, epoch, use_tta=args.tta)
+            val_loss, val_acc, val_preds, val_targets, val_confidences, val_confidence_accuracies = validate_epoch(model, val_loader, criterion, epoch, use_tta=args.tta)
         
         # Update schedulers
         if isinstance(scheduler, list):
@@ -1179,7 +1245,8 @@ def main():
         # Generate learning curves every 5 epochs or when we hit a new best
         if epoch % 5 == 0 or val_acc > best_acc:
             plot_learning_curves(train_losses, train_accs, val_losses, val_accs, 
-                               learning_rates, e_accs, i_accs, RUN_TIMESTAMP)
+                               learning_rates, e_accs, i_accs, RUN_TIMESTAMP,
+                               val_confidences, val_confidence_accuracies)
         
         logger.info(f'Epoch {epoch}/{EPOCHS}:')
         logger.info(f'  Train: Loss={train_loss:.4f}, Acc={train_acc:.2f}%')
@@ -1222,7 +1289,8 @@ def main():
     
     # Final plot
     plot_learning_curves(train_losses, train_accs, val_losses, val_accs, 
-                       learning_rates, e_accs, i_accs, RUN_TIMESTAMP)
+                       learning_rates, e_accs, i_accs, RUN_TIMESTAMP,
+                       val_confidences, val_confidence_accuracies)
 
     logger.info(f'Training complete!')
     logger.info(f'Best validation accuracy: {best_acc:.2f}% (epoch {best_epoch})')

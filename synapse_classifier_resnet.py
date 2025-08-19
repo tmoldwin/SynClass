@@ -440,12 +440,13 @@ def log_epoch_to_csv(run_name, epoch, lr, dropout, weight_decay, train_acc, val_
         print(f"Warning: Could not acquire lock to write to {log_file} for run {run_name}, epoch {epoch}. Skipping log entry.")
 
 
-def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_name=None, sweep_dir=None):
+def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learning_rates, e_accs, i_accs, run_name=None, sweep_dir=None, 
+                        val_confidences=None, val_confidence_accuracies=None):
     """Plot comprehensive learning curves and save to figures directory."""
     epochs = range(1, len(train_losses) + 1)
     
-    # Create figure with subplots - 3x2 layout for comprehensive view
-    fig = plt.figure(figsize=(20, 15))
+    # Create figure with subplots - 3x3 layout for comprehensive view including confidence plot
+    fig = plt.figure(figsize=(24, 18))
     
     # Plot 1: Training and validation loss
     ax1 = plt.subplot(3, 2, 1)
@@ -526,6 +527,60 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
              verticalalignment='top', bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.8))
     ax6.set_title('Training Summary', fontsize=14, fontweight='bold')
     ax6.axis('off')
+    
+    # Plot 7: Confidence vs Accuracy scatterplot (binned)
+    ax7 = plt.subplot(3, 3, 7)
+    if val_confidences is not None and val_confidence_accuracies is not None:
+        ax7.scatter(val_confidences, val_confidence_accuracies, alpha=0.6, s=30, color='purple', label='Validation')
+        
+        # Add binned regression line
+        if len(val_confidences) > 10:  # Only bin if we have enough data
+            # Create bins
+            confidence_bins = np.linspace(0.5, 1.0, 11)  # 10 bins from 0.5 to 1.0
+            bin_centers = []
+            bin_accuracies = []
+            
+            for i in range(len(confidence_bins) - 1):
+                mask = (val_confidences >= confidence_bins[i]) & (val_confidences < confidence_bins[i + 1])
+                if np.sum(mask) > 0:
+                    bin_centers.append((confidence_bins[i] + confidence_bins[i + 1]) / 2)
+                    bin_accuracies.append(np.mean(np.array(val_confidence_accuracies)[mask]))
+            
+            if len(bin_centers) > 1:
+                # Fit linear regression to binned data
+                z = np.polyfit(bin_centers, bin_accuracies, 1)
+                p = np.poly1d(z)
+                x_line = np.linspace(0.5, 1.0, 100)
+                ax7.plot(x_line, p(x_line), 'r--', linewidth=2, alpha=0.8, label='Binned Regression')
+        
+        ax7.set_xlabel('Model Confidence')
+        ax7.set_ylabel('Accuracy')
+        ax7.set_title('Confidence vs Accuracy (Validation)', fontsize=14, fontweight='bold')
+        ax7.legend()
+        ax7.grid(True, alpha=0.3)
+        ax7.set_xlim(0.5, 1.0)
+        ax7.set_ylim(0, 1.0)
+        
+        # Add correlation coefficient
+        if len(val_confidences) > 1:
+            correlation = np.corrcoef(val_confidences, val_confidence_accuracies)[0, 1]
+            if not np.isnan(correlation):
+                ax7.text(0.05, 0.95, f'Correlation: {correlation:.3f}', 
+                        transform=ax7.transAxes, fontsize=10,
+                        bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+    else:
+        ax7.text(0.5, 0.5, 'No confidence data available', transform=ax7.transAxes, 
+                fontsize=12, ha='center', va='center', alpha=0.5)
+        ax7.set_title('Confidence vs Accuracy', fontsize=14, fontweight='bold')
+        ax7.axis('off')
+    
+    # Plot 8: Empty subplot for future use
+    ax8 = plt.subplot(3, 3, 8)
+    ax8.axis('off')
+    
+    # Plot 9: Empty subplot for future use  
+    ax9 = plt.subplot(3, 3, 9)
+    ax9.axis('off')
     
     plt.tight_layout()
     
@@ -764,6 +819,8 @@ def main():
         model.eval()
         v_tot_loss = v_tot = v_corr = 0
         all_preds, all_lbls = [], []
+        all_confidences = []
+        all_confidence_accuracies = []
         with torch.no_grad():
             pbar = tqdm(val_loader, desc=f'Epoch {epoch}/{EPOCHS} [Val]')
             for x, y in pbar:
@@ -772,8 +829,21 @@ def main():
                 loss = criterion(out, y)
                 v_tot_loss += loss.item() * x.size(0)
                 v_tot += y.size(0)
-                preds = out.argmax(1)
+                
+                # Calculate confidence scores using softmax
+                import torch.nn.functional as F
+                confidence_scores = F.softmax(out, dim=1)
+                max_confidences, preds = torch.max(confidence_scores, 1)
+                
                 v_corr += (preds == y).sum().item()
+                
+                # Store confidence scores and corresponding accuracies
+                for i, label in enumerate(y):
+                    confidence = max_confidences[i].item()
+                    accuracy = 1.0 if preds[i] == label else 0.0
+                    all_confidences.append(confidence)
+                    all_confidence_accuracies.append(accuracy)
+                
                 all_preds.extend(preds.cpu().numpy()); all_lbls.extend(y.cpu().numpy())
                 pbar.set_postfix(Loss=f'{loss.item():.3f}', Acc=f'{100*v_corr/v_tot:.1f}%')
         val_loss = v_tot_loss / v_tot
@@ -813,7 +883,8 @@ def main():
         
         # Update visualization every epoch
         plot_learning_curves(train_losses, train_accs, val_losses, val_accs, 
-                           learning_rates, e_accs, i_accs, RUN_NAME, SWEEP_DIR)
+                           learning_rates, e_accs, i_accs, RUN_NAME, SWEEP_DIR,
+                           all_confidences, all_confidence_accuracies)
         
         # Log GPU memory usage
         if torch.cuda.is_available():

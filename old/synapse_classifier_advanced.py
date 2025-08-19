@@ -721,7 +721,7 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     current_lr = learning_rates[-1] if learning_rates else 0
     
     summary_text = f"""
-    🎯 ADVANCED SYNAPSE CLASSIFIER
+    ADVANCED SYNAPSE CLASSIFIER
     
     Current Epoch: {current_epoch}
     Best Validation Accuracy: {best_val_acc:.2f}% (Epoch {best_epoch})
@@ -733,7 +733,7 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
     E Accuracy: {e_accs[-1]:.2f}% (Current)
     I Accuracy: {i_accs[-1]:.2f}% (Current)
     
-    🎯 TARGET: 90% Accuracy
+    TARGET: 90% Accuracy
     """
     
     ax6.text(0.1, 0.9, summary_text, transform=ax6.transAxes, fontsize=12, 
@@ -804,7 +804,7 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
         os.makedirs('figures', exist_ok=True)
         plot_filename = f'figures/advanced_training_curves_{run_timestamp}.png'
         plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
-        print(f'📊 Plot saved: {plot_filename}')
+        print(f'Plot saved: {plot_filename}')
     except Exception as e:
         print(f'❌ Error saving plot: {e}')
     

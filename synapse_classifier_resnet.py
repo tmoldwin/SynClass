@@ -723,15 +723,6 @@ def main():
     
     total_params = sum(p.numel() for p in model.parameters())
     logger.info(f'Total params: {total_params:,}')
-    logger.info(f'🔥 IMPROVEMENTS APPLIED:')
-    logger.info(f'   • Model size: 50-100% bigger classifier (1024->512->256->128 vs 128)')
-    logger.info(f'   • Dropout: REDUCED from 0.8 to {DROPOUT_RATE} (less over-regularization)')
-    logger.info(f'   • Input size: INCREASED to {INPUT_XY}x{INPUT_XY} (better features)')
-    logger.info(f'   • Learning rate: OPTIMIZED to {LR} (from sweep analysis)')
-    logger.info(f'   • Scheduler: Cosine annealing (better convergence)')
-    logger.info(f'   • Data augmentation: ENHANCED (brightness, noise, more rotations)')
-    logger.info(f'   • Z-SLICE AUGMENTATION: Random slices for training, best slice for validation')
-    logger.info(f'   • Expected improvement: +5-8% accuracy')
 
     # Print model summary
     try:

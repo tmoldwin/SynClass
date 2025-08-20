@@ -12,7 +12,7 @@ git pull
 echo "---"
 
 # --- Architecture hyperparameters for 2D CNN Multi-Channel sweep ---
-CNN_DEPTHS=(3 5 7)                      # Different CNN depths (3, 5, or 7 conv blocks)
+CNN_DEPTHS=(1 2 3)                      # Different CNN depths (1, 2, or 3 conv blocks)
 LEARNING_RATE=1e-5                      # Fixed learning rate
 DROPOUT_RATES=(0.3 0.5 0.7)             # Test different dropout rates for overfitting control
 

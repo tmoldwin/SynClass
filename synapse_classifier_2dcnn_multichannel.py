@@ -198,11 +198,37 @@ class MultiChannelSynapseDataset(torch.utils.data.Dataset):
 class CNN2DMultiChannel(nn.Module):
     """2D CNN for 3-channel input: image + pre_mask + post_mask."""
     
-    def __init__(self, num_classes=2, dropout_rate=0.3, cnn_depth=5):
+    def __init__(self, num_classes=2, dropout_rate=0.3, cnn_depth=3):
         super().__init__()
         
         # Input: 3 channels (image + pre_mask + post_mask)
-        if cnn_depth == 3:
+        if cnn_depth == 1:
+            # Minimal 1-block architecture
+            self.features = nn.Sequential(
+                # Single conv block
+                nn.Conv2d(3, 128, kernel_size=7, stride=2, padding=3),
+                nn.BatchNorm2d(128),
+                nn.ReLU(inplace=True),
+                nn.AdaptiveAvgPool2d((1, 1))
+            )
+            final_features = 128
+        elif cnn_depth == 2:
+            # Light 2-block architecture
+            self.features = nn.Sequential(
+                # First conv block
+                nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3),
+                nn.BatchNorm2d(64),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
+                
+                # Second conv block
+                nn.Conv2d(64, 128, kernel_size=5, stride=1, padding=2),
+                nn.BatchNorm2d(128),
+                nn.ReLU(inplace=True),
+                nn.AdaptiveAvgPool2d((1, 1))
+            )
+            final_features = 128
+        elif cnn_depth == 3:
             # Lighter 3-block architecture
             self.features = nn.Sequential(
                 # First conv block
@@ -224,92 +250,16 @@ class CNN2DMultiChannel(nn.Module):
                 nn.AdaptiveAvgPool2d((1, 1))
             )
             final_features = 256
-        elif cnn_depth == 5:
-            # Medium 5-block architecture
-            self.features = nn.Sequential(
-                # First conv block
-                nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3),
-                nn.BatchNorm2d(64),
-                nn.ReLU(inplace=True),
-                nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
-                
-                # Second conv block
-                nn.Conv2d(64, 128, kernel_size=5, stride=1, padding=2),
-                nn.BatchNorm2d(128),
-                nn.ReLU(inplace=True),
-                nn.MaxPool2d(kernel_size=2, stride=2),
-                
-                # Third conv block
-                nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
-                nn.BatchNorm2d(256),
-                nn.ReLU(inplace=True),
-                nn.MaxPool2d(kernel_size=2, stride=2),
-                
-                # Fourth conv block with residual-like connection
-                nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1),
-                nn.BatchNorm2d(512),
-                nn.ReLU(inplace=True),
-                nn.MaxPool2d(kernel_size=2, stride=2),
-                
-                # Fifth conv block with global average pooling for regularization
-                nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
-                nn.BatchNorm2d(512),
-                nn.ReLU(inplace=True),
-                nn.AdaptiveAvgPool2d((1, 1))
-            )
-            final_features = 512
-        else:  # cnn_depth == 7
-            # Deeper 7-block architecture
-            self.features = nn.Sequential(
-                # First conv block
-                nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3),
-                nn.BatchNorm2d(64),
-                nn.ReLU(inplace=True),
-                nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
-                
-                # Second conv block
-                nn.Conv2d(64, 128, kernel_size=5, stride=1, padding=2),
-                nn.BatchNorm2d(128),
-                nn.ReLU(inplace=True),
-                nn.MaxPool2d(kernel_size=2, stride=2),
-                
-                # Third conv block
-                nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
-                nn.BatchNorm2d(256),
-                nn.ReLU(inplace=True),
-                nn.MaxPool2d(kernel_size=2, stride=2),
-                
-                # Fourth conv block
-                nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1),
-                nn.BatchNorm2d(512),
-                nn.ReLU(inplace=True),
-                nn.MaxPool2d(kernel_size=2, stride=2),
-                
-                # Fifth conv block
-                nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
-                nn.BatchNorm2d(512),
-                nn.ReLU(inplace=True),
-                
-                # Sixth conv block
-                nn.Conv2d(512, 768, kernel_size=3, stride=1, padding=1),
-                nn.BatchNorm2d(768),
-                nn.ReLU(inplace=True),
-                
-                # Seventh conv block
-                nn.Conv2d(768, 768, kernel_size=3, stride=1, padding=1),
-                nn.BatchNorm2d(768),
-                nn.ReLU(inplace=True),
-                nn.AdaptiveAvgPool2d((1, 1))
-            )
-            final_features = 768
+        else:
+            raise ValueError(f"Unsupported cnn_depth: {cnn_depth}. Must be 1, 2, or 3.")
         
-        # Classifier with better regularization (minimal dropout)
+        # Classifier with configurable dropout
         self.classifier = nn.Sequential(
             nn.Flatten(),
             nn.Linear(final_features, 256),
             nn.BatchNorm1d(256),
             nn.ReLU(inplace=True),
-            nn.Dropout(0.2),  # Light dropout only here
+            nn.Dropout(dropout_rate),  # Use the actual dropout_rate parameter
             nn.Linear(256, 64),
             nn.BatchNorm1d(64),
             nn.ReLU(inplace=True),
@@ -378,7 +328,7 @@ def main():
     parser.add_argument('--weight_decay', type=float, default=1e-2, help='Weight decay')
     parser.add_argument('--input_size', type=int, default=224, help='Input image size')
     parser.add_argument('--augments_per_epoch', type=int, default=1, help='Number of augmentations per synapse per epoch')
-    parser.add_argument('--cnn_depth', type=int, default=5, help='Number of CNN blocks (3, 5, or 7)')
+    parser.add_argument('--cnn_depth', type=int, default=3, help='Number of CNN blocks (1, 2, or 3)')
     parser.add_argument('--run_name', type=str, help='Run name for this experiment')
     
     args = parser.parse_args()

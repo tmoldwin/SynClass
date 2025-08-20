@@ -394,6 +394,18 @@ def main():
     # Load data
     train_files, test_files, synapse_map, data_stats = prepare_synapse_data(logger=logger)
     
+    # Verify balanced dataset - should be 50/50 E/I
+    logger.info(f"📊 CLASS VERIFICATION:")
+    logger.info(f"   Train: E={data_stats['train_distribution']['E']}, I={data_stats['train_distribution']['I']}")
+    logger.info(f"   Test:  E={data_stats['test_distribution']['E']}, I={data_stats['test_distribution']['I']}")
+    train_ratio = data_stats['train_distribution']['E'] / data_stats['train_distribution']['I']
+    logger.info(f"   Train E/I ratio: {train_ratio:.3f}:1 (should be ~1.0)")
+    
+    if abs(train_ratio - 1.0) > 0.1:
+        logger.warning(f"⚠️  Dataset is NOT balanced! Ratio: {train_ratio:.3f}:1")
+    else:
+        logger.info(f"✅ Dataset is balanced - no class weights needed")
+    
     # Create dataloaders with validation augmentation for fair comparison
     train_loader, val_loader = create_multichannel_dataloaders(
         train_files, test_files, synapse_map,
@@ -411,21 +423,8 @@ def main():
     model = CNN2DMultiChannel(num_classes=2, dropout_rate=args.dropout_rate, cnn_depth=args.cnn_depth).to(device)
     print_model_summary(model, logger=logger)
     
-    # Setup training with enhanced regularization and stronger class weights
-    class_weights = compute_class_weights(train_files, synapse_map)
-    
-    # Amplify class weights to combat severe imbalance
-    if len(class_weights) == 2:
-        # If I class is underrepresented, boost its weight significantly
-        i_boost = 3.0  # Boost minority class weight by 3x
-        if class_weights[1] > class_weights[0]:  # I class has higher weight (minority)
-            class_weights[1] *= i_boost
-        else:  # E class has higher weight (minority)
-            class_weights[0] *= i_boost
-        logger.info(f"Boosted class weights: E={class_weights[0]:.3f}, I={class_weights[1]:.3f}")
-    
-    class_weights = torch.tensor(class_weights, dtype=torch.float32, device=device)
-    criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=0.2)
+    # Setup training - no class weights needed since dataset is balanced
+    criterion = nn.CrossEntropyLoss(label_smoothing=0.2)
     
     optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     # Use exponential decay for more predictable LR reduction

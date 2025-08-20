@@ -363,10 +363,10 @@ def main():
     """Main training function."""
     parser = argparse.ArgumentParser(description='2D CNN Multi-Channel Synapse Classifier')
     parser.add_argument('--epochs', type=int, default=100, help='Training epochs')
-    parser.add_argument('--lr', type=float, default=1e-5, help='Learning rate')
+    parser.add_argument('--lr', type=float, default=5e-6, help='Learning rate')
     parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
     parser.add_argument('--dropout_rate', type=float, default=0.2, help='Dropout rate')
-    parser.add_argument('--weight_decay', type=float, default=1e-3, help='Weight decay')
+    parser.add_argument('--weight_decay', type=float, default=5e-3, help='Weight decay')
     parser.add_argument('--input_size', type=int, default=224, help='Input image size')
     parser.add_argument('--augments_per_epoch', type=int, default=3, help='Number of augmentations per synapse per epoch')
     parser.add_argument('--cnn_depth', type=int, default=5, help='Number of CNN blocks (3, 5, or 7)')
@@ -403,7 +403,7 @@ def main():
     # Setup training with enhanced regularization
     class_weights = compute_class_weights(train_files, synapse_map)
     class_weights = torch.tensor(class_weights, dtype=torch.float32, device=device)
-    criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=0.15)
+    criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=0.2)
     
     optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(

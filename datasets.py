@@ -5,7 +5,7 @@ import os
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-from augmentation import get_augmentation_transform
+from augmentation import get_augmentation_transform, RandomCrop3D, RandomCrop2D
 from constants import DATA_DIR
 
 
@@ -19,16 +19,18 @@ class SynapseDataset(Dataset):
         augment: Whether to apply data augmentation
         is_3d: Whether this is 3D data (True) or 2D data (False)
         input_size: Target size for resizing (for 2D: int, for 3D: tuple or None)
+        use_mask_aware_crop: Whether to use mask-aware cropping
     """
     
     def __init__(self, file_list, synapse_map, data_dir=None, augment=False, 
-                 is_3d=True, input_size=None):
+                 is_3d=True, input_size=None, use_mask_aware_crop=False):
         self.file_list = file_list
         self.synapse_map = synapse_map
         self.data_dir = data_dir if data_dir is not None else DATA_DIR
         self.augment = augment
         self.is_3d = is_3d
         self.input_size = input_size
+        self.use_mask_aware_crop = use_mask_aware_crop
         
         # Get augmentation transform
         self.transform = get_augmentation_transform(
@@ -36,6 +38,15 @@ class SynapseDataset(Dataset):
             is_3d=is_3d, 
             input_size=input_size
         )
+        
+        # Setup mask-aware cropping if needed
+        if use_mask_aware_crop and augment:
+            if is_3d:
+                self.mask_crop = RandomCrop3D(input_size, mask_aware=True, min_mask_ratio=0.15)
+            else:
+                self.mask_crop = RandomCrop2D(input_size, mask_aware=True, min_mask_ratio=0.15)
+        else:
+            self.mask_crop = None
         
     def __len__(self):
         return len(self.file_list)
@@ -52,7 +63,33 @@ class SynapseDataset(Dataset):
         syn_type = self.synapse_map[syn_id]
         label = 1 if syn_type == 'I' else 0  # I=1 (inhibitory), E=0 (excitatory)
         
-        # Apply transforms
+        # Load masks if using mask-aware cropping
+        mask = None
+        if self.mask_crop is not None:
+            try:
+                pre_mask_path = os.path.join(self.data_dir, filename.replace('syn.npy', 'pre_syn_n_mask.npy'))
+                post_mask_path = os.path.join(self.data_dir, filename.replace('syn.npy', 'post_syn_n_mask.npy'))
+                pre_mask = np.load(pre_mask_path)
+                post_mask = np.load(post_mask_path)
+                # Combine pre and post masks
+                mask = np.logical_or(pre_mask, post_mask).astype(np.float32)
+                mask = torch.tensor(mask, dtype=torch.float32)
+            except FileNotFoundError:
+                # If masks not found, continue without mask-aware cropping
+                pass
+        
+        # Convert data to tensor
+        if not isinstance(data, torch.Tensor):
+            data = torch.tensor(data, dtype=torch.float32)
+        
+        # Apply mask-aware cropping first if available
+        if self.mask_crop is not None and mask is not None:
+            if mask.dim() == 3 and data.dim() == 3:  # 3D case
+                data, _ = self.mask_crop(data, mask)
+            elif mask.dim() == 2 and data.dim() == 2:  # 2D case
+                data, _ = self.mask_crop(data, mask)
+        
+        # Apply other transforms
         if self.transform:
             data = self.transform(data)
         
@@ -66,28 +103,30 @@ class SynapseDataset(Dataset):
 class Synapse3DDataset(SynapseDataset):
     """3D synapse dataset with 3D-specific preprocessing."""
     
-    def __init__(self, file_list, synapse_map, data_dir=None, augment=False, input_size=64):
+    def __init__(self, file_list, synapse_map, data_dir=None, augment=False, input_size=64, use_mask_aware_crop=True):
         super().__init__(
             file_list=file_list,
             synapse_map=synapse_map, 
             data_dir=data_dir,
             augment=augment,
             is_3d=True,
-            input_size=input_size
+            input_size=input_size,
+            use_mask_aware_crop=use_mask_aware_crop
         )
 
 
 class Synapse2DDataset(SynapseDataset):
     """2D synapse dataset with 2D-specific preprocessing."""
     
-    def __init__(self, file_list, synapse_map, data_dir=None, augment=False, input_size=224):
+    def __init__(self, file_list, synapse_map, data_dir=None, augment=False, input_size=224, use_mask_aware_crop=True):
         super().__init__(
             file_list=file_list,
             synapse_map=synapse_map,
             data_dir=data_dir, 
             augment=augment,
             is_3d=False,
-            input_size=input_size
+            input_size=input_size,
+            use_mask_aware_crop=use_mask_aware_crop
         )
     
     def __getitem__(self, idx):
@@ -114,7 +153,7 @@ class Synapse2DDataset(SynapseDataset):
 
 def create_dataloaders(train_files, test_files, synapse_map, batch_size=16, 
                       num_workers=4, pin_memory=True, is_3d=True, 
-                      input_size=None, augment_train=True):
+                      input_size=None, augment_train=True, use_mask_aware_crop=True):
     """Create train and validation dataloaders.
     
     Args:
@@ -138,10 +177,12 @@ def create_dataloaders(train_files, test_files, synapse_map, batch_size=16,
     
     # Create datasets
     train_dataset = DatasetClass(
-        train_files, synapse_map, augment=augment_train, input_size=input_size
+        train_files, synapse_map, augment=augment_train, input_size=input_size, 
+        use_mask_aware_crop=use_mask_aware_crop
     )
     val_dataset = DatasetClass(
-        test_files, synapse_map, augment=False, input_size=input_size
+        test_files, synapse_map, augment=False, input_size=input_size,
+        use_mask_aware_crop=False  # No cropping for validation
     )
     
     # Create dataloaders

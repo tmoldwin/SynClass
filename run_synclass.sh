@@ -12,12 +12,12 @@ git pull
 echo "---"
 
 # --- Architecture hyperparameters for 2D CNN Multi-Channel sweep ---
-CNN_DEPTHS=(3 5 7)                      # Different CNN depths (3 vs 5 conv blocks)
-AUGMENTS_PER_EPOCH=(2 4)              # Different augmentation multipliers
+CNN_DEPTHS=(3 5 7)                      # Different CNN depths (3, 5, or 7 conv blocks)
+AUGMENTS_PER_EPOCH=(1 2 4)            # Different augmentation multipliers
 
 # --- SLURM Configuration ---
 PARTITION="ss.gpu" # Set to "ss.gpu" to automatically request a GPU
-TIME="24:00:00"
+TIME="48:00:00"
 GRES="" # Will be set automatically based on the partition name
 
 # Automatically add GPU request if partition name contains "gpu"

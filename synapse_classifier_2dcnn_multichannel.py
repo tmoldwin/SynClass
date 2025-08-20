@@ -221,8 +221,8 @@ class CNN2DMultiChannel(nn.Module):
                 nn.AdaptiveAvgPool2d((1, 1))
             )
             final_features = 256
-        else:  # cnn_depth == 5 (default)
-            # Deeper 5-block architecture
+        elif cnn_depth == 5:
+            # Medium 5-block architecture
             self.features = nn.Sequential(
                 # First conv block
                 nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3),
@@ -255,6 +255,50 @@ class CNN2DMultiChannel(nn.Module):
                 nn.AdaptiveAvgPool2d((1, 1))
             )
             final_features = 512
+        else:  # cnn_depth == 7
+            # Deeper 7-block architecture
+            self.features = nn.Sequential(
+                # First conv block
+                nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3),
+                nn.BatchNorm2d(64),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
+                
+                # Second conv block
+                nn.Conv2d(64, 128, kernel_size=5, stride=1, padding=2),
+                nn.BatchNorm2d(128),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                
+                # Third conv block
+                nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
+                nn.BatchNorm2d(256),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                
+                # Fourth conv block
+                nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1),
+                nn.BatchNorm2d(512),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                
+                # Fifth conv block
+                nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
+                nn.BatchNorm2d(512),
+                nn.ReLU(inplace=True),
+                
+                # Sixth conv block
+                nn.Conv2d(512, 768, kernel_size=3, stride=1, padding=1),
+                nn.BatchNorm2d(768),
+                nn.ReLU(inplace=True),
+                
+                # Seventh conv block
+                nn.Conv2d(768, 768, kernel_size=3, stride=1, padding=1),
+                nn.BatchNorm2d(768),
+                nn.ReLU(inplace=True),
+                nn.AdaptiveAvgPool2d((1, 1))
+            )
+            final_features = 768
         
         # Classifier
         self.classifier = nn.Sequential(
@@ -322,7 +366,7 @@ def main():
     parser.add_argument('--weight_decay', type=float, default=1e-4, help='Weight decay')
     parser.add_argument('--input_size', type=int, default=224, help='Input image size')
     parser.add_argument('--augments_per_epoch', type=int, default=3, help='Number of augmentations per synapse per epoch')
-    parser.add_argument('--cnn_depth', type=int, default=5, help='Number of CNN blocks (3 or 5)')
+    parser.add_argument('--cnn_depth', type=int, default=5, help='Number of CNN blocks (3, 5, or 7)')
     parser.add_argument('--run_name', type=str, help='Run name for this experiment')
     
     args = parser.parse_args()

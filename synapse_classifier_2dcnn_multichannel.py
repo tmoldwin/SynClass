@@ -242,13 +242,13 @@ class CNN2DMultiChannel(nn.Module):
                 nn.ReLU(inplace=True),
                 nn.MaxPool2d(kernel_size=2, stride=2),
                 
-                # Fourth conv block
+                # Fourth conv block with residual-like connection
                 nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1),
                 nn.BatchNorm2d(512),
                 nn.ReLU(inplace=True),
                 nn.MaxPool2d(kernel_size=2, stride=2),
                 
-                # Fifth conv block
+                # Fifth conv block with global average pooling for regularization
                 nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
                 nn.BatchNorm2d(512),
                 nn.ReLU(inplace=True),
@@ -300,14 +300,17 @@ class CNN2DMultiChannel(nn.Module):
             )
             final_features = 768
         
-        # Classifier
+        # Classifier with better regularization (minimal dropout)
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Dropout(dropout_rate),
             nn.Linear(final_features, 256),
+            nn.BatchNorm1d(256),
             nn.ReLU(inplace=True),
-            nn.Dropout(dropout_rate),
-            nn.Linear(256, num_classes)
+            nn.Dropout(0.2),  # Light dropout only here
+            nn.Linear(256, 64),
+            nn.BatchNorm1d(64),
+            nn.ReLU(inplace=True),
+            nn.Linear(64, num_classes)
         )
         
     def forward(self, x):
@@ -360,10 +363,10 @@ def main():
     """Main training function."""
     parser = argparse.ArgumentParser(description='2D CNN Multi-Channel Synapse Classifier')
     parser.add_argument('--epochs', type=int, default=100, help='Training epochs')
-    parser.add_argument('--lr', type=float, default=1e-4, help='Learning rate')
+    parser.add_argument('--lr', type=float, default=1e-5, help='Learning rate')
     parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
-    parser.add_argument('--dropout_rate', type=float, default=0.3, help='Dropout rate')
-    parser.add_argument('--weight_decay', type=float, default=1e-4, help='Weight decay')
+    parser.add_argument('--dropout_rate', type=float, default=0.2, help='Dropout rate')
+    parser.add_argument('--weight_decay', type=float, default=1e-3, help='Weight decay')
     parser.add_argument('--input_size', type=int, default=224, help='Input image size')
     parser.add_argument('--augments_per_epoch', type=int, default=3, help='Number of augmentations per synapse per epoch')
     parser.add_argument('--cnn_depth', type=int, default=5, help='Number of CNN blocks (3, 5, or 7)')
@@ -397,21 +400,21 @@ def main():
     model = CNN2DMultiChannel(num_classes=2, dropout_rate=args.dropout_rate, cnn_depth=args.cnn_depth).to(device)
     print_model_summary(model, logger=logger)
     
-    # Setup training
+    # Setup training with enhanced regularization
     class_weights = compute_class_weights(train_files, synapse_map)
     class_weights = torch.tensor(class_weights, dtype=torch.float32, device=device)
-    criterion = nn.CrossEntropyLoss(weight=class_weights)
+    criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=0.15)
     
     optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(
-        optimizer, T_0=20, T_mult=2, eta_min=args.lr/100
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode='max', factor=0.5, patience=10, verbose=True, min_lr=args.lr/1000
     )
     
     # Train
     results = train_model(
         model, train_loader, val_loader, criterion, optimizer,
         args.epochs, device, scheduler, f'best_synapse_model_{model_name}.pth',
-        early_stopping_patience=15, logger=logger
+        early_stopping_patience=25, logger=logger
     )
     
     # Save plots

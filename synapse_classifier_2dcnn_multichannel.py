@@ -20,7 +20,7 @@ class MultiChannelSynapseDataset(torch.utils.data.Dataset):
     """2D dataset with 3 channels: image + pre_mask + post_mask, multiple augments per epoch."""
     
     def __init__(self, file_list, synapse_map, data_dir=None, augment=False, 
-                 input_size=224, augments_per_epoch=3):
+                 input_size=224, augments_per_epoch=3, augment_prob=0.2):
         from constants import DATA_DIR
         import os
         
@@ -30,12 +30,15 @@ class MultiChannelSynapseDataset(torch.utils.data.Dataset):
         self.augment = augment
         self.input_size = input_size
         self.augments_per_epoch = augments_per_epoch if augment else 1
+        self.augment_prob = augment_prob  # Probability of applying augmentation vs using original
         
         # Get 2D augmentation transforms
         from augmentation import get_2d_augmentation_transform
         self.transform = get_2d_augmentation_transform(augment=augment, input_size=input_size)
         
         print(f"📊 Dataset: {len(file_list)} synapses × {self.augments_per_epoch} augments = {len(self)} samples per epoch")
+        if augment:
+            print(f"🎲 Augmentation probability: {augment_prob:.1f} (vs {1-augment_prob:.1f} for originals)")
     
     def _rotated_crop(self, image, center_h, center_w, crop_size, angle):
         """Apply rotated crop to image without black borders."""
@@ -336,10 +339,10 @@ def create_multichannel_dataloaders(train_files, test_files, synapse_map,
         input_size=input_size, augments_per_epoch=val_augments_per_epoch
     )
     
-    print(f"🎯 FAIR AUGMENTATION:")
-    print(f"   Training: {len(train_files)} synapses × {augments_per_epoch} augments = {len(train_dataset)} samples")
-    print(f"   Validation: {len(test_files)} synapses × {val_augments_per_epoch} augments = {len(val_dataset)} samples")
-    print(f"   Training/Val ratio: {len(train_dataset)/len(val_dataset):.1f}:1 (was 16:1)")
+    print(f"🎯 NO AUGMENTATION TRAINING:")
+    print(f"   Training: {len(train_files)} synapses (no augmentation)")
+    print(f"   Validation: {len(test_files)} synapses (no augmentation)")
+    print(f"   Training/Val ratio: {len(train_dataset)/len(val_dataset):.1f}:1 (natural dataset ratio)")
     
     # Create dataloaders
     train_loader = DataLoader(
@@ -398,8 +401,8 @@ def main():
         num_workers=4,
         pin_memory=True,
         input_size=args.input_size,
-        augment_train=True,
-        augments_per_epoch=args.augments_per_epoch,
+        augment_train=False,  # No augmentation to match validation
+        augments_per_epoch=1,
         augment_val=False,  # No validation augmentation
         val_augments_per_epoch=1  # Single pass for validation
     )

@@ -434,7 +434,7 @@ def get_augmentation_transform(augment=True, is_3d=True, input_size=None):
 
 
 def visualize_2d_augmentations():
-    """Main visualization function for 2D augmentations - the only function you need."""
+    """Main visualization function for 2D augmentations with masks and cropping examples."""
     import os
     import matplotlib.pyplot as plt
     import random
@@ -443,21 +443,21 @@ def visualize_2d_augmentations():
     from scipy.ndimage import rotate
     from skimage.transform import resize
     
-    print("Creating 2D augmentation gallery...")
+    print("Creating comprehensive 2D augmentation gallery with masks and cropping...")
     
     # Load sample synapses
     synapse_map = load_synapse_metadata()
     E_files, I_files, _ = discover_synapse_files(synapse_map=synapse_map)
     
-    # Get 3 synapses total
+    # Get 4 synapses total for more examples
     selected_files = []
     if len(E_files) >= 2:
         selected_files.extend(random.sample(E_files, 2))
-    if len(I_files) >= 1:
-        selected_files.extend(random.sample(I_files, 1))
+    if len(I_files) >= 2:
+        selected_files.extend(random.sample(I_files, 2))
     
     synapses = []
-    for file in selected_files[:3]:
+    for file in selected_files[:4]:
         filepath = os.path.join(DATA_DIR, file)
         data = np.load(filepath)
         syn_id = int(file.split('_')[0])
@@ -475,6 +475,8 @@ def visualize_2d_augmentations():
         
         synapses.append({
             'data': data,
+            'pre_mask': pre_mask,
+            'post_mask': post_mask, 
             'combined_mask': combined_mask,
             'syn_type': syn_type,
             'syn_id': syn_id
@@ -484,20 +486,30 @@ def visualize_2d_augmentations():
         print("No synapses found!")
         return
     
-    # Create the visualization
-    fig, axes = plt.subplots(len(synapses), 6, figsize=(18, 3*len(synapses)))
-    fig.suptitle('2D Synapse Augmentation Gallery (Focus on 2D)', fontsize=16, fontweight='bold')
+    # Create larger visualization - 9 columns to show more augmentations
+    fig, axes = plt.subplots(len(synapses), 9, figsize=(27, 3*len(synapses)))
+    fig.suptitle('Comprehensive 2D Augmentation Gallery with Masks & Multiple Crops', fontsize=18, fontweight='bold')
+    
+    print(f"\n📊 AUGMENTATION TRAINING INFO:")
+    print(f"• During training: ONE random augmentation per synapse per epoch")
+    print(f"• Validation: NO augmentations (original data only)")
+    print(f"• Random crop: Different crop location each epoch -> data diversity")
+    print(f"• Each synapse = {len(synapses)} different views per epoch from augmentations\n")
     
     for syn_idx, synapse in enumerate(synapses):
         data = synapse['data']
-        mask = synapse['combined_mask']
+        pre_mask = synapse['pre_mask']
+        post_mask = synapse['post_mask']
+        combined_mask = synapse['combined_mask']
         syn_type = synapse['syn_type']
         syn_id = synapse['syn_id']
         
         # Take middle slice
         mid_z = data.shape[2] // 2
         data_2d = data[:, :, mid_z]
-        mask_2d = mask[:, :, mid_z] if mask is not None else None
+        pre_2d = pre_mask[:, :, mid_z] if pre_mask is not None else None
+        post_2d = post_mask[:, :, mid_z] if post_mask is not None else None
+        combined_2d = combined_mask[:, :, mid_z] if combined_mask is not None else None
         
         # Normalize
         data_norm = (data_2d - data_2d.min()) / (data_2d.max() - data_2d.min())
@@ -507,73 +519,197 @@ def visualize_2d_augmentations():
         # 1. Original
         ax_row[0].imshow(data_norm, cmap='gray')
         if syn_idx == 0:
-            ax_row[0].set_title('Original')
-        ax_row[0].set_ylabel(f'ID {syn_id} ({syn_type})')
+            ax_row[0].set_title('Original Data')
+        ax_row[0].set_ylabel(f'ID {syn_id} ({syn_type})', fontweight='bold')
         ax_row[0].axis('off')
         
-        # 2. Horizontal flip
-        h_flip = np.fliplr(data_norm)
-        ax_row[1].imshow(h_flip, cmap='gray')
+        # 2. Masks overlay with alpha blending
+        if pre_2d is not None and post_2d is not None:
+            # Start with grayscale image as base
+            ax_row[1].imshow(data_norm, cmap='gray')
+            
+            # Overlay masks with transparency
+            pre_pixels = pre_2d.astype(bool)
+            post_pixels = post_2d.astype(bool)
+            
+            # Create colored masks
+            h, w = data_norm.shape
+            pre_overlay = np.zeros((h, w, 4))  # RGBA
+            post_overlay = np.zeros((h, w, 4))  # RGBA
+            
+            # Yellow for pre-synaptic (more visible)
+            pre_overlay[pre_pixels] = [1.0, 1.0, 0.0, 0.5]  # Bright yellow with alpha
+            # Much more pink for post-synaptic  
+            post_overlay[post_pixels] = [1.0, 0.4, 0.7, 0.5]  # Proper pink/magenta with alpha
+            
+            # Apply overlays
+            ax_row[1].imshow(pre_overlay)
+            ax_row[1].imshow(post_overlay)
+        else:
+            ax_row[1].imshow(data_norm, cmap='gray')
         if syn_idx == 0:
-            ax_row[1].set_title('H-Flip')
+            ax_row[1].set_title('Mask Overlay\n(Yellow=Pre, Pink=Post)')
         ax_row[1].axis('off')
         
-        # 3. Rotation
-        rotated = rotate(data_norm, angle=15, reshape=False, mode='constant', cval=0)
-        ax_row[2].imshow(rotated, cmap='gray')
+        # 3. Vertical flip with mask overlay
+        v_flip_data = np.flipud(data_norm)
+        v_flip_pre = np.flipud(pre_2d) if pre_2d is not None else None
+        v_flip_post = np.flipud(post_2d) if post_2d is not None else None
+        
+        ax_row[2].imshow(v_flip_data, cmap='gray')
+        if v_flip_pre is not None and v_flip_post is not None:
+            # Add mask overlays
+            pre_overlay = np.zeros((v_flip_data.shape[0], v_flip_data.shape[1], 4))
+            post_overlay = np.zeros((v_flip_data.shape[0], v_flip_data.shape[1], 4))
+            pre_overlay[v_flip_pre.astype(bool)] = [1.0, 1.0, 0.0, 0.4]
+            post_overlay[v_flip_post.astype(bool)] = [1.0, 0.4, 0.7, 0.4]
+            ax_row[2].imshow(pre_overlay)
+            ax_row[2].imshow(post_overlay)
         if syn_idx == 0:
-            ax_row[2].set_title('Rotate 15°')
+            ax_row[2].set_title('V-Flip + Overlay')
         ax_row[2].axis('off')
         
-        # 4. Noise
-        noisy = data_norm + np.random.normal(0, 0.05, data_norm.shape)
-        noisy = np.clip(noisy, 0, 1)
-        ax_row[3].imshow(noisy, cmap='gray')
+        # 4. Rotated crop (65-75% crop with rotation)
+        h, w = data_norm.shape
+        crop_ratio = 0.7  # 70% crop
+        crop_size = int(min(h, w) * crop_ratio)
+        angle = 25  # Fixed angle for demo
+        
+        # Center crop
+        center_h, center_w = h//2, w//2
+        
+        # Apply rotated crop
+        from scipy.ndimage import rotate as scipy_rotate
+        
+        # Rotate first
+        rotated_data = scipy_rotate(data_norm, angle, reshape=False, mode='reflect')
+        rotated_pre = scipy_rotate(pre_2d, angle, reshape=False, mode='nearest') if pre_2d is not None else None
+        rotated_post = scipy_rotate(post_2d, angle, reshape=False, mode='nearest') if post_2d is not None else None
+        
+        # Then crop
+        start_h = center_h - crop_size//2
+        start_w = center_w - crop_size//2
+        crop_data = rotated_data[start_h:start_h+crop_size, start_w:start_w+crop_size]
+        crop_pre = rotated_pre[start_h:start_h+crop_size, start_w:start_w+crop_size] if rotated_pre is not None else None
+        crop_post = rotated_post[start_h:start_h+crop_size, start_w:start_w+crop_size] if rotated_post is not None else None
+        
+        # Resize back for display
+        crop_resized = resize(crop_data, data_norm.shape, preserve_range=True)
+        ax_row[3].imshow(crop_resized, cmap='gray')
+        if crop_pre is not None and crop_post is not None:
+            crop_pre_resized = resize(crop_pre, data_norm.shape, preserve_range=True, order=0)
+            crop_post_resized = resize(crop_post, data_norm.shape, preserve_range=True, order=0)
+            pre_overlay = np.zeros((data_norm.shape[0], data_norm.shape[1], 4))
+            post_overlay = np.zeros((data_norm.shape[0], data_norm.shape[1], 4))
+            pre_overlay[crop_pre_resized > 0.5] = [1.0, 1.0, 0.0, 0.4]
+            post_overlay[crop_post_resized > 0.5] = [1.0, 0.4, 0.7, 0.4]
+            ax_row[3].imshow(pre_overlay)
+            ax_row[3].imshow(post_overlay)
         if syn_idx == 0:
-            ax_row[3].set_title('+ Noise')
+            ax_row[3].set_title('Rotated Crop + Overlay')
         ax_row[3].axis('off')
         
-        # 5. Brightness
-        bright = np.clip(data_norm * 1.3, 0, 1)
-        ax_row[4].imshow(bright, cmap='gray')
+        # 5. Noise
+        noisy = data_norm + np.random.normal(0, 0.03, data_norm.shape)
+        noisy = np.clip(noisy, 0, 1)
+        ax_row[4].imshow(noisy, cmap='gray')
+        if pre_2d is not None and post_2d is not None:
+            pre_overlay = np.zeros((data_norm.shape[0], data_norm.shape[1], 4))
+            post_overlay = np.zeros((data_norm.shape[0], data_norm.shape[1], 4))
+            pre_overlay[pre_2d.astype(bool)] = [1.0, 1.0, 0.0, 0.4]
+            post_overlay[post_2d.astype(bool)] = [1.0, 0.4, 0.7, 0.4]
+            ax_row[4].imshow(pre_overlay)
+            ax_row[4].imshow(post_overlay)
         if syn_idx == 0:
-            ax_row[4].set_title('+ Bright')
+            ax_row[4].set_title('+ Noise + Overlay')
         ax_row[4].axis('off')
         
-        # 6. Smart crop (mask-aware)
-        if mask_2d is not None and np.any(mask_2d):
-            # Find mask center
-            mask_coords = np.where(mask_2d > 0)
-            if len(mask_coords[0]) > 0:
-                center_h = int(np.mean(mask_coords[0]))
-                center_w = int(np.mean(mask_coords[1]))
-                
-                # Crop around center
-                crop_size = min(data_norm.shape) // 2
-                h, w = data_norm.shape
-                start_h = max(0, min(h - crop_size, center_h - crop_size//2))
-                start_w = max(0, min(w - crop_size, center_w - crop_size//2))
-                
-                cropped = data_norm[start_h:start_h+crop_size, start_w:start_w+crop_size]
-                # Resize back
-                cropped_resized = resize(cropped, data_norm.shape, preserve_range=True)
-                ax_row[5].imshow(cropped_resized, cmap='gray')
-            else:
-                ax_row[5].imshow(data_norm, cmap='gray')
-        else:
-            ax_row[5].imshow(data_norm, cmap='gray')
-        
+        # 6. Brightness
+        bright = np.clip(data_norm * 1.3, 0, 1)
+        ax_row[5].imshow(bright, cmap='gray')
+        if pre_2d is not None and post_2d is not None:
+            pre_overlay = np.zeros((data_norm.shape[0], data_norm.shape[1], 4))
+            post_overlay = np.zeros((data_norm.shape[0], data_norm.shape[1], 4))
+            pre_overlay[pre_2d.astype(bool)] = [1.0, 1.0, 0.0, 0.4]
+            post_overlay[post_2d.astype(bool)] = [1.0, 0.4, 0.7, 0.4]
+            ax_row[5].imshow(pre_overlay)
+            ax_row[5].imshow(post_overlay)
         if syn_idx == 0:
-            ax_row[5].set_title('Smart Crop')
+            ax_row[5].set_title('+ Bright + Overlay')
         ax_row[5].axis('off')
+        
+        # 7-9. Three different rotated crops (60-80% of full image size)
+        for crop_idx in range(3):
+            h, w = data_norm.shape
+            
+            # Use 60-80% of FULL image size (not small crops!)
+            crop_ratios = [0.65, 0.72, 0.78]  # 65%, 72%, 78% of full image
+            crop_ratio = crop_ratios[crop_idx]
+            crop_size = int(min(h, w) * crop_ratio)
+            
+            # Different rotation angles for each crop
+            angles = [15, -25, 35]
+            angle = angles[crop_idx]
+            
+            if combined_2d is not None and np.any(combined_2d):
+                # Find mask center with some randomness
+                mask_coords = np.where(combined_2d > 0)
+                center_h = int(np.mean(mask_coords[0])) + random.randint(-30, 30)
+                center_w = int(np.mean(mask_coords[1])) + random.randint(-30, 30)
+                
+                # Keep center within bounds for the crop
+                center_h = max(crop_size//2, min(h - crop_size//2, center_h))
+                center_w = max(crop_size//2, min(w - crop_size//2, center_w))
+            else:
+                # Random center
+                center_h = random.randint(crop_size//2, h - crop_size//2)
+                center_w = random.randint(crop_size//2, w - crop_size//2)
+            
+            # Apply rotated crop to data and masks
+            from scipy.ndimage import rotate as scipy_rotate
+            
+            # Rotate data and masks
+            rotated_data = scipy_rotate(data_norm, angle, reshape=False, mode='reflect')
+            rotated_pre = scipy_rotate(pre_2d, angle, reshape=False, mode='constant', cval=0) if pre_2d is not None else None
+            rotated_post = scipy_rotate(post_2d, angle, reshape=False, mode='constant', cval=0) if post_2d is not None else None
+            
+            # Extract the large crop (60-80% of original size)
+            start_h = center_h - crop_size//2
+            start_w = center_w - crop_size//2
+            
+            crop_data = rotated_data[start_h:start_h+crop_size, start_w:start_w+crop_size]
+            crop_pre = rotated_pre[start_h:start_h+crop_size, start_w:start_w+crop_size] if rotated_pre is not None else None
+            crop_post = rotated_post[start_h:start_h+crop_size, start_w:start_w+crop_size] if rotated_post is not None else None
+            
+            # Show the cropped image
+            ax_row[6 + crop_idx].imshow(crop_data, cmap='gray')
+            
+            # Add mask overlays on top with proper colors
+            if crop_pre is not None and crop_post is not None:
+                crop_h, crop_w = crop_data.shape
+                pre_overlay = np.zeros((crop_h, crop_w, 4))  # RGBA
+                post_overlay = np.zeros((crop_h, crop_w, 4))  # RGBA
+                
+                # Yellow for pre-synaptic (bright and visible)
+                pre_overlay[crop_pre > 0.1] = [1.0, 1.0, 0.0, 0.5]  # Bright yellow with good alpha
+                # MUCH more pink for post-synaptic 
+                post_overlay[crop_post > 0.1] = [1.0, 0.4, 0.7, 0.5]  # Proper pink/magenta with good alpha
+                
+                # Apply overlays
+                ax_row[6 + crop_idx].imshow(pre_overlay)
+                ax_row[6 + crop_idx].imshow(post_overlay)
+            
+            if syn_idx == 0:
+                ax_row[6 + crop_idx].set_title(f'Rotated Crop {crop_idx+1}\n({int(crop_ratio*100)}%, {angle}°)')
+            ax_row[6 + crop_idx].axis('off')
     
     plt.tight_layout()
     
     # Save
     os.makedirs('figures', exist_ok=True)
-    save_path = 'figures/2d_augmentation_gallery.png'
+    save_path = 'figures/comprehensive_2d_augmentation_gallery.png'
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
-    print(f"✅ 2D augmentation gallery saved to: {save_path}")
+    print(f"✅ Comprehensive 2D augmentation gallery saved to: {save_path}")
     
     plt.show()
     return fig

@@ -8,6 +8,7 @@ from tqdm import tqdm
 import numpy as np
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 from utils import compute_class_weights
+from plotting import plot_training_curves
 
 
 def train_epoch(model, train_loader, criterion, optimizer, device, logger=None):
@@ -216,6 +217,14 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
             logger.info(f"  Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%")
             logger.info(f"  Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}%")
             logger.info(f"  Best Val Acc: {best_val_acc:.2f}%")
+        
+        # Update plot EVERY epoch - same figure overwrites itself
+        if save_path:
+            model_name = os.path.splitext(os.path.basename(save_path))[0].replace('best_synapse_model_', '')
+            _update_training_plots(
+                train_losses, val_losses, train_accuracies, val_accuracies,
+                model_name, epoch + 1
+            )
     
     # Final evaluation
     if logger:
@@ -279,6 +288,23 @@ def setup_training(model, train_files, device, learning_rate=0.001, weight_decay
     )
     
     return criterion, optimizer, scheduler
+
+
+def _update_training_plots(train_losses, val_losses, train_accuracies, val_accuracies, 
+                           model_name, current_epoch):
+    """Update ONE training plot per model that overwrites itself every epoch."""
+    import os
+    
+    figures_dir = 'figures'
+    os.makedirs(figures_dir, exist_ok=True)
+    
+    # ONE figure per model - same filename overwrites every epoch
+    plot_training_curves(
+        train_losses, val_losses, train_accuracies, val_accuracies,
+        save_path=os.path.join(figures_dir, f'{model_name}_training_curves.png'),
+        title=f'{model_name.title()} Training Progress (Epoch {current_epoch})',
+        show=False
+    )
 
 
 def resume_training(model, checkpoint_path, device):

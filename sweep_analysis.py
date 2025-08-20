@@ -333,7 +333,7 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
         aggfunc='mean'
     )
     
-    sns.heatmap(heatmap_data, annot=True, fmt='.1f', cmap='RdYlBu_r', ax=ax7, cbar_kws={'shrink': 0.8})
+    sns.heatmap(heatmap_data, annot=True, fmt='.1f', cmap='Reds', ax=ax7, cbar_kws={'shrink': 0.8})
     ax7.set_title('Average Validation Accuracy (%)', fontsize=12, fontweight='bold')
     ax7.set_xlabel('CNN Width')
     ax7.set_ylabel('CNN Depth')

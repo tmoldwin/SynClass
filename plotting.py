@@ -98,7 +98,7 @@ def plot_confusion_matrix(y_true, y_pred, class_names=['E', 'I'], save_path=None
     n_bins = 100
     cmap = plt.cm.colors.LinearSegmentedColormap.from_list('custom', colors, N=n_bins)
     
-    sns.heatmap(cm, annot=True, fmt=fmt, cmap='Blues', 
+    sns.heatmap(cm, annot=True, fmt=fmt, cmap='Reds', 
                 xticklabels=class_names, yticklabels=class_names,
                 cbar_kws={'label': 'Count' if not normalize else 'Proportion'})
     

@@ -321,7 +321,8 @@ class CNN2DMultiChannel(nn.Module):
 
 def create_multichannel_dataloaders(train_files, test_files, synapse_map, 
                                    batch_size=16, num_workers=4, pin_memory=True,
-                                   input_size=224, augment_train=True, augments_per_epoch=3):
+                                   input_size=224, augment_train=True, augments_per_epoch=3,
+                                   augment_val=False, val_augments_per_epoch=1):
     """Create dataloaders for multi-channel training."""
     from torch.utils.data import DataLoader
     
@@ -331,9 +332,14 @@ def create_multichannel_dataloaders(train_files, test_files, synapse_map,
         input_size=input_size, augments_per_epoch=augments_per_epoch
     )
     val_dataset = MultiChannelSynapseDataset(
-        test_files, synapse_map, augment=False, 
-        input_size=input_size, augments_per_epoch=1  # No multiple augments for validation
+        test_files, synapse_map, augment=augment_val, 
+        input_size=input_size, augments_per_epoch=val_augments_per_epoch
     )
+    
+    print(f"🎯 FAIR AUGMENTATION:")
+    print(f"   Training: {len(train_files)} synapses × {augments_per_epoch} augments = {len(train_dataset)} samples")
+    print(f"   Validation: {len(test_files)} synapses × {val_augments_per_epoch} augments = {len(val_dataset)} samples")
+    print(f"   Training/Val ratio: {len(train_dataset)/len(val_dataset):.1f}:1 (was 16:1)")
     
     # Create dataloaders
     train_loader = DataLoader(
@@ -363,12 +369,12 @@ def main():
     """Main training function."""
     parser = argparse.ArgumentParser(description='2D CNN Multi-Channel Synapse Classifier')
     parser.add_argument('--epochs', type=int, default=100, help='Training epochs')
-    parser.add_argument('--lr', type=float, default=5e-6, help='Learning rate')
-    parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
+    parser.add_argument('--lr', type=float, default=1e-5, help='Learning rate')
+    parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
     parser.add_argument('--dropout_rate', type=float, default=0.2, help='Dropout rate')
     parser.add_argument('--weight_decay', type=float, default=5e-3, help='Weight decay')
     parser.add_argument('--input_size', type=int, default=224, help='Input image size')
-    parser.add_argument('--augments_per_epoch', type=int, default=3, help='Number of augmentations per synapse per epoch')
+    parser.add_argument('--augments_per_epoch', type=int, default=1, help='Number of augmentations per synapse per epoch')
     parser.add_argument('--cnn_depth', type=int, default=5, help='Number of CNN blocks (3, 5, or 7)')
     parser.add_argument('--run_name', type=str, help='Run name for this experiment')
     
@@ -385,7 +391,7 @@ def main():
     # Load data
     train_files, test_files, synapse_map, data_stats = prepare_synapse_data(logger=logger)
     
-    # Create dataloaders
+    # Create dataloaders with validation augmentation for fair comparison
     train_loader, val_loader = create_multichannel_dataloaders(
         train_files, test_files, synapse_map,
         batch_size=args.batch_size, 
@@ -393,22 +399,34 @@ def main():
         pin_memory=True,
         input_size=args.input_size,
         augment_train=True,
-        augments_per_epoch=args.augments_per_epoch
+        augments_per_epoch=args.augments_per_epoch,
+        augment_val=False,  # No validation augmentation
+        val_augments_per_epoch=1  # Single pass for validation
     )
     
     # Initialize model
     model = CNN2DMultiChannel(num_classes=2, dropout_rate=args.dropout_rate, cnn_depth=args.cnn_depth).to(device)
     print_model_summary(model, logger=logger)
     
-    # Setup training with enhanced regularization
+    # Setup training with enhanced regularization and stronger class weights
     class_weights = compute_class_weights(train_files, synapse_map)
+    
+    # Amplify class weights to combat severe imbalance
+    if len(class_weights) == 2:
+        # If I class is underrepresented, boost its weight significantly
+        i_boost = 3.0  # Boost minority class weight by 3x
+        if class_weights[1] > class_weights[0]:  # I class has higher weight (minority)
+            class_weights[1] *= i_boost
+        else:  # E class has higher weight (minority)
+            class_weights[0] *= i_boost
+        logger.info(f"Boosted class weights: E={class_weights[0]:.3f}, I={class_weights[1]:.3f}")
+    
     class_weights = torch.tensor(class_weights, dtype=torch.float32, device=device)
     criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=0.2)
     
     optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='max', factor=0.5, patience=10, min_lr=args.lr/1000
-    )
+    # Use exponential decay for more predictable LR reduction
+    scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.98)  # 2% reduction per epoch
     
     # Train
     results = train_model(

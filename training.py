@@ -292,19 +292,50 @@ def setup_training(model, train_files, device, learning_rate=0.001, weight_decay
 
 def _update_training_plots(train_losses, val_losses, train_accuracies, val_accuracies, 
                            model_name, current_epoch):
-    """Update ONE training plot per model that overwrites itself every epoch."""
+    """Save training plot in sweep directory with epoch and accuracy in filename, exactly like the old 2DCNN."""
     import os
+    import glob
     
-    figures_dir = 'figures'
-    os.makedirs(figures_dir, exist_ok=True)
+    # Get current accuracies
+    current_train_acc = train_accuracies[-1] if train_accuracies else 0
+    current_val_acc = val_accuracies[-1] if val_accuracies else 0
     
-    # ONE figure per model - same filename overwrites every epoch
+    # Check if we're in a sweep (SWEEP_MASTER_DIR env variable)
+    sweep_dir = os.environ.get('SWEEP_MASTER_DIR')
+    if sweep_dir is None:
+        figures_dir = 'figures'
+        os.makedirs(figures_dir, exist_ok=True)
+    else:
+        figures_dir = os.path.join(sweep_dir, 'figures')
+        os.makedirs(figures_dir, exist_ok=True)
+    
+    # Create filename with epoch and accuracies exactly like old 2DCNN
+    filename = f"{model_name}_epoch{current_epoch:03d}_train{current_train_acc:.1f}_val{current_val_acc:.1f}.png"
+    save_path = os.path.join(figures_dir, filename)
+    
+    # Delete previous epoch figures for this run to save disk space
+    if current_epoch > 1:
+        pattern = f"{model_name}_epoch*_train*_val*.png"
+        previous_files = glob.glob(os.path.join(figures_dir, pattern))
+        
+        # Delete files from previous epochs (keep only current epoch)
+        for old_file in previous_files:
+            try:
+                os.remove(old_file)
+                print(f"Deleted previous epoch figure: {old_file}")
+            except OSError as e:
+                print(f"Could not delete {old_file}: {e}")
+    
+    # Create the plot with detailed title
+    title = f'Training Progress - {model_name} | Epoch {current_epoch} | Train: {current_train_acc:.1f}% | Val: {current_val_acc:.1f}%'
     plot_training_curves(
         train_losses, val_losses, train_accuracies, val_accuracies,
-        save_path=os.path.join(figures_dir, f'{model_name}_training_curves.png'),
-        title=f'{model_name.title()} Training Progress (Epoch {current_epoch})',
+        save_path=save_path,
+        title=title,
         show=False
     )
+    
+    print(f"Progress plot saved: {save_path}")
 
 
 def resume_training(model, checkpoint_path, device):

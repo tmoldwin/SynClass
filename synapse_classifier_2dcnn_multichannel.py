@@ -394,17 +394,29 @@ def main():
     # Load data
     train_files, test_files, synapse_map, data_stats = prepare_synapse_data(logger=logger)
     
-    # Verify balanced dataset - should be 50/50 E/I
+    # Verify balanced dataset - should be 50/50 E/I for BOTH train and test
     logger.info(f"📊 CLASS VERIFICATION:")
     logger.info(f"   Train: E={data_stats['train_distribution']['E']}, I={data_stats['train_distribution']['I']}")
     logger.info(f"   Test:  E={data_stats['test_distribution']['E']}, I={data_stats['test_distribution']['I']}")
-    train_ratio = data_stats['train_distribution']['E'] / data_stats['train_distribution']['I']
-    logger.info(f"   Train E/I ratio: {train_ratio:.3f}:1 (should be ~1.0)")
     
-    if abs(train_ratio - 1.0) > 0.1:
-        logger.warning(f"⚠️  Dataset is NOT balanced! Ratio: {train_ratio:.3f}:1")
+    train_ratio = data_stats['train_distribution']['E'] / data_stats['train_distribution']['I']
+    test_ratio = data_stats['test_distribution']['E'] / data_stats['test_distribution']['I']
+    
+    logger.info(f"   Train E/I ratio: {train_ratio:.3f}:1 (should be ~1.0)")
+    logger.info(f"   Test E/I ratio:  {test_ratio:.3f}:1 (should be ~1.0)")
+    
+    train_balanced = abs(train_ratio - 1.0) <= 0.1
+    test_balanced = abs(test_ratio - 1.0) <= 0.1
+    
+    if not train_balanced:
+        logger.warning(f"⚠️  TRAIN dataset is NOT balanced! Ratio: {train_ratio:.3f}:1")
+    if not test_balanced:
+        logger.warning(f"⚠️  TEST dataset is NOT balanced! Ratio: {test_ratio:.3f}:1")
+        
+    if train_balanced and test_balanced:
+        logger.info(f"✅ Both train and test datasets are balanced - no class weights needed")
     else:
-        logger.info(f"✅ Dataset is balanced - no class weights needed")
+        logger.error(f"❌ Dataset imbalance detected - this will cause training issues!")
     
     # Create dataloaders with validation augmentation for fair comparison
     train_loader, val_loader = create_multichannel_dataloaders(

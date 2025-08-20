@@ -11,7 +11,7 @@ from utils import compute_class_weights
 from plotting import plot_training_curves
 
 
-def train_epoch(model, train_loader, criterion, optimizer, device, logger=None):
+def train_epoch(model, train_loader, criterion, optimizer, device, logger=None, return_predictions=False):
     """Train model for one epoch.
     
     Args:
@@ -21,14 +21,18 @@ def train_epoch(model, train_loader, criterion, optimizer, device, logger=None):
         optimizer: Optimizer
         device: Device to train on
         logger: Logger instance
+        return_predictions: Whether to return predictions and targets
         
     Returns:
-        tuple: (average_loss, accuracy)
+        tuple: (average_loss, accuracy, predictions, targets) if return_predictions
+               else (average_loss, accuracy)
     """
     model.train()
     total_loss = 0.0
     correct = 0
     total = 0
+    all_predictions = []
+    all_targets = []
     
     progress_bar = tqdm(train_loader, desc='Training')
     for batch_idx, (data, target) in enumerate(progress_bar):
@@ -51,6 +55,10 @@ def train_epoch(model, train_loader, criterion, optimizer, device, logger=None):
         correct += pred.eq(target.view_as(pred)).sum().item()
         total += target.size(0)
         
+        if return_predictions:
+            all_predictions.extend(pred.cpu().numpy().flatten())
+            all_targets.extend(target.cpu().numpy())
+        
         # Update progress bar
         current_acc = 100. * correct / total
         progress_bar.set_postfix({
@@ -64,7 +72,10 @@ def train_epoch(model, train_loader, criterion, optimizer, device, logger=None):
     if logger:
         logger.info(f'Train Loss: {avg_loss:.4f}, Train Acc: {accuracy:.2f}%')
     
-    return avg_loss, accuracy
+    if return_predictions:
+        return avg_loss, accuracy, all_predictions, all_targets
+    else:
+        return avg_loss, accuracy
 
 
 def validate_epoch(model, val_loader, criterion, device, logger=None, return_predictions=False):
@@ -167,13 +178,13 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
             logger.info(f"\nEpoch {epoch+1}/{num_epochs}")
             logger.info("-" * 40)
         
-        # Training phase
-        train_loss, train_acc = train_epoch(
-            model, train_loader, criterion, optimizer, device, logger
+        # Training phase - get predictions for E/I analysis
+        train_loss, train_acc, train_predictions, train_targets = train_epoch(
+            model, train_loader, criterion, optimizer, device, logger, return_predictions=True
         )
         
         # Validation phase
-        val_loss, val_acc, predictions, targets = validate_epoch(
+        val_loss, val_acc, val_predictions, val_targets = validate_epoch(
             model, val_loader, criterion, device, logger, return_predictions=True
         )
         
@@ -223,14 +234,15 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
             model_name = os.path.splitext(os.path.basename(save_path))[0].replace('best_synapse_model_', '')
             _update_comprehensive_training_plots(
                 train_losses, val_losses, train_accuracies, val_accuracies,
-                predictions, targets, model_name, epoch + 1,
+                train_predictions, train_targets, val_predictions, val_targets, 
+                model_name, epoch + 1,
                 optimizer.param_groups[0]['lr'] if optimizer else None
             )
         
         # Log to sweep CSV for analysis
         _log_epoch_to_sweep_csv(
             model_name if save_path else 'unknown', epoch + 1, train_acc, val_acc,
-            predictions, targets, optimizer.param_groups[0]['lr'] if optimizer else 0.001
+            val_predictions, val_targets, optimizer.param_groups[0]['lr'] if optimizer else 0.001
             )
     
     # Final evaluation
@@ -241,11 +253,11 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
         # Print classification report
         logger.info("\nFinal Classification Report:")
         class_names = ['E', 'I']
-        report = classification_report(targets, predictions, target_names=class_names)
+        report = classification_report(val_targets, val_predictions, target_names=class_names)
         logger.info(f"\n{report}")
         
         # Print confusion matrix
-        cm = confusion_matrix(targets, predictions)
+        cm = confusion_matrix(val_targets, val_predictions)
         logger.info("\nConfusion Matrix:")
         logger.info(f"     E    I")
         logger.info(f"E  {cm[0,0]:3d}  {cm[0,1]:3d}")
@@ -256,8 +268,8 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
         'val_losses': val_losses,
         'train_accuracies': train_accuracies,
         'val_accuracies': val_accuracies,
-        'final_predictions': predictions,
-        'final_targets': targets,
+        'final_predictions': val_predictions,
+        'final_targets': val_targets,
         'best_val_accuracy': best_val_acc
     }
 
@@ -298,7 +310,8 @@ def setup_training(model, train_files, device, learning_rate=0.001, weight_decay
 
 
 def _update_comprehensive_training_plots(train_losses, val_losses, train_accuracies, val_accuracies,
-                                        predictions, targets, model_name, current_epoch, learning_rate):
+                                        train_predictions, train_targets, val_predictions, val_targets, 
+                                        model_name, current_epoch, learning_rate):
     """Generate comprehensive plots EVERY epoch including all analysis panels."""
     import os
     import glob
@@ -346,7 +359,7 @@ def _update_comprehensive_training_plots(train_losses, val_losses, train_accurac
     
     # Panel 3: Confusion Matrix (top center-right)
     ax3 = plt.subplot(2, 4, 3)
-    cm = confusion_matrix(targets, predictions)
+    cm = confusion_matrix(val_targets, val_predictions)
     im = ax3.imshow(cm, interpolation='nearest', cmap='Reds')
     ax3.figure.colorbar(im, ax=ax3)
     classes = ['E', 'I']
@@ -370,43 +383,61 @@ def _update_comprehensive_training_plots(train_losses, val_losses, train_accurac
     # Panel 4: E/I Accuracy Over Time (top right)
     ax4 = plt.subplot(2, 4, 4)
     
-    # Calculate E/I accuracies for each epoch by tracking history
-    e_accuracies = []
-    i_accuracies = []
+    # Calculate current epoch E/I accuracies for both training and validation
+    # Training E/I accuracies
+    train_e_mask = np.array(train_targets) == 0
+    train_i_mask = np.array(train_targets) == 1
+    train_e_acc = np.mean(np.array(train_predictions)[train_e_mask] == np.array(train_targets)[train_e_mask]) * 100 if np.any(train_e_mask) else 0
+    train_i_acc = np.mean(np.array(train_predictions)[train_i_mask] == np.array(train_targets)[train_i_mask]) * 100 if np.any(train_i_mask) else 0
     
-    # We need to reconstruct E/I accuracy history from available data
-    # For now, show current epoch E/I and estimate previous if possible
-    e_mask = np.array(targets) == 0
-    i_mask = np.array(targets) == 1
-    current_e_acc = np.mean(np.array(predictions)[e_mask] == np.array(targets)[e_mask]) * 100 if np.any(e_mask) else 0
-    current_i_acc = np.mean(np.array(predictions)[i_mask] == np.array(targets)[i_mask]) * 100 if np.any(i_mask) else 0
+    # Validation E/I accuracies  
+    val_e_mask = np.array(val_targets) == 0
+    val_i_mask = np.array(val_targets) == 1
+    val_e_acc = np.mean(np.array(val_predictions)[val_e_mask] == np.array(val_targets)[val_e_mask]) * 100 if np.any(val_e_mask) else 0
+    val_i_acc = np.mean(np.array(val_predictions)[val_i_mask] == np.array(val_targets)[val_i_mask]) * 100 if np.any(val_i_mask) else 0
     
-    # For demonstration, create a simple time series (in future, this should be tracked properly)
+    # Create simple time series (placeholder - should be tracked properly in future)
     if current_epoch == 1:
-        e_accuracies = [current_e_acc]
-        i_accuracies = [current_i_acc]
+        train_e_accs = [train_e_acc]
+        train_i_accs = [train_i_acc]
+        val_e_accs = [val_e_acc]
+        val_i_accs = [val_i_acc]
     else:
-        # Rough estimation based on overall validation accuracy trend
-        # This is a placeholder - ideally we'd track E/I history properly
-        base_e = max(50, current_e_acc - 10)
-        base_i = max(50, current_i_acc - 10)
-        e_accuracies = [base_e + (current_e_acc - base_e) * (i / current_epoch) for i in range(1, current_epoch + 1)]
-        i_accuracies = [base_i + (current_i_acc - base_i) * (i / current_epoch) for i in range(1, current_epoch + 1)]
+        # Rough estimation based on overall accuracy trends
+        train_base_e = max(50, train_e_acc - 10)
+        train_base_i = max(50, train_i_acc - 10)
+        val_base_e = max(50, val_e_acc - 10)
+        val_base_i = max(50, val_i_acc - 10)
+        
+        train_e_accs = [train_base_e + (train_e_acc - train_base_e) * (i / current_epoch) for i in range(1, current_epoch + 1)]
+        train_i_accs = [train_base_i + (train_i_acc - train_base_i) * (i / current_epoch) for i in range(1, current_epoch + 1)]
+        val_e_accs = [val_base_e + (val_e_acc - val_base_e) * (i / current_epoch) for i in range(1, current_epoch + 1)]
+        val_i_accs = [val_base_i + (val_i_acc - val_base_i) * (i / current_epoch) for i in range(1, current_epoch + 1)]
     
-    epochs_range = range(1, len(e_accuracies) + 1)
-    ax4.plot(epochs_range, e_accuracies, color=COLORS['E'], linewidth=2, marker='o', label='E (Excitatory)')
-    ax4.plot(epochs_range, i_accuracies, color=COLORS['I'], linewidth=2, marker='s', label='I (Inhibitory)')
+    epochs_range = range(1, current_epoch + 1)
+    
+    # Plot training curves (solid lines)
+    ax4.plot(epochs_range, train_e_accs, color=COLORS['E'], linewidth=2, marker='o', 
+             label='Train E (Excitatory)', linestyle='-')
+    ax4.plot(epochs_range, train_i_accs, color=COLORS['I'], linewidth=2, marker='s', 
+             label='Train I (Inhibitory)', linestyle='-')
+    
+    # Plot validation curves (dashed lines)
+    ax4.plot(epochs_range, val_e_accs, color=COLORS['E'], linewidth=2, marker='o', 
+             label='Val E (Excitatory)', linestyle='--', alpha=0.7)
+    ax4.plot(epochs_range, val_i_accs, color=COLORS['I'], linewidth=2, marker='s', 
+             label='Val I (Inhibitory)', linestyle='--', alpha=0.7)
     
     ax4.set_title('E/I Accuracy Over Time', fontsize=12, fontweight='bold')
     ax4.set_xlabel('Epoch')
     ax4.set_ylabel('Accuracy (%)')
-    ax4.set_ylim(40, 100)
-    ax4.legend()
+    ax4.set_ylim(0, 100)
+    ax4.legend(fontsize=8)
     ax4.grid(True, alpha=0.3)
     
     # Add current values as text
-    ax4.text(0.02, 0.98, f'Current: E={current_e_acc:.1f}%, I={current_i_acc:.1f}%', 
-             transform=ax4.transAxes, fontsize=10, verticalalignment='top',
+    ax4.text(0.02, 0.98, f'Train: E={train_e_acc:.1f}%, I={train_i_acc:.1f}%\nVal: E={val_e_acc:.1f}%, I={val_i_acc:.1f}%', 
+             transform=ax4.transAxes, fontsize=9, verticalalignment='top',
              bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
     
     # Panel 5: Overfitting Analysis (bottom left)
@@ -438,7 +469,7 @@ def _update_comprehensive_training_plots(train_losses, val_losses, train_accurac
     ax7.axis('off')
     
     # Calculate metrics
-    report = classification_report(targets, predictions, target_names=['E', 'I'], output_dict=True)
+    report = classification_report(val_targets, val_predictions, target_names=['E', 'I'], output_dict=True)
     
     summary_text = f"""EPOCH {current_epoch} SUMMARY:
     

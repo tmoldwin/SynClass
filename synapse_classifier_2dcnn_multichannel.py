@@ -44,7 +44,7 @@ class MultiChannelSynapseDataset(torch.utils.data.Dataset):
         h, w = image.shape
         
         # Create rotation matrix around crop center
-        rotation_matrix = cv2.getRotationMatrix2D((center_w, center_h), angle, 1.0)
+        rotation_matrix = cv2.getRotationMatrix2D((float(center_w), float(center_h)), float(angle), 1.0)
         
         # Rotate the entire image
         rotated = cv2.warpAffine(image, rotation_matrix, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
@@ -195,47 +195,72 @@ class MultiChannelSynapseDataset(torch.utils.data.Dataset):
 class CNN2DMultiChannel(nn.Module):
     """2D CNN for 3-channel input: image + pre_mask + post_mask."""
     
-    def __init__(self, num_classes=2, dropout_rate=0.3):
+    def __init__(self, num_classes=2, dropout_rate=0.3, cnn_depth=5):
         super().__init__()
         
         # Input: 3 channels (image + pre_mask + post_mask)
-        self.features = nn.Sequential(
-            # First conv block
-            nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3),
-            nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
-            
-            # Second conv block
-            nn.Conv2d(64, 128, kernel_size=5, stride=1, padding=2),
-            nn.BatchNorm2d(128),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            
-            # Third conv block
-            nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(256),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            
-            # Fourth conv block
-            nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(512),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            
-            # Fifth conv block
-            nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(512),
-            nn.ReLU(inplace=True),
-            nn.AdaptiveAvgPool2d((1, 1))
-        )
+        if cnn_depth == 3:
+            # Lighter 3-block architecture
+            self.features = nn.Sequential(
+                # First conv block
+                nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3),
+                nn.BatchNorm2d(64),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
+                
+                # Second conv block
+                nn.Conv2d(64, 128, kernel_size=5, stride=1, padding=2),
+                nn.BatchNorm2d(128),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                
+                # Third conv block
+                nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
+                nn.BatchNorm2d(256),
+                nn.ReLU(inplace=True),
+                nn.AdaptiveAvgPool2d((1, 1))
+            )
+            final_features = 256
+        else:  # cnn_depth == 5 (default)
+            # Deeper 5-block architecture
+            self.features = nn.Sequential(
+                # First conv block
+                nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3),
+                nn.BatchNorm2d(64),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
+                
+                # Second conv block
+                nn.Conv2d(64, 128, kernel_size=5, stride=1, padding=2),
+                nn.BatchNorm2d(128),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                
+                # Third conv block
+                nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
+                nn.BatchNorm2d(256),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                
+                # Fourth conv block
+                nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1),
+                nn.BatchNorm2d(512),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                
+                # Fifth conv block
+                nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
+                nn.BatchNorm2d(512),
+                nn.ReLU(inplace=True),
+                nn.AdaptiveAvgPool2d((1, 1))
+            )
+            final_features = 512
         
         # Classifier
         self.classifier = nn.Sequential(
             nn.Flatten(),
             nn.Dropout(dropout_rate),
-            nn.Linear(512, 256),
+            nn.Linear(final_features, 256),
             nn.ReLU(inplace=True),
             nn.Dropout(dropout_rate),
             nn.Linear(256, num_classes)
@@ -290,94 +315,65 @@ def create_multichannel_dataloaders(train_files, test_files, synapse_map,
 def main():
     """Main training function."""
     parser = argparse.ArgumentParser(description='2D CNN Multi-Channel Synapse Classifier')
-    parser.add_argument('--epochs', type=int, default=50, help='Number of training epochs')
-    parser.add_argument('--batch_size', type=int, default=16, help='Batch size')
-    parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate')
-    parser.add_argument('--dropout', type=float, default=0.3, help='Dropout rate')
-    parser.add_argument('--augments_per_epoch', type=int, default=3, help='Number of augmentations per synapse per epoch')
+    parser.add_argument('--epochs', type=int, default=100, help='Training epochs')
+    parser.add_argument('--lr', type=float, default=1e-4, help='Learning rate')
+    parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
+    parser.add_argument('--dropout_rate', type=float, default=0.3, help='Dropout rate')
+    parser.add_argument('--weight_decay', type=float, default=1e-4, help='Weight decay')
     parser.add_argument('--input_size', type=int, default=224, help='Input image size')
-    parser.add_argument('--num_workers', type=int, default=4, help='Number of data loader workers')
-    parser.add_argument('--save_model', action='store_true', help='Save the trained model')
+    parser.add_argument('--augments_per_epoch', type=int, default=3, help='Number of augmentations per synapse per epoch')
+    parser.add_argument('--cnn_depth', type=int, default=5, help='Number of CNN blocks (3 or 5)')
+    parser.add_argument('--run_name', type=str, help='Run name for this experiment')
     
     args = parser.parse_args()
     
     # Setup
-    logger = setup_logging("2dcnn_multichannel")
+    model_name = args.run_name if args.run_name else '2dcnn_multichannel'
+    logger = setup_logging(model_name)
+    logger.info("Starting 2D CNN Multi-Channel Synapse Classification")
+    
     set_random_seeds(42)
     device = get_device()
     
-    print("=" * 80)
-    print("🧠 2D CNN MULTI-CHANNEL SYNAPSE CLASSIFIER")
-    print("=" * 80)
-    print(f"📊 Input: 3 channels (image + pre_mask + post_mask)")
-    print(f"🔄 Augmentations per epoch: {args.augments_per_epoch}")
-    print(f"📐 Input size: {args.input_size}×{args.input_size}")
-    print(f"🎯 Device: {device}")
-    print("=" * 80)
-    
     # Load data
-    print("\n📂 Loading synapse data...")
     train_files, test_files, synapse_map, data_stats = prepare_synapse_data(logger=logger)
     
     # Create dataloaders
-    print("\n🔄 Creating multi-channel dataloaders...")
     train_loader, val_loader = create_multichannel_dataloaders(
         train_files, test_files, synapse_map,
-        batch_size=args.batch_size,
-        num_workers=args.num_workers,
+        batch_size=args.batch_size, 
+        num_workers=4,
         pin_memory=True,
         input_size=args.input_size,
         augment_train=True,
         augments_per_epoch=args.augments_per_epoch
     )
     
-    print(f"✅ Training samples: {len(train_loader.dataset)}")
-    print(f"✅ Validation samples: {len(val_loader.dataset)}")
-    print(f"✅ Training batches: {len(train_loader)}")
-    print(f"✅ Validation batches: {len(val_loader)}")
-    
-    # Create model
-    print("\n🏗️ Creating 2D CNN model...")
-    model = CNN2DMultiChannel(num_classes=2, dropout_rate=args.dropout)
-    model = model.to(device)
-    
-    print_model_summary(model, input_size=(3, args.input_size, args.input_size))
+    # Initialize model
+    model = CNN2DMultiChannel(num_classes=2, dropout_rate=args.dropout_rate, cnn_depth=args.cnn_depth).to(device)
+    print_model_summary(model, logger=logger)
     
     # Setup training
     class_weights = compute_class_weights(train_files, synapse_map)
-    criterion = nn.CrossEntropyLoss(weight=torch.tensor(class_weights, dtype=torch.float32).to(device))
-    optimizer = optim.Adam(model.parameters(), lr=args.learning_rate, weight_decay=1e-4)
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
+    class_weights = torch.tensor(class_weights, dtype=torch.float32, device=device)
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
     
-    # Train model
-    print(f"\n🚀 Starting training for {args.epochs} epochs...")
-    history = train_model(
-        model=model,
-        train_loader=train_loader,
-        val_loader=val_loader,
-        criterion=criterion,
-        optimizer=optimizer,
-        num_epochs=args.epochs,
-        device=device,
-        scheduler=scheduler,
-        early_stopping_patience=15,
-        logger=logger
+    optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(
+        optimizer, T_0=20, T_mult=2, eta_min=args.lr/100
     )
     
-    # Save model
-    if args.save_model:
-        model_path = 'best_synapse_model_2dcnn_multichannel.pth'
-        torch.save(model.state_dict(), model_path)
-        print(f"💾 Model saved to: {model_path}")
+    # Train
+    results = train_model(
+        model, train_loader, val_loader, criterion, optimizer,
+        args.epochs, device, scheduler, f'best_synapse_model_{model_name}.pth',
+        early_stopping_patience=15, logger=logger
+    )
     
-    # Generate plots
-    print("\n📊 Generating training plots...")
-    save_all_plots(history, model_name="2dcnn_multichannel", 
-                   train_loader=train_loader, val_loader=val_loader, 
-                   model=model, device=device)
+    # Save plots
+    save_all_plots(results, 'figures', model_name)
     
-    print("\n🎉 Training completed successfully!")
-    print("📂 Check 'figures/' directory for training plots")
+    logger.info(f"Training complete! Best accuracy: {results.get('best_val_accuracy', 'N/A'):.2f}%")
 
 
 if __name__ == '__main__':

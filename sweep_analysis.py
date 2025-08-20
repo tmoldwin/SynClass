@@ -21,43 +21,43 @@ def load_and_prepare_data(csv_file):
     # Create a unique identifier for each run
     df['run_id'] = df['run_name']
     
-    # Extract depth and width from run_name (e.g., "resnet_d101_w256" -> depth=101, width=256)
-    def extract_depth_width(run_name):
+    # Extract depth and augments from run_name (e.g., "2dcnn_mc_d3_a2" -> depth=3, augments=2)
+    def extract_depth_augments(run_name):
         try:
-            # Handle different naming patterns
-            if 'resnet_d' in run_name and '_w' in run_name:
-                # Format: resnet_d101_w256
+            # Handle 2D CNN multi-channel naming pattern
+            if '2dcnn_mc_d' in run_name and '_a' in run_name:
+                # Format: 2dcnn_mc_d3_a2
+                parts = run_name.split('_')
+                depth_part = [p for p in parts if p.startswith('d')][0]
+                augments_part = [p for p in parts if p.startswith('a')][0]
+                depth = int(depth_part[1:])
+                augments = int(augments_part[1:])
+            elif 'resnet_d' in run_name and '_w' in run_name:
+                # Legacy format: resnet_d101_w256 (treat width as augments for compatibility)
                 parts = run_name.split('_')
                 depth_part = [p for p in parts if p.startswith('d')][0]
                 width_part = [p for p in parts if p.startswith('w')][0]
                 depth = int(depth_part[1:])
-                width = int(width_part[1:])
-            elif 'cnn_d' in run_name and '_w' in run_name:
-                # Format: cnn_d7_w32
-                parts = run_name.split('_')
-                depth_part = [p for p in parts if p.startswith('d')][0]
-                width_part = [p for p in parts if p.startswith('w')][0]
-                depth = int(depth_part[1:])
-                width = int(width_part[1:])
+                augments = int(width_part[1:])
             else:
                 # Fallback: try to extract any numbers
                 import re
                 numbers = re.findall(r'\d+', run_name)
                 if len(numbers) >= 2:
                     depth = int(numbers[0])
-                    width = int(numbers[1])
+                    augments = int(numbers[1])
                 else:
                     depth = 0
-                    width = 0
+                    augments = 0
         except:
             depth = 0
-            width = 0
-        return depth, width
+            augments = 0
+        return depth, augments
     
-    # Extract depth and width for each run
-    depth_width = df['run_name'].apply(extract_depth_width)
-    df['cnn_depth'] = [dw[0] for dw in depth_width]
-    df['cnn_width'] = [dw[1] for dw in depth_width]
+    # Extract depth and augments for each run
+    depth_augments = df['run_name'].apply(extract_depth_augments)
+    df['cnn_depth'] = [da[0] for da in depth_augments]
+    df['augments_per_epoch'] = [da[1] for da in depth_augments]
     
     # Add E/I performance analysis if columns exist
     if 'val_e_acc' in df.columns and 'val_i_acc' in df.columns:
@@ -69,10 +69,10 @@ def load_and_prepare_data(csv_file):
     
     print(f"Loaded {len(df)} data points from {df['run_name'].nunique()} unique runs")
     if df['cnn_depth'].max() > 0:
-        print(f"Depth range: {df['cnn_depth'].min()}-{df['cnn_depth'].max()}")
-        print(f"Width range: {df['cnn_width'].min()}-{df['cnn_width'].max()}")
+        print(f"CNN Depth range: {df['cnn_depth'].min()}-{df['cnn_depth'].max()}")
+        print(f"Augments per epoch range: {df['augments_per_epoch'].min()}-{df['augments_per_epoch'].max()}")
     else:
-        print("Could not extract depth/width from run names")
+        print("Could not extract depth/augments from run names")
     
     return df
 

@@ -4,16 +4,16 @@
 # Usage: ./run_synclass.sh
 # --> EDIT THE PARTITION VARIABLE أدناه TO SWITCH BETWEEN CPU AND GPU <--
 
-echo "--- Starting LARGEST ResNet Models Hyperparameter Sweep ---"
+echo "--- Starting 2D CNN Multi-Channel Hyperparameter Sweep ---"
 
 # --- Update codebase ---
 echo "Pulling latest changes from git..."
 git pull
 echo "---"
 
-# --- Architecture hyperparameters for ResNet sweep ---
-RESNET_DEPTHS=(50 101 152)            # 3 largest ResNet variants
-CLASSIFIER_WIDTHS=(128 256 512)       # 3 largest classifier widths
+# --- Architecture hyperparameters for 2D CNN Multi-Channel sweep ---
+CNN_DEPTHS=(3 5 7)                      # Different CNN depths (3 vs 5 conv blocks)
+AUGMENTS_PER_EPOCH=(2 4)              # Different augmentation multipliers
 
 # --- SLURM Configuration ---
 PARTITION="ss.gpu" # Set to "ss.gpu" to automatically request a GPU
@@ -34,23 +34,26 @@ MASTER_SWEEP_DIR="sweep_${SWEEP_TIMESTAMP}"
 mkdir -p "$MASTER_SWEEP_DIR"
 echo "Master sweep directory: $MASTER_SWEEP_DIR"
 
-for RESNET_DEPTH in "${RESNET_DEPTHS[@]}"; do
-    for CLASSIFIER_WIDTH in "${CLASSIFIER_WIDTHS[@]}"; do
+for CNN_DEPTH in "${CNN_DEPTHS[@]}"; do
+    for AUGMENTS_PER_EPOCH in "${AUGMENTS_PER_EPOCH[@]}"; do
       
-    # Define unique names for the job and its output files
-    RUN_NAME="resnet_d${RESNET_DEPTH}_w${CLASSIFIER_WIDTH}"
-        
+        # Define unique names for the job and its output files
+        RUN_NAME="2dcnn_mc_d${CNN_DEPTH}_a${AUGMENTS_PER_EPOCH}"
+            
         JOB_NAME="synclass_${RUN_NAME}"
         OUTPUT_LOG="${MASTER_SWEEP_DIR}/${RUN_NAME}.out"
         
         # Construct the python command to be executed by SLURM
         # Note: The path to the script is now relative, assuming submission from project root
-                  PYTHON_CMD="python -W ignore synapse_classifier_resnet.py \
-                      --resnet_depth ${RESNET_DEPTH} \
-            --classifier_width ${CLASSIFIER_WIDTH} \
-          --lr 1e-4 \
-          --epochs 150 \
-          --run_name ${RUN_NAME}"
+        PYTHON_CMD="python -W ignore synapse_classifier_2dcnn_multichannel.py \
+            --cnn_depth ${CNN_DEPTH} \
+            --augments_per_epoch ${AUGMENTS_PER_EPOCH} \
+            --lr 1e-4 \
+            --dropout_rate 0.3 \
+            --epochs 100 \
+            --batch_size 32 \
+            --input_size 224 \
+            --run_name ${RUN_NAME}"
 
         # Use sbatch with --wrap to submit the command as a job
         echo "Submitting job: $JOB_NAME"
@@ -76,8 +79,8 @@ for RESNET_DEPTH in "${RESNET_DEPTHS[@]}"; do
         # Small delay to avoid overwhelming the SLURM scheduler
         sleep 1
         
-      done
     done
+done
 
 echo "--- All hyperparameter jobs have been submitted. ---"
 echo ""

@@ -284,7 +284,7 @@ def setup_training(model, train_files, device, learning_rate=0.001, weight_decay
     
     # Learning rate scheduler
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='max', factor=0.5, patience=5, verbose=True
+        optimizer, mode='max', factor=0.5, patience=5
     )
     
     return criterion, optimizer, scheduler

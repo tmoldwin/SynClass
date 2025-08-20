@@ -374,8 +374,8 @@ def main():
     parser.add_argument('--epochs', type=int, default=100, help='Training epochs')
     parser.add_argument('--lr', type=float, default=1e-5, help='Learning rate')
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
-    parser.add_argument('--dropout_rate', type=float, default=0.2, help='Dropout rate')
-    parser.add_argument('--weight_decay', type=float, default=5e-3, help='Weight decay')
+    parser.add_argument('--dropout_rate', type=float, default=0.5, help='Dropout rate')
+    parser.add_argument('--weight_decay', type=float, default=1e-2, help='Weight decay')
     parser.add_argument('--input_size', type=int, default=224, help='Input image size')
     parser.add_argument('--augments_per_epoch', type=int, default=1, help='Number of augmentations per synapse per epoch')
     parser.add_argument('--cnn_depth', type=int, default=5, help='Number of CNN blocks (3, 5, or 7)')
@@ -434,7 +434,7 @@ def main():
     results = train_model(
         model, train_loader, val_loader, criterion, optimizer,
         args.epochs, device, scheduler, f'best_synapse_model_{model_name}.pth',
-        early_stopping_patience=25, logger=logger
+        early_stopping_patience=15, logger=logger
     )
     
     # Save plots

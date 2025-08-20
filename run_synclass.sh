@@ -13,7 +13,8 @@ echo "---"
 
 # --- Architecture hyperparameters for 2D CNN Multi-Channel sweep ---
 CNN_DEPTHS=(3 5 7)                      # Different CNN depths (3, 5, or 7 conv blocks)
-LEARNING_RATES=(1e-5 1e-6 1e-7)        # Different learning rates (sweep LRs instead of augments)
+LEARNING_RATE=1e-5                      # Fixed learning rate
+DROPOUT_RATES=(0.3 0.5 0.7)             # Test different dropout rates for overfitting control
 
 # --- SLURM Configuration ---
 PARTITION="ss.gpu" # Set to "ss.gpu" to automatically request a GPU
@@ -35,11 +36,11 @@ mkdir -p "$MASTER_SWEEP_DIR"
 echo "Master sweep directory: $MASTER_SWEEP_DIR"
 
 for CNN_DEPTH in "${CNN_DEPTHS[@]}"; do
-    for LR in "${LEARNING_RATES[@]}"; do
+    for DROPOUT in "${DROPOUT_RATES[@]}"; do
       
         # Define unique names for the job and its output files
-        RUN_NAME="2dcnn_mc_d${CNN_DEPTH}_lr${LR}"
-            
+        RUN_NAME="2dcnn_mc_d${CNN_DEPTH}_dr${DROPOUT}"
+        
         JOB_NAME="synclass_${RUN_NAME}"
         OUTPUT_LOG="${MASTER_SWEEP_DIR}/${RUN_NAME}.out"
         
@@ -47,8 +48,8 @@ for CNN_DEPTH in "${CNN_DEPTHS[@]}"; do
         # Note: The path to the script is now relative, assuming submission from project root
         PYTHON_CMD="python -W ignore synapse_classifier_2dcnn_multichannel.py \
             --cnn_depth ${CNN_DEPTH} \
-            --lr ${LR} \
-            --dropout_rate 0.2 \
+            --lr ${LEARNING_RATE} \
+            --dropout_rate ${DROPOUT} \
             --epochs 100 \
             --batch_size 64 \
             --input_size 224 \
@@ -74,10 +75,10 @@ for CNN_DEPTH in "${CNN_DEPTHS[@]}"; do
         
         # Execute the sbatch command
         eval $SBATCH_CMD
-        
+    
         # Small delay to avoid overwhelming the SLURM scheduler
         sleep 1
-        
+            
     done
 done
 

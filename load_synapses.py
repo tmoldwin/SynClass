@@ -47,48 +47,47 @@ def load_synapse_subset(num_samples=5):
             
             post_mask = np.load(post_mask_path)
             
-            # Debug: Print data shapes and contents
             print(f'Processing synapse {synapse_id} - Type: {synapse_type}')
-            print(f'Raw data shape: {data.shape}')
-            print(f'Pre-synaptic mask shape: {pre_mask.shape}')
-            print(f'Post-synaptic mask shape: {post_mask.shape}')
-            print(f'Raw data slice 1 sum: {np.sum(data[:, :, 0])}')
-            print(f'Pre-synaptic mask slice 1 sum: {np.sum(pre_mask[:, :, 0])}')
-            print(f'Post-synaptic mask slice 1 sum: {np.sum(post_mask[:, :, 0])}')
-            
-            # Detailed logging for each synapse
-            print(f'--- Synapse {synapse_id} ---')
-            for z in range(data.shape[2]):
-                print(f'Slice {z+1}: Raw sum = {np.sum(data[:, :, z])}, Pre-synaptic sum = {np.sum(pre_mask[:, :, z])}, Post-synaptic sum = {np.sum(post_mask[:, :, z])}')
             
             # Check if raw data is all zeros
             if np.all(data == 0):
                 print(f'Skipping synapse {synapse_id} due to all-zero raw data')
                 continue
             
-            # Visualize all Z slices in a single row with the top row numbered
+            # Visualize all Z slices: raw image and combined color-coded masks
             num_slices = data.shape[2]
-            fig, axes = plt.subplots(3, num_slices, figsize=(4 * num_slices, 12))
+            fig, axes = plt.subplots(2, num_slices, figsize=(4 * num_slices, 8))
             fig.suptitle(f'{file} - {synapse_type}', fontsize=16)
             
             for z in range(num_slices):
                 # Raw image
-                print(f'Displaying raw image for slice {z+1}')
                 axes[0, z].imshow(data[:, :, z], cmap='gray')
                 axes[0, z].set_title(f'#{z+1}')
                 axes[0, z].axis('off')
                 
-                # Pre-synaptic mask
-                print(f'Displaying pre-synaptic mask for slice {z+1}')
-                axes[1, z].imshow(pre_mask[:, :, z], cmap='gray')
-                axes[1, z].set_title('Pre')
-                axes[1, z].axis('off')
+                # Combined color-coded masks: pre=pink, post=black, surround=white
+                pre_slice = pre_mask[:, :, z]
+                post_slice = post_mask[:, :, z]
                 
-                # Post-synaptic mask
-                print(f'Displaying post-synaptic mask for slice {z+1}')
-                axes[2, z].imshow(post_mask[:, :, z], cmap='gray')
-                axes[2, z].set_title('Post')
-                axes[2, z].axis('off')
+                # Create RGB image for color coding
+                h, w = pre_slice.shape
+                rgb_mask = np.ones((h, w, 3))  # Start with white background
+                
+                # Pre-synaptic pixels = pink (1, 0.7, 0.7)
+                pre_pixels = pre_slice.astype(bool)
+                rgb_mask[pre_pixels] = [1.0, 0.7, 0.7]  # Pink
+                
+                # Post-synaptic pixels = black (0, 0, 0)
+                post_pixels = post_slice.astype(bool)
+                rgb_mask[post_pixels] = [0.0, 0.0, 0.0]  # Black
+                
+                # Overlapping pixels (both pre and post) = darker pink
+                overlap_pixels = pre_pixels & post_pixels
+                rgb_mask[overlap_pixels] = [0.8, 0.4, 0.4]  # Darker pink
+                
+                axes[1, z].imshow(rgb_mask)
+                axes[1, z].set_title('Masks: Pre=Pink, Post=Black')
+                axes[1, z].axis('off')
             
             plt.tight_layout(rect=[0, 0.03, 1, 0.95])
             

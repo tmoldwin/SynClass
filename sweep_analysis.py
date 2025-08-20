@@ -54,10 +54,15 @@ def load_and_prepare_data(csv_file):
             augments = 0
         return depth, augments
     
-    # Extract depth and augments for each run
-    depth_augments = df['run_name'].apply(extract_depth_augments)
-    df['cnn_depth'] = [da[0] for da in depth_augments]
-    df['augments_per_epoch'] = [da[1] for da in depth_augments]
+    # Extract depth and augments for each run (use existing columns if available)
+    if 'cnn_depth' not in df.columns or 'augments_per_epoch' not in df.columns:
+        depth_augments = df['run_name'].apply(extract_depth_augments)
+        df['cnn_depth'] = [da[0] for da in depth_augments]
+        df['augments_per_epoch'] = [da[1] for da in depth_augments]
+    
+    # Add cnn_width column for compatibility (use augments_per_epoch as proxy)
+    if 'cnn_width' not in df.columns:
+        df['cnn_width'] = df['augments_per_epoch']
     
     # Add E/I performance analysis if columns exist
     if 'val_e_acc' in df.columns and 'val_i_acc' in df.columns:

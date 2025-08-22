@@ -21,48 +21,57 @@ def load_and_prepare_data(csv_file):
     # Create a unique identifier for each run
     df['run_id'] = df['run_name']
     
-    # Extract depth and augments from run_name (e.g., "2dcnn_mc_d3_a2" -> depth=3, augments=2)
-    def extract_depth_augments(run_name):
+    # Extract depth and examples from run_name (e.g., "2dcnn_mc_d3_e5000" -> depth=3, examples=5000)
+    def extract_depth_examples(run_name):
         try:
             # Handle 2D CNN multi-channel naming pattern
-            if '2dcnn_mc_d' in run_name and '_a' in run_name:
-                # Format: 2dcnn_mc_d3_a2
+            if '2dcnn_mc_d' in run_name and '_e' in run_name:
+                # Format: 2dcnn_mc_d3_e5000
+                parts = run_name.split('_')
+                depth_part = [p for p in parts if p.startswith('d')][0]
+                examples_part = [p for p in parts if p.startswith('e')][0]
+                depth = int(depth_part[1:])
+                examples = int(examples_part[1:])
+            elif '2dcnn_mc_d' in run_name and '_a' in run_name:
+                # Legacy format: 2dcnn_mc_d3_a2 (treat augments as examples for compatibility)
                 parts = run_name.split('_')
                 depth_part = [p for p in parts if p.startswith('d')][0]
                 augments_part = [p for p in parts if p.startswith('a')][0]
                 depth = int(depth_part[1:])
-                augments = int(augments_part[1:])
+                examples = int(augments_part[1:]) * 1000  # Convert augments to approximate examples
             elif 'resnet_d' in run_name and '_w' in run_name:
                 # Legacy format: resnet_d101_w256 (treat width as augments for compatibility)
                 parts = run_name.split('_')
                 depth_part = [p for p in parts if p.startswith('d')][0]
                 width_part = [p for p in parts if p.startswith('w')][0]
                 depth = int(depth_part[1:])
-                augments = int(width_part[1:])
+                examples = int(width_part[1:])
             else:
                 # Fallback: try to extract any numbers
                 import re
                 numbers = re.findall(r'\d+', run_name)
                 if len(numbers) >= 2:
                     depth = int(numbers[0])
-                    augments = int(numbers[1])
+                    examples = int(numbers[1])
                 else:
                     depth = 0
-                    augments = 0
+                    examples = 0
         except:
             depth = 0
-            augments = 0
-        return depth, augments
+            examples = 0
+        return depth, examples
     
-    # Extract depth and augments for each run (use existing columns if available)
-    if 'cnn_depth' not in df.columns or 'augments_per_epoch' not in df.columns:
-        depth_augments = df['run_name'].apply(extract_depth_augments)
-        df['cnn_depth'] = [da[0] for da in depth_augments]
-        df['augments_per_epoch'] = [da[1] for da in depth_augments]
+    # Extract depth and examples for each run (use existing columns if available)
+    if 'cnn_depth' not in df.columns or 'examples_per_epoch' not in df.columns:
+        depth_examples = df['run_name'].apply(extract_depth_examples)
+        df['cnn_depth'] = [de[0] for de in depth_examples]
+        df['examples_per_epoch'] = [de[1] for de in depth_examples]
     
-    # Add cnn_width column for compatibility (use augments_per_epoch as proxy)
+    # Add legacy columns for compatibility 
+    if 'augments_per_epoch' not in df.columns:
+        df['augments_per_epoch'] = df['examples_per_epoch'] // 1000  # Convert examples to approximate augments
     if 'cnn_width' not in df.columns:
-        df['cnn_width'] = df['augments_per_epoch']
+        df['cnn_width'] = df['examples_per_epoch'] // 1000  # Use examples as proxy for width
     
     # Add E/I performance analysis if columns exist
     if 'val_e_acc' in df.columns and 'val_i_acc' in df.columns:
@@ -75,9 +84,9 @@ def load_and_prepare_data(csv_file):
     print(f"Loaded {len(df)} data points from {df['run_name'].nunique()} unique runs")
     if df['cnn_depth'].max() > 0:
         print(f"CNN Depth range: {df['cnn_depth'].min()}-{df['cnn_depth'].max()}")
-        print(f"Augments per epoch range: {df['augments_per_epoch'].min()}-{df['augments_per_epoch'].max()}")
+        print(f"Examples per epoch range: {df['examples_per_epoch'].min()}-{df['examples_per_epoch'].max()}")
     else:
-        print("Could not extract depth/augments from run names")
+        print("Could not extract depth/examples from run names")
     
     return df
 

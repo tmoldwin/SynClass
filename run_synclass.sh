@@ -11,10 +11,11 @@ echo "Pulling latest changes from git..."
 git pull
 echo "---"
 
-# --- Architecture hyperparameters for 2D CNN Multi-Channel sweep ---
-CNN_DEPTHS=(1 2 3)                      # Different CNN depths (1, 2, or 3 conv blocks)
+# --- Hyperparameters for examples per epoch vs network depth sweep ---
+CNN_DEPTHS=(1 3 5)                      # Different CNN depths (1, 3, or 5 conv blocks)
+EXAMPLES_PER_EPOCH=(5000 10000 20000)   # Different numbers of training examples per epoch (balanced: 2.5k+2.5k, 5k+5k, 10k+10k)
 LEARNING_RATE=1e-5                      # Fixed learning rate
-DROPOUT_RATES=(0.3 0.5 0.7)             # Test different dropout rates for overfitting control
+DROPOUT_RATE=0.3                        # Fixed dropout rate
 
 # --- SLURM Configuration ---
 PARTITION="ss.gpu" # Set to "ss.gpu" to automatically request a GPU
@@ -36,10 +37,10 @@ mkdir -p "$MASTER_SWEEP_DIR"
 echo "Master sweep directory: $MASTER_SWEEP_DIR"
 
 for CNN_DEPTH in "${CNN_DEPTHS[@]}"; do
-    for DROPOUT in "${DROPOUT_RATES[@]}"; do
+    for EXAMPLES in "${EXAMPLES_PER_EPOCH[@]}"; do
       
         # Define unique names for the job and its output files
-        RUN_NAME="2dcnn_mc_d${CNN_DEPTH}_dr${DROPOUT}"
+        RUN_NAME="2dcnn_mc_d${CNN_DEPTH}_e${EXAMPLES}"
         
         JOB_NAME="synclass_${RUN_NAME}"
         OUTPUT_LOG="${MASTER_SWEEP_DIR}/${RUN_NAME}.out"
@@ -48,9 +49,10 @@ for CNN_DEPTH in "${CNN_DEPTHS[@]}"; do
         # Note: The path to the script is now relative, assuming submission from project root
         PYTHON_CMD="python -W ignore synapse_classifier_2dcnn_multichannel.py \
             --cnn_depth ${CNN_DEPTH} \
+            --examples_per_epoch ${EXAMPLES} \
             --lr ${LEARNING_RATE} \
-            --dropout_rate ${DROPOUT} \
-            --epochs 100 \
+            --dropout_rate ${DROPOUT_RATE} \
+            --epochs 150 \
             --batch_size 64 \
             --input_size 224 \
             --run_name ${RUN_NAME}"

@@ -17,10 +17,10 @@ from utils import set_random_seeds, get_device, print_model_summary, compute_cla
 
 
 class MultiChannelSynapseDataset(torch.utils.data.Dataset):
-    """2D dataset with 3 channels: image + pre_mask + post_mask, multiple augments per epoch."""
+    """2D dataset with 3 channels: image + pre_mask + post_mask, configurable examples per epoch."""
     
     def __init__(self, file_list, synapse_map, data_dir=None, augment=False, 
-                 input_size=224, augments_per_epoch=3, augment_prob=0.2):
+                 input_size=224, examples_per_epoch=None, augment_prob=0.2):
         from constants import DATA_DIR
         import os
         
@@ -29,14 +29,14 @@ class MultiChannelSynapseDataset(torch.utils.data.Dataset):
         self.data_dir = data_dir if data_dir is not None else DATA_DIR
         self.augment = augment
         self.input_size = input_size
-        self.augments_per_epoch = augments_per_epoch if augment else 1
+        self.examples_per_epoch = examples_per_epoch if examples_per_epoch is not None else len(file_list)
         self.augment_prob = augment_prob  # Probability of applying augmentation vs using original
         
         # Get 2D augmentation transforms
         from augmentation import get_2d_augmentation_transform
         self.transform = get_2d_augmentation_transform(augment=augment, input_size=input_size)
         
-        print(f"📊 Dataset: {len(file_list)} synapses × {self.augments_per_epoch} augments = {len(self)} samples per epoch")
+        print(f"📊 Dataset: {len(file_list)} total synapses -> {self.examples_per_epoch} examples per epoch")
         if augment:
             print(f"🎲 Augmentation probability: {augment_prob:.1f} (vs {1-augment_prob:.1f} for originals)")
     
@@ -73,18 +73,59 @@ class MultiChannelSynapseDataset(torch.utils.data.Dataset):
             cropped = cv2.copyMakeBorder(cropped, 0, pad_h, 0, pad_w, cv2.BORDER_REFLECT)
         
         return cropped
+    
+    def _create_balanced_epoch_indices(self):
+        """Create balanced indices for sampling examples per epoch."""
+        import numpy as np
+        
+        # Get labels for all files
+        labels = []
+        for filename in self.file_list:
+            syn_id = int(filename.split('_')[0])
+            syn_type = self.synapse_map[syn_id]
+            labels.append(syn_type)
+        
+        # Separate indices by class
+        e_indices = [i for i, label in enumerate(labels) if label == 'E']
+        i_indices = [i for i, label in enumerate(labels) if label == 'I']
+        
+        # Calculate how many samples per class we need (balanced)
+        samples_per_class = self.examples_per_epoch // 2
+        
+        # Sample balanced indices
+        np.random.seed(42)  # Fixed seed for reproducibility
+        selected_e = np.random.choice(e_indices, min(samples_per_class, len(e_indices)), replace=False)
+        selected_i = np.random.choice(i_indices, min(samples_per_class, len(i_indices)), replace=False)
+        
+        # Combine and shuffle
+        all_selected = np.concatenate([selected_e, selected_i])
+        np.random.shuffle(all_selected)
+        
+        # Adjust final count to match examples_per_epoch exactly
+        self._epoch_indices = all_selected[:self.examples_per_epoch]
+        
+        print(f"🎯 Balanced sampling: {len(selected_e)} E + {len(selected_i)} I = {len(self._epoch_indices)} total examples")
         
     def __len__(self):
-        return len(self.file_list) * self.augments_per_epoch
+        return self.examples_per_epoch
     
     def __getitem__(self, idx):
         import os
         import numpy as np
         from torchvision.transforms import functional as TF
         
-        # Map idx back to original synapse and augmentation number
-        synapse_idx = idx // self.augments_per_epoch
-        aug_idx = idx % self.augments_per_epoch
+        # Map idx to a synapse (with balanced sampling if examples_per_epoch < len(file_list))
+        if self.examples_per_epoch >= len(self.file_list):
+            # If we want more examples than synapses, repeat synapses with different augmentations
+            synapse_idx = idx % len(self.file_list)
+            aug_idx = idx // len(self.file_list)
+        else:
+            # If we want fewer examples, sample with balanced class distribution
+            # Create balanced sample indices once per epoch (deterministic)
+            if not hasattr(self, '_epoch_indices'):
+                self._create_balanced_epoch_indices()
+            synapse_idx = self._epoch_indices[idx]
+            aug_idx = 0
         
         filename = self.file_list[synapse_idx]
         filepath = os.path.join(self.data_dir, filename)
@@ -250,8 +291,42 @@ class CNN2DMultiChannel(nn.Module):
                 nn.AdaptiveAvgPool2d((1, 1))
             )
             final_features = 256
+        elif cnn_depth == 5:
+            # Deep 5-block architecture
+            self.features = nn.Sequential(
+                # First conv block
+                nn.Conv2d(3, 32, kernel_size=7, stride=2, padding=3),
+                nn.BatchNorm2d(32),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
+                
+                # Second conv block
+                nn.Conv2d(32, 64, kernel_size=5, stride=1, padding=2),
+                nn.BatchNorm2d(64),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                
+                # Third conv block
+                nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
+                nn.BatchNorm2d(128),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                
+                # Fourth conv block
+                nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
+                nn.BatchNorm2d(256),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                
+                # Fifth conv block
+                nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1),
+                nn.BatchNorm2d(512),
+                nn.ReLU(inplace=True),
+                nn.AdaptiveAvgPool2d((1, 1))
+            )
+            final_features = 512
         else:
-            raise ValueError(f"Unsupported cnn_depth: {cnn_depth}. Must be 1, 2, or 3.")
+            raise ValueError(f"Unsupported cnn_depth: {cnn_depth}. Must be 1, 2, 3, or 5.")
         
         # Classifier with configurable dropout
         self.classifier = nn.Sequential(
@@ -274,25 +349,25 @@ class CNN2DMultiChannel(nn.Module):
 
 def create_multichannel_dataloaders(train_files, test_files, synapse_map, 
                                    batch_size=16, num_workers=4, pin_memory=True,
-                                   input_size=224, augment_train=True, augments_per_epoch=3,
-                                   augment_val=False, val_augments_per_epoch=1):
+                                   input_size=224, augment_train=True, examples_per_epoch=None,
+                                   augment_val=False, val_examples_per_epoch=None):
     """Create dataloaders for multi-channel training."""
     from torch.utils.data import DataLoader
     
     # Create datasets
     train_dataset = MultiChannelSynapseDataset(
         train_files, synapse_map, augment=augment_train, 
-        input_size=input_size, augments_per_epoch=augments_per_epoch
+        input_size=input_size, examples_per_epoch=examples_per_epoch
     )
     val_dataset = MultiChannelSynapseDataset(
         test_files, synapse_map, augment=augment_val, 
-        input_size=input_size, augments_per_epoch=val_augments_per_epoch
+        input_size=input_size, examples_per_epoch=val_examples_per_epoch
     )
     
-    print(f"🎯 NO AUGMENTATION TRAINING:")
-    print(f"   Training: {len(train_files)} synapses (no augmentation)")
-    print(f"   Validation: {len(test_files)} synapses (no augmentation)")
-    print(f"   Training/Val ratio: {len(train_dataset)/len(val_dataset):.1f}:1 (natural dataset ratio)")
+    print(f"🎯 TRAINING CONFIGURATION:")
+    print(f"   Training: {len(train_files)} total synapses -> {len(train_dataset)} examples per epoch")
+    print(f"   Validation: {len(test_files)} total synapses -> {len(val_dataset)} examples per epoch")
+    print(f"   Training/Val ratio: {len(train_dataset)/len(val_dataset):.1f}:1")
     
     # Create dataloaders
     train_loader = DataLoader(
@@ -327,8 +402,8 @@ def main():
     parser.add_argument('--dropout_rate', type=float, default=0.5, help='Dropout rate')
     parser.add_argument('--weight_decay', type=float, default=1e-2, help='Weight decay')
     parser.add_argument('--input_size', type=int, default=224, help='Input image size')
-    parser.add_argument('--augments_per_epoch', type=int, default=1, help='Number of augmentations per synapse per epoch')
-    parser.add_argument('--cnn_depth', type=int, default=3, help='Number of CNN blocks (1, 2, or 3)')
+    parser.add_argument('--examples_per_epoch', type=int, default=None, help='Number of training examples per epoch (default: all)')
+    parser.add_argument('--cnn_depth', type=int, default=3, help='Number of CNN blocks (1, 3, or 5)')
     parser.add_argument('--run_name', type=str, help='Run name for this experiment')
     
     args = parser.parse_args()
@@ -368,17 +443,17 @@ def main():
     else:
         logger.error(f"❌ Dataset imbalance detected - this will cause training issues!")
     
-    # Create dataloaders with validation augmentation for fair comparison
+    # Create dataloaders
     train_loader, val_loader = create_multichannel_dataloaders(
         train_files, test_files, synapse_map,
         batch_size=args.batch_size, 
         num_workers=4,
         pin_memory=True,
         input_size=args.input_size,
-        augment_train=False,  # No augmentation to match validation
-        augments_per_epoch=1,
+        augment_train=False,  # No augmentation 
+        examples_per_epoch=args.examples_per_epoch,
         augment_val=False,  # No validation augmentation
-        val_augments_per_epoch=1  # Single pass for validation
+        val_examples_per_epoch=None  # Use all validation examples
     )
     
     # Initialize model

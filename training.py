@@ -556,17 +556,27 @@ def _log_epoch_to_sweep_csv(run_name, epoch, train_acc, val_acc, predictions, ta
     # Get confusion matrix
     cm = confusion_matrix(targets, predictions)
     
-    # Extract depth and augments from run_name (e.g., "2dcnn_mc_d3_a2")
+    # Extract depth and examples from run_name (e.g., "2dcnn_mc_d3_e5000")
     cnn_depth = 5  # Default
-    augments_per_epoch = 3  # Default
+    examples_per_epoch = 5000  # Default
     
-    if 'mc_d' in run_name and '_a' in run_name:
+    if 'mc_d' in run_name and '_e' in run_name:
+        try:
+            parts = run_name.split('_')
+            depth_part = [p for p in parts if p.startswith('d')][0]
+            examples_part = [p for p in parts if p.startswith('e')][0]
+            cnn_depth = int(depth_part[1:])
+            examples_per_epoch = int(examples_part[1:])
+        except:
+            pass
+    elif 'mc_d' in run_name and '_a' in run_name:
+        # Legacy format compatibility
         try:
             parts = run_name.split('_')
             depth_part = [p for p in parts if p.startswith('d')][0]
             augments_part = [p for p in parts if p.startswith('a')][0]
             cnn_depth = int(depth_part[1:])
-            augments_per_epoch = int(augments_part[1:])
+            examples_per_epoch = int(augments_part[1:]) * 1000  # Convert augments to approximate examples
         except:
             pass
     
@@ -585,7 +595,7 @@ def _log_epoch_to_sweep_csv(run_name, epoch, train_acc, val_acc, predictions, ta
             os.mkdir(lock_file)
             
             try:
-                header = ['run_name', 'epoch', 'train_acc', 'val_acc', 'overfitting_gap', 'cnn_depth', 'augments_per_epoch',
+                header = ['run_name', 'epoch', 'train_acc', 'val_acc', 'overfitting_gap', 'cnn_depth', 'examples_per_epoch',
                          'val_e_acc', 'val_i_acc', 'e_i_gap', 'learning_rate', 'timestamp',
                          'cm_e_correct', 'cm_e_incorrect', 'cm_i_correct', 'cm_i_incorrect']
                 
@@ -606,7 +616,7 @@ def _log_epoch_to_sweep_csv(run_name, epoch, train_acc, val_acc, predictions, ta
                     
                     writer.writerow([
                         run_name, epoch, f'{train_acc:.2f}', f'{val_acc:.2f}', f'{overfitting_gap:.2f}',
-                        cnn_depth, augments_per_epoch, f'{val_e_acc:.2f}', f'{val_i_acc:.2f}', 
+                        cnn_depth, examples_per_epoch, f'{val_e_acc:.2f}', f'{val_i_acc:.2f}', 
                         f'{val_e_acc - val_i_acc:.2f}', f'{learning_rate:.6f}', timestamp,
                         cm_e_correct, cm_e_incorrect, cm_i_correct, cm_i_incorrect
                     ])

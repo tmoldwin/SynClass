@@ -464,8 +464,15 @@ def main():
     criterion = nn.CrossEntropyLoss(label_smoothing=0.2)
     
     optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    # Use exponential decay for more predictable LR reduction
-    scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.98)  # 2% reduction per epoch
+    # Use aggressive plateau-based scheduler that responds to validation accuracy
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, 
+        mode='max',           # maximize validation accuracy
+        factor=0.3,           # reduce LR by 70% when plateau detected
+        patience=5,           # wait 5 epochs before reducing
+        threshold=0.01,       # minimum improvement to be considered progress (1%)
+        min_lr=args.lr/1000   # don't go below 0.1% of original LR
+    )
     
     # Train
     results = train_model(

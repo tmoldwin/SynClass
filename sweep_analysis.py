@@ -71,7 +71,7 @@ def load_and_prepare_data(csv_file):
     if 'augments_per_epoch' not in df.columns:
         df['augments_per_epoch'] = df['examples_per_epoch'] // 1000  # Convert examples to approximate augments
     if 'cnn_width' not in df.columns:
-        df['cnn_width'] = df['examples_per_epoch'] // 1000  # Use examples as proxy for width
+        df['cnn_width'] = df['examples_per_epoch']  # Use actual examples per epoch
     
     # Add E/I performance analysis if columns exist
     if 'val_e_acc' in df.columns and 'val_i_acc' in df.columns:
@@ -143,7 +143,10 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
     ax1.set_title('Best 5 Training Curves', fontsize=12, fontweight='bold')
     ax1.legend(fontsize=8, loc='lower right')
     ax1.grid(True, alpha=0.3)
-    ax1.set_ylim(50, 75)
+    # Dynamic y-limits based on data
+    y_min = min(df['train_acc'].min(), df['val_acc'].min()) - 2
+    y_max = max(df['train_acc'].max(), df['val_acc'].max()) + 2
+    ax1.set_ylim(y_min, y_max)
     
     # Panel 2: Validation curves (top center)
     ax2 = plt.subplot(3, 4, 2, sharey=ax1)
@@ -159,7 +162,7 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
     ax2.set_title('Best 5 Validation Curves', fontsize=12, fontweight='bold')
     ax2.legend(fontsize=8, loc='lower right')
     ax2.grid(True, alpha=0.3)
-    ax2.set_ylim(50, 75)
+    # Share y-limits with ax1 (already set)
     
     # Panel 3: Correlation scatter (top right)
     ax3 = plt.subplot(3, 4, 3)
@@ -285,36 +288,36 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
              verticalalignment='top', fontfamily='monospace',
              bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgray", alpha=0.8))
     
-    # Panel 5: Width vs Validation (middle left)
+    # Panel 5: Examples vs Validation (middle left)
     ax5 = plt.subplot(3, 4, 5)
     
     for depth in sorted(final_data['cnn_depth'].unique()):
         depth_data = final_data[final_data['cnn_depth'] == depth]
-        ax5.scatter(depth_data['cnn_width'], depth_data['val_acc'], 
+        ax5.scatter(depth_data['examples_per_epoch'], depth_data['val_acc'], 
                    label=f'Depth {depth}', s=100, alpha=0.7)
     
     # Add overall regression line
-    z = np.polyfit(final_data['cnn_width'], final_data['val_acc'], 1)
+    z = np.polyfit(final_data['examples_per_epoch'], final_data['val_acc'], 1)
     p = np.poly1d(z)
-    ax5.plot(final_data['cnn_width'], p(final_data['cnn_width']), "r--", alpha=0.8, linewidth=2)
+    ax5.plot(final_data['examples_per_epoch'], p(final_data['examples_per_epoch']), "r--", alpha=0.8, linewidth=2)
     
     # Calculate correlation and R-squared
-    correlation = final_data['cnn_width'].corr(final_data['val_acc'])
+    correlation = final_data['examples_per_epoch'].corr(final_data['val_acc'])
     r_squared = correlation ** 2
     
-    ax5.set_xlabel('CNN Width')
+    ax5.set_xlabel('Examples per Epoch')
     ax5.set_ylabel('Final Validation Accuracy (%)')
-    ax5.set_title(f'Width vs Validation Accuracy\nr={correlation:.3f}, R²={r_squared:.3f}', fontsize=12, fontweight='bold')
+    ax5.set_title(f'Examples vs Validation Accuracy\nr={correlation:.3f}, R²={r_squared:.3f}', fontsize=12, fontweight='bold')
     ax5.legend(fontsize=8)
     ax5.grid(True, alpha=0.3)
     
     # Panel 6: Depth vs Validation (middle center)
     ax6 = plt.subplot(3, 4, 6)
     
-    for width in sorted(final_data['cnn_width'].unique()):
-        width_data = final_data[final_data['cnn_width'] == width]
-        ax6.scatter(width_data['cnn_depth'], width_data['val_acc'], 
-                   label=f'Width {width}', s=100, alpha=0.7)
+    for examples in sorted(final_data['examples_per_epoch'].unique()):
+        examples_data = final_data[final_data['examples_per_epoch'] == examples]
+        ax6.scatter(examples_data['cnn_depth'], examples_data['val_acc'], 
+                   label=f'{examples} examples', s=100, alpha=0.7)
     
     # Add overall regression line
     z = np.polyfit(final_data['cnn_depth'], final_data['val_acc'], 1)
@@ -338,13 +341,13 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
     heatmap_data = final_data.pivot_table(
         values='val_acc', 
         index='cnn_depth', 
-        columns='cnn_width', 
+        columns='examples_per_epoch', 
         aggfunc='mean'
     )
     
     sns.heatmap(heatmap_data, annot=True, fmt='.1f', cmap='Reds', ax=ax7, cbar_kws={'shrink': 0.8})
     ax7.set_title('Average Validation Accuracy (%)', fontsize=12, fontweight='bold')
-    ax7.set_xlabel('CNN Width')
+    ax7.set_xlabel('Examples per Epoch')
     ax7.set_ylabel('CNN Depth')
     
     # Panel 8: Overfitting analysis (middle right)
@@ -353,13 +356,13 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
     overfitting_heatmap = final_data.pivot_table(
         values='overfitting_gap', 
         index='cnn_depth', 
-        columns='cnn_width', 
+        columns='examples_per_epoch', 
         aggfunc='mean'
     )
     
     sns.heatmap(overfitting_heatmap, annot=True, fmt='.1f', cmap='RdBu_r', ax=ax8, cbar_kws={'shrink': 0.8})
     ax8.set_title('Overfitting Gap (Train-Val)', fontsize=12, fontweight='bold')
-    ax8.set_xlabel('CNN Width')
+    ax8.set_xlabel('Examples per Epoch')
     ax8.set_ylabel('CNN Depth')
     
     # Panel 9: Training E/I Accuracies (bottom left)
@@ -568,8 +571,8 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
     ax12 = plt.subplot(3, 4, 12)
     
     # Calculate epochs completed for each model configuration
-    epochs_completed = df.groupby(['cnn_depth', 'cnn_width'])['epoch'].max().reset_index()
-    epochs_pivot = epochs_completed.pivot(index='cnn_depth', columns='cnn_width', values='epoch')
+    epochs_completed = df.groupby(['cnn_depth', 'examples_per_epoch'])['epoch'].max().reset_index()
+    epochs_pivot = epochs_completed.pivot(index='cnn_depth', columns='examples_per_epoch', values='epoch')
     
     # Determine if models finished (assuming 150 epochs is the target)
     target_epochs = 150  # This should match the EPOCHS setting in the training script
@@ -578,22 +581,22 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
     # Create annotations with asterisks for finished models
     annot_data = epochs_pivot.copy()
     for depth in epochs_pivot.index:
-        for width in epochs_pivot.columns:
-            if not pd.isna(epochs_pivot.loc[depth, width]):
-                epochs = int(epochs_pivot.loc[depth, width])
+        for examples in epochs_pivot.columns:
+            if not pd.isna(epochs_pivot.loc[depth, examples]):
+                epochs = int(epochs_pivot.loc[depth, examples])
                 # Check if this model finished
                 is_finished = len(finished_models[(finished_models['cnn_depth'] == depth) & 
-                                                (finished_models['cnn_width'] == width)]) > 0
+                                                (finished_models['examples_per_epoch'] == examples)]) > 0
                 if is_finished:
-                    annot_data.loc[depth, width] = f"{epochs}*"
+                    annot_data.loc[depth, examples] = f"{epochs}*"
                 else:
-                    annot_data.loc[depth, width] = f"{epochs}"
+                    annot_data.loc[depth, examples] = f"{epochs}"
     
     # Create heatmap
     sns.heatmap(epochs_pivot, annot=annot_data, fmt='', cmap='YlOrRd', ax=ax12, 
                 cbar_kws={'shrink': 0.8, 'label': 'Epochs Completed'})
     ax12.set_title('Epochs Completed by Model\n(* = Finished Training)', fontsize=12, fontweight='bold')
-    ax12.set_xlabel('CNN Width')
+    ax12.set_xlabel('Examples per Epoch')
     ax12.set_ylabel('CNN Depth')
     
     plt.tight_layout()
@@ -617,7 +620,7 @@ def print_summary_statistics(df, best_runs_df, correlation):
     print(f"   • Total runs: {df['run_name'].nunique()}")
     print(f"   • Total epochs: {len(df)}")
     print(f"   • Depth range: {df['cnn_depth'].min()}-{df['cnn_depth'].max()}")
-    print(f"   • Width range: {df['cnn_width'].min()}-{df['cnn_width'].max()}")
+    print(f"   • Examples per epoch range: {df['examples_per_epoch'].min()}-{df['examples_per_epoch'].max()}")
     
     print(f"\n🏆 TOP 5 PERFORMING CONFIGURATIONS:")
     for i, (_, run) in enumerate(best_runs_df.iterrows(), 1):
@@ -632,14 +635,14 @@ def print_summary_statistics(df, best_runs_df, correlation):
     # Calculate regression statistics for all relationships
     train_val_corr = final_data['train_acc'].corr(final_data['val_acc'])
     train_val_r2 = train_val_corr ** 2
-    width_val_corr = final_data['cnn_width'].corr(final_data['val_acc'])
-    width_val_r2 = width_val_corr ** 2
+    examples_val_corr = final_data['examples_per_epoch'].corr(final_data['val_acc'])
+    examples_val_r2 = examples_val_corr ** 2
     depth_val_corr = final_data['cnn_depth'].corr(final_data['val_acc'])
     depth_val_r2 = depth_val_corr ** 2
     
     print(f"\n📊 REGRESSION STATISTICS:")
     print(f"   • Train vs Val: r={train_val_corr:.3f}, R²={train_val_r2:.3f}")
-    print(f"   • Width vs Val: r={width_val_corr:.3f}, R²={width_val_r2:.3f}")
+    print(f"   • Examples vs Val: r={examples_val_corr:.3f}, R²={examples_val_r2:.3f}")
     print(f"   • Depth vs Val: r={depth_val_corr:.3f}, R²={depth_val_r2:.3f}")
     
     print(f"\n🔍 DEPTH ANALYSIS:")
@@ -671,10 +674,10 @@ def print_summary_statistics(df, best_runs_df, correlation):
         for _, model in incomplete.iterrows():
             print(f"     - d{model['cnn_depth']}_w{model['cnn_width']}: {model['epoch']} epochs")
     
-    print(f"\n🔍 WIDTH ANALYSIS:")
-    width_stats = final_data.groupby('cnn_width')['val_acc'].agg(['mean', 'std', 'max']).round(2)
-    for width, stats in width_stats.iterrows():
-        print(f"   • Width {width}: Mean={stats['mean']}%, Std={stats['std']}%, Max={stats['max']}%")
+    print(f"\n🔍 EXAMPLES PER EPOCH ANALYSIS:")
+    examples_stats = final_data.groupby('examples_per_epoch')['val_acc'].agg(['mean', 'std', 'max']).round(2)
+    for examples, stats in examples_stats.iterrows():
+        print(f"   • {examples} examples: Mean={stats['mean']}%, Std={stats['std']}%, Max={stats['max']}%")
     
     print(f"\n⚖️ OVERFITTING ANALYSIS:")
     print(f"   • Average overfitting gap: {final_data['overfitting_gap'].mean():.2f}%")
@@ -693,19 +696,19 @@ def print_summary_statistics(df, best_runs_df, correlation):
     print(f"   • Best overall: d{best_overall['cnn_depth']}_w{best_overall['cnn_width']} "
           f"({best_overall['val_acc']:.2f}%)")
     
-    # Best depth for different widths
-    print(f"   • Best depth by width:")
-    for width in sorted(final_data['cnn_width'].unique()):
-        width_data = final_data[final_data['cnn_width'] == width]
-        best_depth = width_data.loc[width_data['val_acc'].idxmax()]
-        print(f"     - Width {width}: Depth {best_depth['cnn_depth']} ({best_depth['val_acc']:.2f}%)")
+    # Best depth for different examples per epoch
+    print(f"   • Best depth by examples:")
+    for examples in sorted(final_data['examples_per_epoch'].unique()):
+        examples_data = final_data[final_data['examples_per_epoch'] == examples]
+        best_depth = examples_data.loc[examples_data['val_acc'].idxmax()]
+        print(f"     - {examples} examples: Depth {best_depth['cnn_depth']} ({best_depth['val_acc']:.2f}%)")
     
-    # Best width for different depths
-    print(f"   • Best width by depth:")
+    # Best examples for different depths
+    print(f"   • Best examples by depth:")
     for depth in sorted(final_data['cnn_depth'].unique()):
         depth_data = final_data[final_data['cnn_depth'] == depth]
-        best_width = depth_data.loc[depth_data['val_acc'].idxmax()]
-        print(f"     - Depth {depth}: Width {best_width['cnn_width']} ({best_width['val_acc']:.2f}%)")
+        best_examples = depth_data.loc[depth_data['val_acc'].idxmax()]
+        print(f"     - Depth {depth}: {best_examples['examples_per_epoch']} examples ({best_examples['val_acc']:.2f}%)")
     
     # Efficiency analysis (performance vs model size)
     print(f"\n⚡ EFFICIENCY ANALYSIS:")

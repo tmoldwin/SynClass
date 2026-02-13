@@ -187,7 +187,7 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
     
     ax3.set_xlabel('Training Accuracy (%)')
     ax3.set_ylabel('Validation Accuracy (%)')
-    ax3.set_title(f'Train vs Val Correlation\nr={correlation:.3f}, R²={r_squared:.3f}', fontsize=12, fontweight='bold')
+    ax3.set_title(f'Train vs Val Correlation\nr={correlation:.3f}, R2={r_squared:.3f}', fontsize=12, fontweight='bold')
     
     # Add regression equation annotation
     ax3.text(0.05, 0.95, f'y = {slope:.3f}x + {intercept:.3f}', 
@@ -223,43 +223,43 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
             combined_info = f"""
     DATASET & PERFORMANCE SUMMARY:
     
-    📊 Dataset:
-    • Total Runs: {total_runs} configurations tested
-    • Estimated: ~{estimated_total_samples:,} total samples
-    • Balance: Balanced E/I dataset (50/50)
+    Dataset:
+    - Total Runs: {total_runs} configurations tested
+    - Estimated: ~{estimated_total_samples:,} total samples
+    - Balance: Balanced E/I dataset (50/50)
     
-    🏆 Best Overall:
+    Best Overall:
     d{best_overall['cnn_depth']}_w{best_overall['cnn_width']}
     {best_overall['val_acc']:.2f}% validation
     
-    ⚖️ Best Generalization:
+    Best Generalization:
     d{min_overfitting['cnn_depth']}_w{min_overfitting['cnn_width']}
     Gap: {min_overfitting['overfitting_gap']:.2f}%
     
-    📈 Statistics:
-    • Mean Val Acc: {final_data['val_acc'].mean():.1f}%
-    • Std Val Acc: {final_data['val_acc'].std():.1f}%
-    • Train-Val r: {correlation:.3f}
+    Statistics:
+    - Mean Val Acc: {final_data['val_acc'].mean():.1f}%
+    - Std Val Acc: {final_data['val_acc'].std():.1f}%
+    - Train-Val r: {correlation:.3f}
     """
         except Exception as e:
             combined_info = f"""
     DATASET & PERFORMANCE SUMMARY:
     
-    📊 Dataset:
-    • Training Set: [Error reading data]
-    • Validation Set: [Error reading data]
-    • Class Balance: [Error reading data]
+    Dataset:
+    - Training Set: [Error reading data]
+    - Validation Set: [Error reading data]
+    - Class Balance: [Error reading data]
     
-    🏆 Best Overall:
+    Best Overall:
     [Error reading data]
     
-    ⚖️ Best Generalization:
+    Best Generalization:
     [Error reading data]
     
-    📈 Statistics:
-    • Mean Val Acc: [Error reading data]
-    • Std Val Acc: [Error reading data]
-    • Train-Val r: [Error reading data]
+    Statistics:
+    - Mean Val Acc: [Error reading data]
+    - Std Val Acc: [Error reading data]
+    - Train-Val r: [Error reading data]
     
     Error: {str(e)}
     """
@@ -267,21 +267,21 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
         combined_info = """
     DATASET & PERFORMANCE SUMMARY:
     
-    📊 Dataset:
-    • Training Set: [Data not found]
-    • Validation Set: [Data not found]
-    • Class Balance: [Data not found]
+    Dataset:
+    - Training Set: [Data not found]
+    - Validation Set: [Data not found]
+    - Class Balance: [Data not found]
     
-    🏆 Best Overall:
+    Best Overall:
     [Data not found]
     
-    ⚖️ Best Generalization:
+    Best Generalization:
     [Data not found]
     
-    📈 Statistics:
-    • Mean Val Acc: [Data not found]
-    • Std Val Acc: [Data not found]
-    • Train-Val r: [Data not found]
+    Statistics:
+    - Mean Val Acc: [Data not found]
+    - Std Val Acc: [Data not found]
+    - Train-Val r: [Data not found]
     """
     
     ax4.text(0.1, 0.9, combined_info, transform=ax4.transAxes, fontsize=9,
@@ -307,7 +307,7 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
     
     ax5.set_xlabel('Examples per Epoch')
     ax5.set_ylabel('Final Validation Accuracy (%)')
-    ax5.set_title(f'Examples vs Validation Accuracy\nr={correlation:.3f}, R²={r_squared:.3f}', fontsize=12, fontweight='bold')
+    ax5.set_title(f'Examples vs Validation Accuracy\nr={correlation:.3f}, R2={r_squared:.3f}', fontsize=12, fontweight='bold')
     ax5.legend(fontsize=8)
     ax5.grid(True, alpha=0.3)
     
@@ -330,7 +330,7 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
     
     ax6.set_xlabel('CNN Depth')
     ax6.set_ylabel('Final Validation Accuracy (%)')
-    ax6.set_title(f'Depth vs Validation Accuracy\nr={correlation:.3f}, R²={r_squared:.3f}', fontsize=12, fontweight='bold')
+    ax6.set_title(f'Depth vs Validation Accuracy\nr={correlation:.3f}, R2={r_squared:.3f}', fontsize=12, fontweight='bold')
     ax6.legend(fontsize=8)
     ax6.grid(True, alpha=0.3)
     
@@ -496,71 +496,71 @@ def create_comprehensive_analysis(df, save_path='comprehensive_sweep_analysis.pn
                 cm_stats = f"""
     CONFUSION MATRIX STATISTICS:
     
-    📊 Training Metrics:
-    • Precision: {train_precision:.3f}
-    • Recall: {train_recall:.3f}
-    • F1-Score: {train_f1:.3f}
+    Training Metrics:
+    - Precision: {train_precision:.3f}
+    - Recall: {train_recall:.3f}
+    - F1-Score: {train_f1:.3f}
     
-    📊 Validation Metrics:
-    • Precision: {val_precision:.3f}
-    • Recall: {val_recall:.3f}
-    • F1-Score: {val_f1:.3f}
+    Validation Metrics:
+    - Precision: {val_precision:.3f}
+    - Recall: {val_recall:.3f}
+    - F1-Score: {val_f1:.3f}
     
-    📈 Class Accuracies:
-    • Train E: {train_e_acc:.1f}%, I: {train_i_acc:.1f}%
-    • Val E: {val_e_acc:.1f}%, I: {val_i_acc:.1f}%
-    • E/I Gap: {val_e_acc - val_i_acc:.1f}%
+    Class Accuracies:
+    - Train E: {train_e_acc:.1f}%, I: {train_i_acc:.1f}%
+    - Val E: {val_e_acc:.1f}%, I: {val_i_acc:.1f}%
+    - E/I Gap: {val_e_acc - val_i_acc:.1f}%
     """
             else:
                 cm_stats = """
     CONFUSION MATRIX STATISTICS:
     
-    📊 Training Metrics:
-    • Precision: [Data not available]
-    • Recall: [Data not available]
-    • F1-Score: [Data not available]
+    Training Metrics:
+    - Precision: [Data not available]
+    - Recall: [Data not available]
+    - F1-Score: [Data not available]
     
-    📊 Validation Metrics:
-    • Precision: [Data not available]
-    • Recall: [Data not available]
-    • F1-Score: [Data not available]
+    Validation Metrics:
+    - Precision: [Data not available]
+    - Recall: [Data not available]
+    - F1-Score: [Data not available]
     
-    📈 Raw Counts:
-    • [Data not available]
+    Raw Counts:
+    - [Data not available]
     """
         except:
             cm_stats = """
     CONFUSION MATRIX STATISTICS:
     
-    📊 Training Metrics:
-    • Precision: [Parse error]
-    • Recall: [Parse error]
-    • F1-Score: [Parse error]
+    Training Metrics:
+    - Precision: [Parse error]
+    - Recall: [Parse error]
+    - F1-Score: [Parse error]
     
-    📊 Validation Metrics:
-    • Precision: [Parse error]
-    • Recall: [Parse error]
-    • F1-Score: [Parse error]
+    Validation Metrics:
+    - Precision: [Parse error]
+    - Recall: [Parse error]
+    - F1-Score: [Parse error]
     
-    📈 Raw Counts:
-    • [Parse error]
+    Raw Counts:
+    - [Parse error]
     """
     else:
         cm_stats = """
     CONFUSION MATRIX STATISTICS:
     
-    📊 Training Metrics:
-    • Precision: [Data not available]
-    • Recall: [Data not available]
-    • F1-Score: [Data not available]
+    Training Metrics:
+    - Precision: [Data not available]
+    - Recall: [Data not available]
+    - F1-Score: [Data not available]
     
-    📊 Validation Metrics:
-    • Precision: [Data not available]
-    • Recall: [Data not available]
-    • F1-Score: [Data not available]
+    Validation Metrics:
+    - Precision: [Data not available]
+    - Recall: [Data not available]
+    - F1-Score: [Data not available]
     
-    📈 Raw Counts:
-    • [Data not available]
+    Raw Counts:
+    - [Data not available]
     """
     
     ax11.text(0.1, 0.9, cm_stats, transform=ax11.transAxes, fontsize=9,
@@ -616,21 +616,21 @@ def print_summary_statistics(df, best_runs_df, correlation):
         lambda x: x.loc[x['epoch'].idxmax()]
     ).reset_index(drop=True)
     
-    print(f"\n📊 DATASET OVERVIEW:")
-    print(f"   • Total runs: {df['run_name'].nunique()}")
-    print(f"   • Total epochs: {len(df)}")
-    print(f"   • Depth range: {df['cnn_depth'].min()}-{df['cnn_depth'].max()}")
-    print(f"   • Examples per epoch range: {df['examples_per_epoch'].min()}-{df['examples_per_epoch'].max()}")
+    print(f"\nDATASET OVERVIEW:")
+    print(f"   - Total runs: {df['run_name'].nunique()}")
+    print(f"   - Total epochs: {len(df)}")
+    print(f"   - Depth range: {df['cnn_depth'].min()}-{df['cnn_depth'].max()}")
+    print(f"   - Examples per epoch range: {df['examples_per_epoch'].min()}-{df['examples_per_epoch'].max()}")
     
-    print(f"\n🏆 TOP 5 PERFORMING CONFIGURATIONS:")
+    print(f"\nTOP 5 PERFORMING CONFIGURATIONS:")
     for i, (_, run) in enumerate(best_runs_df.iterrows(), 1):
         print(f"   {i}. d{run['depth']}_w{run['width']}: {run['final_val_acc']:.2f}%")
     
-    print(f"\n📈 PERFORMANCE STATISTICS:")
-    print(f"   • Best validation accuracy: {final_data['val_acc'].max():.2f}%")
-    print(f"   • Average validation accuracy: {final_data['val_acc'].mean():.2f}%")
-    print(f"   • Std validation accuracy: {final_data['val_acc'].std():.2f}%")
-    print(f"   • Train-Val correlation: {correlation:.3f}")
+    print(f"\nPERFORMANCE STATISTICS:")
+    print(f"   - Best validation accuracy: {final_data['val_acc'].max():.2f}%")
+    print(f"   - Average validation accuracy: {final_data['val_acc'].mean():.2f}%")
+    print(f"   - Std validation accuracy: {final_data['val_acc'].std():.2f}%")
+    print(f"   - Train-Val correlation: {correlation:.3f}")
     
     # Calculate regression statistics for all relationships
     train_val_corr = final_data['train_acc'].corr(final_data['val_acc'])
@@ -640,17 +640,17 @@ def print_summary_statistics(df, best_runs_df, correlation):
     depth_val_corr = final_data['cnn_depth'].corr(final_data['val_acc'])
     depth_val_r2 = depth_val_corr ** 2
     
-    print(f"\n📊 REGRESSION STATISTICS:")
-    print(f"   • Train vs Val: r={train_val_corr:.3f}, R²={train_val_r2:.3f}")
-    print(f"   • Examples vs Val: r={examples_val_corr:.3f}, R²={examples_val_r2:.3f}")
-    print(f"   • Depth vs Val: r={depth_val_corr:.3f}, R²={depth_val_r2:.3f}")
+    print(f"\nREGRESSION STATISTICS:")
+    print(f"   - Train vs Val: r={train_val_corr:.3f}, R2={train_val_r2:.3f}")
+    print(f"   - Examples vs Val: r={examples_val_corr:.3f}, R2={examples_val_r2:.3f}")
+    print(f"   - Depth vs Val: r={depth_val_corr:.3f}, R2={depth_val_r2:.3f}")
     
-    print(f"\n🔍 DEPTH ANALYSIS:")
+    print(f"\nDEPTH ANALYSIS:")
     depth_stats = final_data.groupby('cnn_depth')['val_acc'].agg(['mean', 'std', 'max']).round(2)
     for depth, stats in depth_stats.iterrows():
-        print(f"   • Depth {depth}: Mean={stats['mean']}%, Std={stats['std']}%, Max={stats['max']}%")
+        print(f"   - Depth {depth}: Mean={stats['mean']}%, Std={stats['std']}%, Max={stats['max']}%")
     
-    print(f"\n⏱️  TRAINING PROGRESS:")
+    print(f"\nTRAINING PROGRESS:")
     # Calculate epochs completed for each model
     epochs_completed = df.groupby(['cnn_depth', 'cnn_width'])['epoch'].max().reset_index()
     target_epochs = 150  # Should match EPOCHS in training script
@@ -659,62 +659,62 @@ def print_summary_statistics(df, best_runs_df, correlation):
     total_models = len(epochs_completed)
     completed_models = len(finished_models)
     
-    print(f"   • Total model configurations: {total_models}")
-    print(f"   • Completed training ({target_epochs} epochs): {completed_models} ({completed_models/total_models*100:.1f}%)")
-    print(f"   • Incomplete training: {total_models - completed_models}")
+    print(f"   - Total model configurations: {total_models}")
+    print(f"   - Completed training ({target_epochs} epochs): {completed_models} ({completed_models/total_models*100:.1f}%)")
+    print(f"   - Incomplete training: {total_models - completed_models}")
     
     if len(finished_models) > 0:
-        print(f"   • Completed models:")
+        print(f"   - Completed models:")
         for _, model in finished_models.iterrows():
             print(f"     - d{model['cnn_depth']}_w{model['cnn_width']}: {model['epoch']} epochs")
     
     if len(epochs_completed[epochs_completed['epoch'] < target_epochs]) > 0:
-        print(f"   • Incomplete models:")
+        print(f"   - Incomplete models:")
         incomplete = epochs_completed[epochs_completed['epoch'] < target_epochs]
         for _, model in incomplete.iterrows():
             print(f"     - d{model['cnn_depth']}_w{model['cnn_width']}: {model['epoch']} epochs")
     
-    print(f"\n🔍 EXAMPLES PER EPOCH ANALYSIS:")
+    print(f"\nEXAMPLES PER EPOCH ANALYSIS:")
     examples_stats = final_data.groupby('examples_per_epoch')['val_acc'].agg(['mean', 'std', 'max']).round(2)
     for examples, stats in examples_stats.iterrows():
-        print(f"   • {examples} examples: Mean={stats['mean']}%, Std={stats['std']}%, Max={stats['max']}%")
+        print(f"   - {examples} examples: Mean={stats['mean']}%, Std={stats['std']}%, Max={stats['max']}%")
     
-    print(f"\n⚖️ OVERFITTING ANALYSIS:")
-    print(f"   • Average overfitting gap: {final_data['overfitting_gap'].mean():.2f}%")
-    print(f"   • Min overfitting gap: {final_data['overfitting_gap'].min():.2f}%")
-    print(f"   • Max overfitting gap: {final_data['overfitting_gap'].max():.2f}%")
+    print(f"\nOVERFITTING ANALYSIS:")
+    print(f"   - Average overfitting gap: {final_data['overfitting_gap'].mean():.2f}%")
+    print(f"   - Min overfitting gap: {final_data['overfitting_gap'].min():.2f}%")
+    print(f"   - Max overfitting gap: {final_data['overfitting_gap'].max():.2f}%")
     
     # Find configurations with minimal overfitting
     min_overfitting = final_data.loc[final_data['overfitting_gap'].idxmin()]
-    print(f"   • Best generalization: d{min_overfitting['cnn_depth']}_w{min_overfitting['cnn_width']} "
+    print(f"   - Best generalization: d{min_overfitting['cnn_depth']}_w{min_overfitting['cnn_width']} "
           f"(gap: {min_overfitting['overfitting_gap']:.2f}%)")
     
-    print(f"\n💡 RECOMMENDATIONS:")
+    print(f"\nRECOMMENDATIONS:")
     
     # Best overall performance
     best_overall = final_data.loc[final_data['val_acc'].idxmax()]
-    print(f"   • Best overall: d{best_overall['cnn_depth']}_w{best_overall['cnn_width']} "
+    print(f"   - Best overall: d{best_overall['cnn_depth']}_w{best_overall['cnn_width']} "
           f"({best_overall['val_acc']:.2f}%)")
     
     # Best depth for different examples per epoch
-    print(f"   • Best depth by examples:")
+    print(f"   - Best depth by examples:")
     for examples in sorted(final_data['examples_per_epoch'].unique()):
         examples_data = final_data[final_data['examples_per_epoch'] == examples]
         best_depth = examples_data.loc[examples_data['val_acc'].idxmax()]
         print(f"     - {examples} examples: Depth {best_depth['cnn_depth']} ({best_depth['val_acc']:.2f}%)")
     
     # Best examples for different depths
-    print(f"   • Best examples by depth:")
+    print(f"   - Best examples by depth:")
     for depth in sorted(final_data['cnn_depth'].unique()):
         depth_data = final_data[final_data['cnn_depth'] == depth]
         best_examples = depth_data.loc[depth_data['val_acc'].idxmax()]
         print(f"     - Depth {depth}: {best_examples['examples_per_epoch']} examples ({best_examples['val_acc']:.2f}%)")
     
     # Efficiency analysis (performance vs model size)
-    print(f"\n⚡ EFFICIENCY ANALYSIS:")
+    print(f"\nEFFICIENCY ANALYSIS:")
     final_data['model_size'] = final_data['cnn_depth'] * final_data['cnn_width']
     efficiency_data = final_data.groupby('model_size')['val_acc'].agg(['mean', 'max']).round(2)
-    print(f"   • Performance vs model size (depth × width):")
+    print(f"   - Performance vs model size (depth x width):")
     for size, stats in efficiency_data.iterrows():
         print(f"     - Size {size}: Mean={stats['mean']}%, Max={stats['max']}%")
     

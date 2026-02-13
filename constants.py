@@ -6,6 +6,10 @@ from datetime import datetime
 # Data paths
 DATA_DIR = 'Data/synpase_raw_em/'
 CSV_PATH = 'Data/synpase_raw_em/synapse_data.csv'
+# Fallback: CSV at Data root when using 7z (e.g. Data/synapse_data.csv)
+CSV_PATH_FALLBACK = 'Data/synapse_data.csv'
+# Archive for loading without extraction (zip or 7z)
+DATA_ARCHIVE = 'Data/synpase_raw_em.7z'
 
 # Model save paths
 MODEL_SAVE_PATHS = {

@@ -6,7 +6,13 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 from augmentation import get_augmentation_transform, RandomCrop3D, RandomCrop2D
-from constants import DATA_DIR
+from constants import DATA_DIR, DATA_ARCHIVE
+
+try:
+    from data_utils import load_npy
+    _load_npy = lambda d, a, f: load_npy(d, a, f)
+except ImportError:
+    _load_npy = None
 
 
 class SynapseDataset(Dataset):
@@ -22,11 +28,12 @@ class SynapseDataset(Dataset):
         use_mask_aware_crop: Whether to use mask-aware cropping
     """
     
-    def __init__(self, file_list, synapse_map, data_dir=None, augment=False, 
+    def __init__(self, file_list, synapse_map, data_dir=None, archive_path=None, augment=False,
                  is_3d=True, input_size=None, use_mask_aware_crop=False):
         self.file_list = file_list
         self.synapse_map = synapse_map
         self.data_dir = data_dir if data_dir is not None else DATA_DIR
+        self.archive_path = archive_path if archive_path and os.path.isfile(archive_path) else None
         self.augment = augment
         self.is_3d = is_3d
         self.input_size = input_size
@@ -54,9 +61,10 @@ class SynapseDataset(Dataset):
     def __getitem__(self, idx):
         filename = self.file_list[idx]
         filepath = os.path.join(self.data_dir, filename)
-        
-        # Load synapse data
-        data = np.load(filepath)
+        if _load_npy and (self.archive_path or not os.path.isfile(filepath)):
+            data = _load_npy(self.data_dir, self.archive_path or DATA_ARCHIVE, filename)
+        else:
+            data = np.load(filepath)
         
         # Get label
         syn_id = int(filename.split('_')[0])
@@ -67,10 +75,14 @@ class SynapseDataset(Dataset):
         mask = None
         if self.mask_crop is not None:
             try:
-                pre_mask_path = os.path.join(self.data_dir, filename.replace('syn.npy', 'pre_syn_n_mask.npy'))
-                post_mask_path = os.path.join(self.data_dir, filename.replace('syn.npy', 'post_syn_n_mask.npy'))
-                pre_mask = np.load(pre_mask_path)
-                post_mask = np.load(post_mask_path)
+                pre_name = filename.replace('syn.npy', 'pre_syn_n_mask.npy')
+                post_name = filename.replace('syn.npy', 'post_syn_n_mask.npy')
+                if _load_npy and (self.archive_path or not os.path.isfile(os.path.join(self.data_dir, pre_name))):
+                    pre_mask = _load_npy(self.data_dir, self.archive_path or DATA_ARCHIVE, pre_name)
+                    post_mask = _load_npy(self.data_dir, self.archive_path or DATA_ARCHIVE, post_name)
+                else:
+                    pre_mask = np.load(os.path.join(self.data_dir, pre_name))
+                    post_mask = np.load(os.path.join(self.data_dir, post_name))
                 # Combine pre and post masks
                 mask = np.logical_or(pre_mask, post_mask).astype(np.float32)
                 mask = torch.tensor(mask, dtype=torch.float32)
@@ -103,11 +115,12 @@ class SynapseDataset(Dataset):
 class Synapse3DDataset(SynapseDataset):
     """3D synapse dataset with 3D-specific preprocessing."""
     
-    def __init__(self, file_list, synapse_map, data_dir=None, augment=False, input_size=64, use_mask_aware_crop=True):
+    def __init__(self, file_list, synapse_map, data_dir=None, archive_path=None, augment=False, input_size=64, use_mask_aware_crop=True):
         super().__init__(
             file_list=file_list,
-            synapse_map=synapse_map, 
+            synapse_map=synapse_map,
             data_dir=data_dir,
+            archive_path=archive_path,
             augment=augment,
             is_3d=True,
             input_size=input_size,
@@ -118,11 +131,12 @@ class Synapse3DDataset(SynapseDataset):
 class Synapse2DDataset(SynapseDataset):
     """2D synapse dataset with 2D-specific preprocessing."""
     
-    def __init__(self, file_list, synapse_map, data_dir=None, augment=False, input_size=224, use_mask_aware_crop=True):
+    def __init__(self, file_list, synapse_map, data_dir=None, archive_path=None, augment=False, input_size=224, use_mask_aware_crop=True):
         super().__init__(
             file_list=file_list,
             synapse_map=synapse_map,
-            data_dir=data_dir, 
+            data_dir=data_dir,
+            archive_path=archive_path,
             augment=augment,
             is_3d=False,
             input_size=input_size,
@@ -175,13 +189,13 @@ def create_dataloaders(train_files, test_files, synapse_map, batch_size=16,
     # Choose dataset class
     DatasetClass = Synapse3DDataset if is_3d else Synapse2DDataset
     
-    # Create datasets
+    archive_path = DATA_ARCHIVE if os.path.isfile(DATA_ARCHIVE) else None
     train_dataset = DatasetClass(
-        train_files, synapse_map, augment=augment_train, input_size=input_size, 
+        train_files, synapse_map, archive_path=archive_path, augment=augment_train, input_size=input_size,
         use_mask_aware_crop=use_mask_aware_crop
     )
     val_dataset = DatasetClass(
-        test_files, synapse_map, augment=False, input_size=input_size,
+        test_files, synapse_map, archive_path=archive_path, augment=False, input_size=input_size,
         use_mask_aware_crop=False  # No cropping for validation
     )
     

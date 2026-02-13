@@ -19,14 +19,15 @@ from utils import set_random_seeds, get_device, print_model_summary, compute_cla
 class MultiChannelSynapseDataset(torch.utils.data.Dataset):
     """2D dataset with 3 channels: image + pre_mask + post_mask, configurable examples per epoch."""
     
-    def __init__(self, file_list, synapse_map, data_dir=None, augment=False, 
+    def __init__(self, file_list, synapse_map, data_dir=None, archive_path=None, augment=False,
                  input_size=224, examples_per_epoch=None, augment_prob=0.2):
-        from constants import DATA_DIR
+        from constants import DATA_DIR, DATA_ARCHIVE
         import os
         
         self.file_list = file_list
         self.synapse_map = synapse_map
         self.data_dir = data_dir if data_dir is not None else DATA_DIR
+        self.archive_path = archive_path if archive_path and os.path.isfile(archive_path) else (DATA_ARCHIVE if os.path.isfile(DATA_ARCHIVE) else None)
         self.augment = augment
         self.input_size = input_size
         self.examples_per_epoch = examples_per_epoch if examples_per_epoch is not None else len(file_list)
@@ -36,9 +37,9 @@ class MultiChannelSynapseDataset(torch.utils.data.Dataset):
         from augmentation import get_2d_augmentation_transform
         self.transform = get_2d_augmentation_transform(augment=augment, input_size=input_size)
         
-        print(f"📊 Dataset: {len(file_list)} total synapses -> {self.examples_per_epoch} examples per epoch")
+        print(f"Dataset: {len(file_list)} total synapses -> {self.examples_per_epoch} examples per epoch")
         if augment:
-            print(f"🎲 Augmentation probability: {augment_prob:.1f} (vs {1-augment_prob:.1f} for originals)")
+            print(f"Augmentation probability: {augment_prob:.1f} (vs {1-augment_prob:.1f} for originals)")
     
     def _rotated_crop(self, image, center_h, center_w, crop_size, angle):
         """Apply rotated crop to image without black borders."""
@@ -104,7 +105,7 @@ class MultiChannelSynapseDataset(torch.utils.data.Dataset):
         # Adjust final count to match examples_per_epoch exactly
         self._epoch_indices = all_selected[:self.examples_per_epoch]
         
-        print(f"🎯 Balanced sampling: {len(selected_e)} E + {len(selected_i)} I = {len(self._epoch_indices)} total examples")
+        print(f"Balanced sampling: {len(selected_e)} E + {len(selected_i)} I = {len(self._epoch_indices)} total examples")
         
     def __len__(self):
         return self.examples_per_epoch
@@ -129,21 +130,33 @@ class MultiChannelSynapseDataset(torch.utils.data.Dataset):
         
         filename = self.file_list[synapse_idx]
         filepath = os.path.join(self.data_dir, filename)
-        
-        # Load synapse data (3D)
-        data_3d = np.load(filepath)
-        
-        # Get label
+        from data_utils import load_npy
+        for attempt in range(3):
+            try:
+                if self.archive_path or not os.path.isfile(filepath):
+                    data_3d = load_npy(self.data_dir, self.archive_path, filename)
+                else:
+                    data_3d = np.load(filepath)
+                break
+            except (FileNotFoundError, EOFError, OSError) as e:
+                if attempt < 2:
+                    synapse_idx = (synapse_idx + 1) % len(self.file_list)
+                    filename = self.file_list[synapse_idx]
+                    filepath = os.path.join(self.data_dir, filename)
+                else:
+                    raise
         syn_id = int(filename.split('_')[0])
         syn_type = self.synapse_map[syn_id]
-        label = 1 if syn_type == 'I' else 0  # I=1 (inhibitory), E=0 (excitatory)
-        
-        # Load masks
+        label = 1 if syn_type == 'I' else 0
         try:
-            pre_mask_path = os.path.join(self.data_dir, filename.replace('syn.npy', 'pre_syn_n_mask.npy'))
-            post_mask_path = os.path.join(self.data_dir, filename.replace('syn.npy', 'post_syn_n_mask.npy'))
-            pre_mask_3d = np.load(pre_mask_path)
-            post_mask_3d = np.load(post_mask_path)
+            pre_name = filename.replace('syn.npy', 'pre_syn_n_mask.npy')
+            post_name = filename.replace('syn.npy', 'post_syn_n_mask.npy')
+            if self.archive_path or not os.path.isfile(os.path.join(self.data_dir, pre_name)):
+                pre_mask_3d = load_npy(self.data_dir, self.archive_path, pre_name)
+                post_mask_3d = load_npy(self.data_dir, self.archive_path, post_name)
+            else:
+                pre_mask_3d = np.load(os.path.join(self.data_dir, pre_name))
+                post_mask_3d = np.load(os.path.join(self.data_dir, post_name))
         except FileNotFoundError:
             # Create dummy masks if not found
             pre_mask_3d = np.zeros_like(data_3d)
@@ -347,24 +360,27 @@ class CNN2DMultiChannel(nn.Module):
         return x
 
 
-def create_multichannel_dataloaders(train_files, test_files, synapse_map, 
+def create_multichannel_dataloaders(train_files, test_files, synapse_map,
                                    batch_size=16, num_workers=4, pin_memory=True,
                                    input_size=224, augment_train=True, examples_per_epoch=None,
                                    augment_val=False, val_examples_per_epoch=None):
     """Create dataloaders for multi-channel training."""
     from torch.utils.data import DataLoader
-    
-    # Create datasets
+    from constants import DATA_ARCHIVE
+    import os
+    archive_path = DATA_ARCHIVE if os.path.isfile(DATA_ARCHIVE) else None
+    # num_workers=0 when loading from archive (py7zr + multiprocessing can cause EOFError)
+    if archive_path and num_workers > 0:
+        num_workers = 0
     train_dataset = MultiChannelSynapseDataset(
-        train_files, synapse_map, augment=augment_train, 
+        train_files, synapse_map, archive_path=archive_path, augment=augment_train,
         input_size=input_size, examples_per_epoch=examples_per_epoch
     )
     val_dataset = MultiChannelSynapseDataset(
-        test_files, synapse_map, augment=augment_val, 
+        test_files, synapse_map, archive_path=archive_path, augment=augment_val,
         input_size=input_size, examples_per_epoch=val_examples_per_epoch
     )
-    
-    print(f"🎯 TRAINING CONFIGURATION:")
+    print(f"TRAINING CONFIGURATION:")
     print(f"   Training: {len(train_files)} total synapses -> {len(train_dataset)} examples per epoch")
     print(f"   Validation: {len(test_files)} total synapses -> {len(val_dataset)} examples per epoch")
     print(f"   Training/Val ratio: {len(train_dataset)/len(val_dataset):.1f}:1")
@@ -420,7 +436,7 @@ def main():
     train_files, test_files, synapse_map, data_stats = prepare_synapse_data(logger=logger)
     
     # Verify balanced dataset - should be 50/50 E/I for BOTH train and test
-    logger.info(f"📊 CLASS VERIFICATION:")
+    logger.info("CLASS VERIFICATION:")
     logger.info(f"   Train: E={data_stats['train_distribution']['E']}, I={data_stats['train_distribution']['I']}")
     logger.info(f"   Test:  E={data_stats['test_distribution']['E']}, I={data_stats['test_distribution']['I']}")
     
@@ -434,14 +450,14 @@ def main():
     test_balanced = abs(test_ratio - 1.0) <= 0.1
     
     if not train_balanced:
-        logger.warning(f"⚠️  TRAIN dataset is NOT balanced! Ratio: {train_ratio:.3f}:1")
+        logger.warning(f"TRAIN dataset is NOT balanced! Ratio: {train_ratio:.3f}:1")
     if not test_balanced:
-        logger.warning(f"⚠️  TEST dataset is NOT balanced! Ratio: {test_ratio:.3f}:1")
+        logger.warning(f"TEST dataset is NOT balanced! Ratio: {test_ratio:.3f}:1")
         
     if train_balanced and test_balanced:
-        logger.info(f"✅ Both train and test datasets are balanced - no class weights needed")
+        logger.info("Both train and test datasets are balanced - no class weights needed")
     else:
-        logger.error(f"❌ Dataset imbalance detected - this will cause training issues!")
+        logger.error("Dataset imbalance detected - this will cause training issues!")
     
     # Create dataloaders
     train_loader, val_loader = create_multichannel_dataloaders(

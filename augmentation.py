@@ -490,11 +490,11 @@ def visualize_2d_augmentations():
     fig, axes = plt.subplots(len(synapses), 9, figsize=(27, 3*len(synapses)))
     fig.suptitle('Comprehensive 2D Augmentation Gallery with Masks & Multiple Crops', fontsize=18, fontweight='bold')
     
-    print(f"\n📊 AUGMENTATION TRAINING INFO:")
-    print(f"• During training: ONE random augmentation per synapse per epoch")
-    print(f"• Validation: NO augmentations (original data only)")
-    print(f"• Random crop: Different crop location each epoch -> data diversity")
-    print(f"• Each synapse = {len(synapses)} different views per epoch from augmentations\n")
+    print(f"\nAUGMENTATION TRAINING INFO:")
+    print(f"- During training: ONE random augmentation per synapse per epoch")
+    print(f"- Validation: NO augmentations (original data only)")
+    print(f"- Random crop: Different crop location each epoch -> data diversity")
+    print(f"- Each synapse = {len(synapses)} different views per epoch from augmentations\n")
     
     for syn_idx, synapse in enumerate(synapses):
         data = synapse['data']
@@ -700,7 +700,7 @@ def visualize_2d_augmentations():
                 ax_row[6 + crop_idx].imshow(post_overlay)
             
             if syn_idx == 0:
-                ax_row[6 + crop_idx].set_title(f'Rotated Crop {crop_idx+1}\n({int(crop_ratio*100)}%, {angle}°)')
+                ax_row[6 + crop_idx].set_title(f'Rotated Crop {crop_idx+1}\n({int(crop_ratio*100)}%, {angle} deg)')
             ax_row[6 + crop_idx].axis('off')
     
     plt.tight_layout()
@@ -709,7 +709,7 @@ def visualize_2d_augmentations():
     os.makedirs('figures', exist_ok=True)
     save_path = 'figures/comprehensive_2d_augmentation_gallery.png'
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
-    print(f"✅ Comprehensive 2D augmentation gallery saved to: {save_path}")
+    print(f"Comprehensive 2D augmentation gallery saved to: {save_path}")
     
     plt.show()
     return fig

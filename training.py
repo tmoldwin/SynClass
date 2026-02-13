@@ -473,21 +473,21 @@ def _update_comprehensive_training_plots(train_losses, val_losses, train_accurac
     
     summary_text = f"""EPOCH {current_epoch} SUMMARY:
     
-📊 Overall Performance:
-• Train Acc: {current_train_acc:.1f}%
-• Val Acc: {current_val_acc:.1f}%
-• Overfitting Gap: {current_train_acc - current_val_acc:.1f}%
+Overall Performance:
+- Train Acc: {current_train_acc:.1f}%
+- Val Acc: {current_val_acc:.1f}%
+- Overfitting Gap: {current_train_acc - current_val_acc:.1f}%
 
-🎯 Class Performance:
-• E Precision: {report['E']['precision']:.3f}
-• E Recall: {report['E']['recall']:.3f}
-• I Precision: {report['I']['precision']:.3f}
-• I Recall: {report['I']['recall']:.3f}
+Class Performance:
+- E Precision: {report['E']['precision']:.3f}
+- E Recall: {report['E']['recall']:.3f}
+- I Precision: {report['I']['precision']:.3f}
+- I Recall: {report['I']['recall']:.3f}
 
-⚙️ Training Status:
-• Learning Rate: {learning_rate:.2e}
-• Best Val Acc: {max(val_accuracies):.1f}%
-• Epoch: {current_epoch}"""
+Training Status:
+- Learning Rate: {learning_rate:.2e}
+- Best Val Acc: {max(val_accuracies):.1f}%
+- Epoch: {current_epoch}"""
     
     ax7.text(0.05, 0.95, summary_text, transform=ax7.transAxes, fontsize=10,
              verticalalignment='top', fontfamily='monospace',
@@ -528,8 +528,8 @@ def _update_comprehensive_training_plots(train_losses, val_losses, train_accurac
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()  # Close to save memory
     
-    print(f"🎯 PLOTS SAVED: {save_path}")
-    print(f"📊 Panels: Loss, Accuracy, Confusion Matrix, E/I Over Time, Overfitting, LR, Summary, Correlation")
+    print(f"PLOTS SAVED: {save_path}")
+    print(f"Panels: Loss, Accuracy, Confusion Matrix, E/I Over Time, Overfitting, LR, Summary, Correlation")
 
 
 def _log_epoch_to_sweep_csv(run_name, epoch, train_acc, val_acc, predictions, targets, learning_rate):
@@ -621,7 +621,7 @@ def _log_epoch_to_sweep_csv(run_name, epoch, train_acc, val_acc, predictions, ta
                         cm_e_correct, cm_e_incorrect, cm_i_correct, cm_i_incorrect
                     ])
                 
-                print(f"📝 CSV LOGGED: {run_name} Epoch {epoch} -> sweep_results.csv")
+                print(f"CSV LOGGED: {run_name} Epoch {epoch} -> sweep_results.csv")
                 break
                 
             finally:

@@ -537,18 +537,18 @@ def plot_epoch_progress(train_losses, train_accs, val_losses, val_accs, learning
     Sample Counts:
     
     Training Set:
-    • E: {train_e_total} samples
-    • I: {train_i_total} samples
-    • Total: {train_e_total + train_i_total} samples
+    - E: {train_e_total} samples
+    - I: {train_i_total} samples
+    - Total: {train_e_total + train_i_total} samples
     
     Validation Set:
-    • E: {val_e_total} samples
-    • I: {val_i_total} samples
-    • Total: {val_e_total + val_i_total} samples
+    - E: {val_e_total} samples
+    - I: {val_i_total} samples
+    - Total: {val_e_total + val_i_total} samples
     
     Class Balance:
-    • Train: {train_e_total/(train_e_total+train_i_total)*100:.1f}% E, {train_i_total/(train_e_total+train_i_total)*100:.1f}% I
-    • Val: {val_e_total/(val_e_total+val_i_total)*100:.1f}% E, {val_i_total/(val_e_total+val_i_total)*100:.1f}% I
+    - Train: {train_e_total/(train_e_total+train_i_total)*100:.1f}% E, {train_i_total/(train_e_total+train_i_total)*100:.1f}% I
+    - Val: {val_e_total/(val_e_total+val_i_total)*100:.1f}% E, {val_i_total/(val_e_total+val_i_total)*100:.1f}% I
     """
             axes[2, 2].text(0.1, 0.5, sample_text, transform=axes[2, 2].transAxes, 
                            fontsize=10, verticalalignment='center', fontfamily='monospace')

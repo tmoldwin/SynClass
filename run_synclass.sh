@@ -2,7 +2,7 @@
 
 # Launcher script for submitting multiple independent SLURM jobs for a hyperparameter sweep.
 # Usage: ./run_synclass.sh
-# --> EDIT THE PARTITION VARIABLE أدناه TO SWITCH BETWEEN CPU AND GPU <--
+# --> EDIT THE PARTITION VARIABLE BELOW TO SWITCH BETWEEN CPU AND GPU <--
 
 echo "--- Starting 2D CNN Multi-Channel Hyperparameter Sweep ---"
 

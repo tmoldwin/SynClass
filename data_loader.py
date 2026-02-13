@@ -6,7 +6,13 @@ import random
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from constants import DATA_DIR, CSV_PATH
+from constants import DATA_DIR, CSV_PATH, CSV_PATH_FALLBACK, DATA_ARCHIVE
+
+try:
+    from data_utils import load_csv, list_synapse_files
+    HAS_DATA_UTILS = True
+except ImportError:
+    HAS_DATA_UTILS = False
 
 
 def load_synapse_metadata(csv_path=None):
@@ -20,11 +26,15 @@ def load_synapse_metadata(csv_path=None):
     """
     if csv_path is None:
         csv_path = CSV_PATH
-        
-    if not os.path.exists(csv_path):
-        raise FileNotFoundError(f"CSV file not found: {csv_path}")
-        
-    data = pd.read_csv(csv_path)
+    if HAS_DATA_UTILS:
+        data = load_csv(csv_path, DATA_ARCHIVE, CSV_PATH_FALLBACK)
+    else:
+        for p in [csv_path, CSV_PATH_FALLBACK]:
+            if p and os.path.isfile(p):
+                data = pd.read_csv(p)
+                break
+        else:
+            raise FileNotFoundError(f"CSV file not found: {csv_path}")
     return {r['id_']: r['pre_clf_type'] for _, r in data.iterrows()}
 
 
@@ -42,20 +52,22 @@ def discover_synapse_files(data_dir=None, synapse_map=None):
         data_dir = DATA_DIR
     if synapse_map is None:
         synapse_map = load_synapse_metadata()
-        
-    all_files = []
-    for f in os.listdir(data_dir):
-        if f.endswith('syn.npy'):
-            try:
-                syn_id = int(f.split('_')[0])
-                if syn_id in synapse_map and synapse_map[syn_id] in ['E', 'I']:
-                    all_files.append(f)
-            except (ValueError, IndexError):
-                continue
-                
-    E_files = [f for f in all_files if synapse_map[int(f.split('_')[0])] == 'E']
-    I_files = [f for f in all_files if synapse_map[int(f.split('_')[0])] == 'I']
-    
+    if HAS_DATA_UTILS:
+        all_files = list_synapse_files(data_dir, DATA_ARCHIVE)
+    else:
+        all_files = []
+        if os.path.isdir(data_dir):
+            all_files = [f for f in os.listdir(data_dir) if f.endswith('syn.npy')]
+    valid_files = []
+    for f in all_files:
+        try:
+            syn_id = int(f.split('_')[0])
+            if syn_id in synapse_map and synapse_map[syn_id] in ['E', 'I']:
+                valid_files.append(f)
+        except (ValueError, IndexError):
+            continue
+    E_files = [f for f in valid_files if synapse_map[int(f.split('_')[0])] == 'E']
+    I_files = [f for f in valid_files if synapse_map[int(f.split('_')[0])] == 'I']
     return E_files, I_files, synapse_map
 
 

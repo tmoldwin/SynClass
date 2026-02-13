@@ -806,7 +806,7 @@ def plot_learning_curves(train_losses, train_accs, val_losses, val_accs, learnin
         plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
         print(f'Plot saved: {plot_filename}')
     except Exception as e:
-        print(f'❌ Error saving plot: {e}')
+        print(f'Error saving plot: {e}')
     
     plt.close()
 

@@ -438,39 +438,51 @@ def visualize_2d_augmentations():
     import os
     import matplotlib.pyplot as plt
     import random
-    from constants import DATA_DIR
+    from constants import DATA_DIR, DATA_ARCHIVE, CSV_PATH_FALLBACK
     from data_loader import load_synapse_metadata, discover_synapse_files
     from scipy.ndimage import rotate
     from skimage.transform import resize
-    
+
+    try:
+        from data_utils import load_npy
+        archive_path = DATA_ARCHIVE if os.path.isfile(DATA_ARCHIVE) else None
+    except ImportError:
+        load_npy = None
+        archive_path = None
+
+    def _load(filepath, filename):
+        if load_npy and (archive_path or not os.path.isfile(filepath)):
+            return load_npy(DATA_DIR, archive_path or DATA_ARCHIVE, filename)
+        return np.load(filepath)
+
     print("Creating comprehensive 2D augmentation gallery with masks and cropping...")
-    
+
     # Load sample synapses
     synapse_map = load_synapse_metadata()
     E_files, I_files, _ = discover_synapse_files(synapse_map=synapse_map)
-    
+
     # Get 4 synapses total for more examples
     selected_files = []
     if len(E_files) >= 2:
         selected_files.extend(random.sample(E_files, 2))
     if len(I_files) >= 2:
         selected_files.extend(random.sample(I_files, 2))
-    
+
     synapses = []
     for file in selected_files[:4]:
         filepath = os.path.join(DATA_DIR, file)
-        data = np.load(filepath)
+        data = _load(filepath, file)
         syn_id = int(file.split('_')[0])
         syn_type = synapse_map[syn_id]
-        
+
         # Load masks
         try:
-            pre_mask_path = os.path.join(DATA_DIR, file.replace('syn.npy', 'pre_syn_n_mask.npy'))
-            post_mask_path = os.path.join(DATA_DIR, file.replace('syn.npy', 'post_syn_n_mask.npy'))
-            pre_mask = np.load(pre_mask_path)
-            post_mask = np.load(post_mask_path)
+            pre_name = file.replace('syn.npy', 'pre_syn_n_mask.npy')
+            post_name = file.replace('syn.npy', 'post_syn_n_mask.npy')
+            pre_mask = _load(os.path.join(DATA_DIR, pre_name), pre_name)
+            post_mask = _load(os.path.join(DATA_DIR, post_name), post_name)
             combined_mask = np.logical_or(pre_mask, post_mask)
-        except:
+        except Exception:
             pre_mask = post_mask = combined_mask = None
         
         synapses.append({
@@ -710,8 +722,8 @@ def visualize_2d_augmentations():
     save_path = 'figures/comprehensive_2d_augmentation_gallery.png'
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     print(f"Comprehensive 2D augmentation gallery saved to: {save_path}")
-    
-    plt.show()
+
+    plt.close(fig)
     return fig
 
 

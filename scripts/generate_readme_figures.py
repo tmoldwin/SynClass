@@ -17,25 +17,6 @@ os.chdir(PROJECT_ROOT)
 sys.path.insert(0, PROJECT_ROOT)
 
 
-def ensure_data():
-    """Ensure synapse data exists; generate synthetic if needed."""
-    from constants import DATA_DIR, DATA_ARCHIVE, CSV_PATH, CSV_PATH_FALLBACK
-    has_csv = os.path.isfile(CSV_PATH) or os.path.isfile(CSV_PATH_FALLBACK)
-    has_archive = os.path.isfile(DATA_ARCHIVE)
-    has_dir = False
-    if os.path.isdir(DATA_DIR):
-        try:
-            has_dir = any(f.endswith('syn.npy') for f in os.listdir(DATA_DIR))
-        except OSError:
-            pass
-    if has_csv and (has_archive or has_dir):
-        return True
-    print("No real data found. Generating synthetic data for figure generation...")
-    from generate_synthetic_data import generate_synthetic_dataset
-    generate_synthetic_dataset(output_dir=DATA_DIR, num_samples=50)
-    return True
-
-
 def generate_data_examples():
     """Create data examples figure: raw EM + mask overlays."""
     import matplotlib.pyplot as plt
@@ -166,7 +147,6 @@ def generate_architecture_diagram():
 
 
 def main():
-    ensure_data()
     generate_data_examples()
     generate_augmentation_gallery()
     generate_architecture_diagram()

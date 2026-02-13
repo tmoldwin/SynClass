@@ -64,6 +64,14 @@ After training, curves and confusion matrix are saved to `figures/`:
 pip install -r requirements.txt
 ```
 
+**RTX 50-series (5060/5070/5080/5090):** Default PyTorch lacks sm_120 support. Install CUDA 12.8 build:
+
+```bash
+python scripts/install_pytorch_rtx50.py
+```
+
+Or: `pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128`
+
 Data can be:
 - Extracted to `Data/synpase_raw_em/`
 - Or kept as `Data/synpase_raw_em.7z` (loaded on-the-fly)

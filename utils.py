@@ -18,16 +18,29 @@ def set_random_seeds(seed=42):
     torch.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
-    if torch.cuda.is_available():
+    if torch.cuda.is_available() and _cuda_actually_works():
         torch.cuda.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
-        # For deterministic behavior on GPU
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
 
 
+def _cuda_actually_works():
+    """Check if CUDA operations actually run (catches sm_120 / RTX 50-series incompatibility)."""
+    if not torch.cuda.is_available():
+        return False
+    try:
+        x = torch.zeros(1, device='cuda')
+        _ = x + 1
+        return True
+    except RuntimeError:
+        return False
+
+
 def get_device(prefer_gpu=True):
     """Get the best available device.
+    
+    Falls back to CPU if GPU is incompatible (e.g. RTX 5060 sm_120 with older PyTorch).
     
     Args:
         prefer_gpu: Whether to prefer GPU if available
@@ -35,11 +48,15 @@ def get_device(prefer_gpu=True):
     Returns:
         torch.device: The device to use
     """
-    if prefer_gpu and torch.cuda.is_available():
+    if prefer_gpu and _cuda_actually_works():
         device = torch.device('cuda')
         print(f"Using GPU: {torch.cuda.get_device_name()}")
         print(f"GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB")
     else:
+        if prefer_gpu and torch.cuda.is_available() and not _cuda_actually_works():
+            print("GPU detected but incompatible (RTX 50-series / sm_120). Install PyTorch with CUDA 12.8:")
+            print("  python scripts/install_pytorch_rtx50.py")
+            print("Or: pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128")
         device = torch.device('cpu')
         print("Using CPU")
     

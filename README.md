@@ -82,6 +82,7 @@ Run training for accuracy curves.
 ```
 SynClass/
   synapse_classifier_2dcnn_multichannel.py   # Main classifier
+  preprocessing.py                           # Generic preprocessing (multi-channel, augment)
   data_loader.py                             # Train/test split, metadata
   data_utils.py                              # Load from disk or 7z
   datasets.py                                # Dataset classes

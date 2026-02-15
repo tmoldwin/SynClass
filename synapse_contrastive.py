@@ -31,9 +31,11 @@ CONTRASTIVE_DATA_DIR = os.path.join(CONTRASTIVE_FIG_DIR, 'data')
 # ── Contrastive Augmentation ─────────────────────────────────────────────────
 
 def contrastive_augment(data_3d, pre_mask_3d, post_mask_3d, input_size=224,
-                        seed=None, em_only=True):
+                        seed=None, em_only=True, z_index=None):
     """Strong augmentation for contrastive learning. Returns one augmented view.
 
+    If z_index is None, uses middle slice (original behavior).
+    If z_index is given, uses that Z-slice (for multi-slice: same synapse, different depth).
     If em_only=True, returns (1, H, W) tensor with just the EM channel.
     If em_only=False, returns (3, H, W) with EM + pre mask + post mask.
     """
@@ -41,17 +43,22 @@ def contrastive_augment(data_3d, pre_mask_3d, post_mask_3d, input_size=224,
     from torchvision.transforms import functional as TF
 
     rng = np.random.RandomState(seed)
+    nz = data_3d.shape[2]
 
-    mid_z = data_3d.shape[2] // 2
-    data_2d = data_3d[:, :, mid_z].copy()
+    if z_index is None:
+        z_index = nz // 2
+    else:
+        z_index = max(0, min(int(z_index), nz - 1))
+
+    data_2d = data_3d[:, :, z_index].copy()
 
     # Normalize EM to [0, 255]
     dmin, dmax = data_2d.min(), data_2d.max()
     data_uint8 = ((data_2d - dmin) / (dmax - dmin + 1e-8) * 255).astype(np.uint8)
 
     if not em_only:
-        pre_2d = pre_mask_3d[:, :, mid_z].copy()
-        post_2d = post_mask_3d[:, :, mid_z].copy()
+        pre_2d = pre_mask_3d[:, :, z_index].copy()
+        post_2d = post_mask_3d[:, :, z_index].copy()
         pre_uint8 = (pre_2d * 255).astype(np.uint8) if pre_2d.max() <= 1.0 else pre_2d.astype(np.uint8)
         post_uint8 = (post_2d * 255).astype(np.uint8) if post_2d.max() <= 1.0 else post_2d.astype(np.uint8)
 
@@ -118,22 +125,30 @@ def contrastive_augment(data_3d, pre_mask_3d, post_mask_3d, input_size=224,
 # ── Dataset ──────────────────────────────────────────────────────────────────
 
 class ContrastiveSynapseDataset(Dataset):
-    """Returns two differently-augmented views of each synapse (+ label for eval)."""
+    """Returns two views of each synapse (+ label for eval).
+
+    If use_multi_slice=True, the two views are different Z-slices from the same
+    synapse (same identity, different depth). Otherwise both views are the
+    middle slice with different random augmentations.
+    """
 
     def __init__(self, file_list, synapse_map, input_size=224,
-                 data_dir=None, archive_path=None, em_only=True):
+                 data_dir=None, archive_path=None, em_only=True,
+                 use_multi_slice=False):
         from constants import DATA_DIR, DATA_ARCHIVE
         self.file_list = file_list
         self.synapse_map = synapse_map
         self.input_size = input_size
         self.em_only = em_only
+        self.use_multi_slice = use_multi_slice
         self.data_dir = data_dir or DATA_DIR
         self.archive_path = (
             archive_path if archive_path and os.path.isfile(archive_path)
             else (DATA_ARCHIVE if os.path.isfile(DATA_ARCHIVE) else None)
         )
         ch = 1 if em_only else 3
-        print(f"ContrastiveDataset: {len(file_list)} synapses, {ch}ch")
+        mode = "multi_slice" if use_multi_slice else "augment"
+        print(f"ContrastiveDataset: {len(file_list)} synapses, {ch}ch, {mode}")
 
     def __len__(self):
         return len(self.file_list)
@@ -152,16 +167,28 @@ class ContrastiveSynapseDataset(Dataset):
                 else:
                     raise
 
-        # Truly random seeds per call (different every epoch)
         seed1 = int.from_bytes(os.urandom(4), 'big')
         seed2 = int.from_bytes(os.urandom(4), 'big')
 
-        view1 = contrastive_augment(data_3d, pre_mask_3d, post_mask_3d,
-                                    self.input_size, seed=seed1,
-                                    em_only=self.em_only)
-        view2 = contrastive_augment(data_3d, pre_mask_3d, post_mask_3d,
-                                    self.input_size, seed=seed2,
-                                    em_only=self.em_only)
+        if self.use_multi_slice:
+            nz = data_3d.shape[2]
+            if nz >= 2:
+                z1, z2 = np.random.choice(nz, size=2, replace=False)
+            else:
+                z1 = z2 = 0
+            view1 = contrastive_augment(data_3d, pre_mask_3d, post_mask_3d,
+                                        self.input_size, seed=seed1,
+                                        em_only=self.em_only, z_index=z1)
+            view2 = contrastive_augment(data_3d, pre_mask_3d, post_mask_3d,
+                                        self.input_size, seed=seed2,
+                                        em_only=self.em_only, z_index=z2)
+        else:
+            view1 = contrastive_augment(data_3d, pre_mask_3d, post_mask_3d,
+                                        self.input_size, seed=seed1,
+                                        em_only=self.em_only)
+            view2 = contrastive_augment(data_3d, pre_mask_3d, post_mask_3d,
+                                        self.input_size, seed=seed2,
+                                        em_only=self.em_only)
 
         syn_id = int(filename.split('_')[0])
         label = 1 if self.synapse_map[syn_id] == 'I' else 0
@@ -946,6 +973,8 @@ def main():
                         help='Use EM channel only (default: True)')
     parser.add_argument('--multichannel', action='store_true', default=False,
                         help='Use all 3 channels (EM + pre + post masks)')
+    parser.add_argument('--multi_slice', action='store_true', default=False,
+                        help='Use different Z-slices from same synapse as view pair (instead of same slice + augmentation)')
 
     args = parser.parse_args()
     em_only = not args.multichannel  # --multichannel overrides default em_only
@@ -953,7 +982,8 @@ def main():
 
     model_name = 'contrastive'
     logger = setup_logging(model_name)
-    logger.info(f"Starting SimCLR Contrastive Learning ({'EM-only' if em_only else '3-channel'})")
+    logger.info(f"Starting SimCLR Contrastive Learning ({'EM-only' if em_only else '3-channel'}, "
+                f"{'multi_slice' if args.multi_slice else 'single-slice+augment'})")
 
     set_random_seeds(42)
     device = get_device(prefer_gpu=not args.cpu)
@@ -975,7 +1005,7 @@ def main():
     dataset = ContrastiveSynapseDataset(
         all_files, synapse_map, input_size=args.input_size,
         archive_path=None if data_on_disk else DATA_ARCHIVE,
-        em_only=em_only)
+        em_only=em_only, use_multi_slice=args.multi_slice)
     dataloader = DataLoader(
         dataset, batch_size=args.batch_size, shuffle=True,
         num_workers=0, pin_memory=True, drop_last=True,

@@ -122,6 +122,158 @@ def contrastive_augment(data_3d, pre_mask_3d, post_mask_3d, input_size=224,
     return torch.cat([data_t, pre_t, post_t], dim=0)  # (3, H, W)
 
 
+# ── SynapseCLR 3D input encoding ─────────────────────────────────────────────
+
+def build_synapseclr_input(data_3d, pre_mask_3d, post_mask_3d, crop_size=None, crop_depth=None):
+    """Build 2-channel 3D tensor for SynapseCLR (paper: integer seg + masked EM).
+
+    data_3d, pre_mask_3d, post_mask_3d: (H, W, Z) numpy arrays.
+    Ch0: integer segmentation (pre=1, post=2, bg=0), shape (D, H, W).
+    Ch1: EM image zeroed outside pre∪post, normalized zero-mean unit-variance, shape (D, H, W).
+    Returns: torch.Tensor float32 (2, D, H, W). If crop_size/crop_depth given, center-crops.
+    """
+    H, W, Z = data_3d.shape
+    # Optional center crop
+    if crop_size is not None or crop_depth is not None:
+        ch = crop_size if crop_size is not None else min(H, W)
+        cd = crop_depth if crop_depth is not None else Z
+        ch, cd = min(ch, H, W), min(cd, Z)
+        h0, h1 = (H - ch) // 2, (H - ch) // 2 + ch
+        w0, w1 = (W - ch) // 2, (W - ch) // 2 + ch
+        z0, z1 = (Z - cd) // 2, (Z - cd) // 2 + cd
+        data_3d = data_3d[h0:h1, w0:w1, z0:z1].copy()
+        pre_mask_3d = pre_mask_3d[h0:h1, w0:w1, z0:z1].copy()
+        post_mask_3d = post_mask_3d[h0:h1, w0:w1, z0:z1].copy()
+        H, W, Z = data_3d.shape
+
+    # Binary masks (allow float 0/1 or already binary)
+    pre_bin = (pre_mask_3d > 0.5).astype(np.float32)
+    post_bin = (post_mask_3d > 0.5).astype(np.float32)
+    # Integer segmentation: 0=bg, 1=pre, 2=post (post overwrites where both)
+    seg = np.zeros((H, W, Z), dtype=np.float32)
+    seg[pre_bin > 0] = 1.0
+    seg[post_bin > 0] = 2.0
+
+    # EM masked to pre∪post
+    combined = (pre_bin > 0) | (post_bin > 0)
+    em_masked = data_3d.astype(np.float32) * np.where(combined, 1.0, 0.0)
+    # Zero-mean unit-variance over the volume (only where mask > 0 if desired; we use full vol for stability)
+    valid = em_masked[combined] if np.any(combined) else em_masked.ravel()
+    if valid.size > 0:
+        mean, std = valid.mean(), valid.std()
+        if std > 1e-8:
+            em_masked = (em_masked - mean) / std
+        else:
+            em_masked = em_masked - mean
+    # Clamp to avoid extreme values
+    em_masked = np.clip(em_masked, -3.0, 3.0).astype(np.float32)
+
+    # (H, W, Z) -> (Z, H, W) for Conv3d (N, C, D, H, W)
+    seg_dhw = np.transpose(seg, (2, 0, 1))   # (D, H, W)
+    em_dhw = np.transpose(em_masked, (2, 0, 1))
+    out = np.stack([seg_dhw, em_dhw], axis=0).astype(np.float32)  # (2, D, H, W)
+    return torch.from_numpy(out)
+
+
+def synapseclr_augment_3d(x, seed=None):
+    """Domain-specific 3D augmentations for SynapseCLR.
+
+    x: (2, D, H, W) tensor or ndarray.
+    Uses scipy.ndimage when available; otherwise falls back to a subset of
+    augmentations that do not require SciPy.
+    """
+    try:
+        from scipy import ndimage as ndi  # type: ignore
+    except ImportError:
+        ndi = None
+    rng = np.random.RandomState(seed)
+    if torch.is_tensor(x):
+        x = x.numpy().copy()
+    else:
+        x = np.asarray(x).copy()
+    C, D, H, W = x.shape
+    seg = x[0:1]   # (1, D, H, W)
+    em = x[1:2]    # (1, D, H, W)
+
+    # ── Geometric ──
+    # Random 3D rotation (small angles to avoid empty corners), if SciPy available
+    if ndi is not None and rng.random() > 0.3:
+        angle_xy = rng.uniform(-30, 30)
+        angle_xz = rng.uniform(-15, 15)
+        angle_yz = rng.uniform(-15, 15)
+        seg_rot = ndi.rotate(seg[0], angle_xy, axes=(1, 2), order=0, reshape=False, mode='nearest')
+        seg_rot = ndi.rotate(seg_rot, angle_xz, axes=(0, 1), order=0, reshape=False, mode='nearest')
+        seg_rot = ndi.rotate(seg_rot, angle_yz, axes=(0, 2), order=0, reshape=False, mode='nearest')
+        em_rot = ndi.rotate(em[0], angle_xy, axes=(1, 2), order=1, reshape=False, mode='nearest')
+        em_rot = ndi.rotate(em_rot, angle_xz, axes=(0, 1), order=1, reshape=False, mode='nearest')
+        em_rot = ndi.rotate(em_rot, angle_yz, axes=(0, 2), order=1, reshape=False, mode='nearest')
+        seg = seg_rot[np.newaxis, ...]
+        em = em_rot[np.newaxis, ...]
+    # Flips
+    if rng.random() > 0.5:
+        seg = np.flip(seg, axis=2).copy()
+        em = np.flip(em, axis=2).copy()
+    if rng.random() > 0.5:
+        seg = np.flip(seg, axis=3).copy()
+        em = np.flip(em, axis=3).copy()
+    if rng.random() > 0.5:
+        seg = np.flip(seg, axis=1).copy()
+        em = np.flip(em, axis=1).copy()
+    # XY swap (swap H and W)
+    if rng.random() > 0.5:
+        seg = np.transpose(seg, (0, 1, 3, 2)).copy()
+        em = np.transpose(em, (0, 1, 3, 2)).copy()
+    # Translation via roll
+    if rng.random() > 0.3:
+        sh, sw, sd = rng.randint(-H // 4, H // 4 + 1), rng.randint(-W // 4, W // 4 + 1), rng.randint(-D // 4, D // 4 + 1)
+        seg = np.roll(seg, (sh, sw, sd), axis=(2, 3, 1))
+        em = np.roll(em, (sh, sw, sd), axis=(2, 3, 1))
+
+    # ── Intensity (EM only) ──
+    # Global brightness
+    if rng.random() > 0.3:
+        em = em * rng.uniform(0.7, 1.3)
+    # Per-section brightness
+    if rng.random() > 0.5:
+        for d in range(D):
+            em[0, d] *= rng.uniform(0.8, 1.2)
+    # Additive Gaussian noise
+    if rng.random() > 0.5:
+        em = em + rng.normal(0, 0.1, em.shape).astype(np.float32)
+    # Multiplicative noise
+    if rng.random() > 0.5:
+        em = em * rng.uniform(0.9, 1.1, em.shape).astype(np.float32)
+    # Gaussian blur (EM only) if SciPy available
+    if ndi is not None and rng.random() > 0.5:
+        sigma = rng.uniform(0.3, 1.0)
+        em = ndi.gaussian_filter(em, sigma=(0, sigma, sigma, sigma), mode='nearest').astype(np.float32)
+    em = np.clip(em, -3.0, 3.0).astype(np.float32)
+
+    # ── Mask distortions (segmentation channel) ──
+    seg_2d = seg[0]
+    # Random cuboid cutout: zero out a random box
+    if rng.random() > 0.6:
+        cd, ch, cw = max(1, D // 4), max(1, H // 4), max(1, W // 4)
+        d0 = rng.randint(0, max(1, D - cd))
+        h0 = rng.randint(0, max(1, H - ch))
+        w0 = rng.randint(0, max(1, W - cw))
+        seg_2d[d0:d0 + cd, h0:h0 + ch, w0:w0 + cw] = 0
+    # Shell masking: keep boundary of mask (erosion then xor) if SciPy available
+    if ndi is not None and rng.random() > 0.6:
+        binary = (seg_2d > 0).astype(np.uint8)
+        eroded = ndi.binary_erosion(binary, structure=ndi.generate_binary_structure(3, 1))
+        shell = binary & (~eroded)
+        seg_2d = seg_2d * shell
+    # Dilation of non-zero mask if SciPy available
+    if ndi is not None and rng.random() > 0.6:
+        binary = (seg_2d > 0).astype(np.uint8)
+        dilated = ndi.binary_dilation(binary, structure=ndi.generate_binary_structure(3, 1))
+        seg_2d = seg_2d * dilated  # keep original labels where dilated
+
+    out = np.concatenate([seg_2d[np.newaxis, ...], em], axis=0).astype(np.float32)
+    return torch.from_numpy(out)
+
+
 # ── Dataset ──────────────────────────────────────────────────────────────────
 
 class ContrastiveSynapseDataset(Dataset):
@@ -195,6 +347,55 @@ class ContrastiveSynapseDataset(Dataset):
         return view1, view2, label
 
 
+class SynapseCLR3DDataset(Dataset):
+    """3D SynapseCLR dataset: returns two augmented 3D volumes (+ label)."""
+
+    def __init__(self, file_list, synapse_map, crop_size=64, crop_depth=32,
+                 data_dir=None, archive_path=None):
+        from constants import DATA_DIR, DATA_ARCHIVE
+        self.file_list = file_list
+        self.synapse_map = synapse_map
+        self.crop_size = crop_size
+        self.crop_depth = crop_depth
+        self.data_dir = data_dir or DATA_DIR
+        self.archive_path = (
+            archive_path if archive_path and os.path.isfile(archive_path)
+            else (DATA_ARCHIVE if os.path.isfile(DATA_ARCHIVE) else None)
+        )
+        print(f"SynapseCLR3DDataset: {len(file_list)} synapses, crop={crop_size}x{crop_size}x{crop_depth}")
+
+    def __len__(self):
+        return len(self.file_list)
+
+    def __getitem__(self, idx):
+        filename = self.file_list[idx]
+        for attempt in range(3):
+            try:
+                data_3d, pre_mask_3d, post_mask_3d = load_synapse_data(
+                    self.data_dir, self.archive_path, filename)
+                break
+            except (FileNotFoundError, EOFError, OSError):
+                if attempt < 2:
+                    idx = (idx + 1) % len(self.file_list)
+                    filename = self.file_list[idx]
+                else:
+                    raise
+
+        base = build_synapseclr_input(
+            data_3d, pre_mask_3d, post_mask_3d,
+            crop_size=self.crop_size, crop_depth=self.crop_depth
+        )  # (2, D, H, W) tensor
+
+        seed1 = int.from_bytes(os.urandom(4), 'big')
+        seed2 = int.from_bytes(os.urandom(4), 'big')
+        view1 = synapseclr_augment_3d(base, seed=seed1)
+        view2 = synapseclr_augment_3d(base, seed=seed2)
+
+        syn_id = int(filename.split('_')[0])
+        label = 1 if self.synapse_map[syn_id] == 'I' else 0
+        return view1, view2, label
+
+
 # ── NT-Xent Loss ─────────────────────────────────────────────────────────────
 
 class NTXentLoss(nn.Module):
@@ -222,10 +423,121 @@ class NTXentLoss(nn.Module):
         return F.cross_entropy(sim, targets)
 
 
-# ── SimCLR Model ─────────────────────────────────────────────────────────────
+# ── 3D ResNet backbone for SynapseCLR ────────────────────────────────────────
+
+class BasicBlock3D(nn.Module):
+    expansion = 1
+
+    def __init__(self, in_planes, planes, stride=1):
+        super().__init__()
+        self.conv1 = nn.Conv3d(in_planes, planes, kernel_size=3, stride=stride,
+                               padding=1, bias=False)
+        self.bn1 = nn.BatchNorm3d(planes)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv3d(planes, planes, kernel_size=3, stride=1,
+                               padding=1, bias=False)
+        self.bn2 = nn.BatchNorm3d(planes)
+
+        self.downsample = None
+        if stride != 1 or in_planes != planes * self.expansion:
+            self.downsample = nn.Sequential(
+                nn.Conv3d(in_planes, planes * self.expansion,
+                          kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm3d(planes * self.expansion),
+            )
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out += identity
+        out = self.relu(out)
+        return out
+
+
+class ResNet3D18(nn.Module):
+    """Minimal 3D-ResNet18 backbone for SynapseCLR (512-dim output)."""
+
+    def __init__(self, in_channels=2):
+        super().__init__()
+        self.in_planes = 64
+        self.conv1 = nn.Conv3d(in_channels, 64, kernel_size=7, stride=2,
+                               padding=3, bias=False)
+        self.bn1 = nn.BatchNorm3d(64)
+        self.relu = nn.ReLU(inplace=True)
+        self.maxpool = nn.MaxPool3d(kernel_size=3, stride=2, padding=1)
+
+        self.layer1 = self._make_layer(64, blocks=2, stride=1)
+        self.layer2 = self._make_layer(128, blocks=2, stride=2)
+        self.layer3 = self._make_layer(256, blocks=2, stride=2)
+        self.layer4 = self._make_layer(512, blocks=2, stride=2)
+
+        self.avgpool = nn.AdaptiveAvgPool3d((1, 1, 1))
+
+    def _make_layer(self, planes, blocks, stride):
+        strides = [stride] + [1] * (blocks - 1)
+        layers = []
+        for s in strides:
+            layers.append(BasicBlock3D(self.in_planes, planes, stride=s))
+            self.in_planes = planes * BasicBlock3D.expansion
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        # x: (N, C=2, D, H, W)
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+
+        x = self.avgpool(x)           # (N, 512, 1, 1, 1)
+        x = torch.flatten(x, 1)       # (N, 512)
+        return x
+
+
+# ── SynapseCLR 3D model (ResNet3D18 + projector) ─────────────────────────────
+
+class SynapseCLRModel3D(nn.Module):
+    """3D SynapseCLR model: ResNet3D18 backbone + 2-layer MLP projector."""
+
+    def __init__(self, proj_dim=128, hidden_dim=512, in_channels=2):
+        super().__init__()
+        self.encoder = ResNet3D18(in_channels=in_channels)
+        self.projector = nn.Sequential(
+            nn.Linear(512, hidden_dim),
+            nn.BatchNorm1d(hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_dim, proj_dim),
+        )
+
+    def encode(self, x):
+        """Backbone features (N, 512) for downstream evaluation."""
+        return self.encoder(x)
+
+    def forward(self, x):
+        """L2-normalised projection (N, proj_dim) for NT-Xent loss."""
+        h = self.encode(x)
+        z = self.projector(h)
+        return F.normalize(z, dim=1)
+
+
+# ── 2D SimCLR Model (legacy) ─────────────────────────────────────────────────
 
 class SimCLRModel(nn.Module):
-    """CNN encoder (from CNN2DMultiChannel) + MLP projection head."""
+    """Original 2D SimCLR model using CNN2DMultiChannel backbone (kept for --use_2d)."""
 
     def __init__(self, cnn_depth=3, proj_dim=64, hidden_dim=256, in_channels=1):
         super().__init__()
@@ -234,7 +546,6 @@ class SimCLRModel(nn.Module):
                                      cnn_depth=cnn_depth)
         self.encoder = backbone.features
 
-        # Patch first conv layer if not using 3 channels
         if in_channels != 3:
             old_conv = self.encoder[0]
             self.encoder[0] = nn.Conv2d(
@@ -252,12 +563,10 @@ class SimCLRModel(nn.Module):
         )
 
     def encode(self, x):
-        """Encoder features (for downstream evaluation)."""
         h = self.encoder(x)
         return h.view(h.size(0), -1)
 
     def forward(self, x):
-        """L2-normalised projection (for contrastive loss)."""
         h = self.encode(x)
         z = self.projector(h)
         return F.normalize(z, dim=1)
@@ -445,8 +754,13 @@ def train_contrastive(model, dataloader, optimizer, scheduler, criterion,
 
 @torch.no_grad()
 def extract_embeddings(model, file_list, synapse_map, input_size, device,
-                       em_only=True):
-    """Get encoder embeddings for every sample (no augmentation)."""
+                       em_only=True, use_2d=True,
+                       crop_size=64, crop_depth=32):
+    """Get encoder embeddings for every sample (no augmentation).
+
+    If use_2d=True: use original 2D pipeline (middle slice, optional masks).
+    If use_2d=False: use 3D SynapseCLR pipeline (integer seg + masked EM).
+    """
     import cv2
     from torchvision.transforms import functional as TF
 
@@ -460,21 +774,28 @@ def extract_embeddings(model, file_list, synapse_map, input_size, device,
             filename,
         )
 
-        if em_only:
-            # EM-only: single channel, no masks
-            mid_z = data_3d.shape[2] // 2
-            data_2d = data_3d[:, :, mid_z]
-            dmin, dmax = data_2d.min(), data_2d.max()
-            data_uint8 = ((data_2d - dmin) / (dmax - dmin + 1e-8) * 255).astype(np.uint8)
-            resized = cv2.resize(data_uint8, (input_size, input_size),
-                                 interpolation=cv2.INTER_AREA)
-            tensor = torch.tensor(resized, dtype=torch.float32).unsqueeze(0) / 255.0
-            tensor = TF.normalize(tensor, mean=[0.485], std=[0.229])
+        if use_2d:
+            if em_only:
+                # EM-only: single channel, no masks
+                mid_z = data_3d.shape[2] // 2
+                data_2d = data_3d[:, :, mid_z]
+                dmin, dmax = data_2d.min(), data_2d.max()
+                data_uint8 = ((data_2d - dmin) / (dmax - dmin + 1e-8) * 255).astype(np.uint8)
+                resized = cv2.resize(data_uint8, (input_size, input_size),
+                                     interpolation=cv2.INTER_AREA)
+                tensor = torch.tensor(resized, dtype=torch.float32).unsqueeze(0) / 255.0
+                tensor = TF.normalize(tensor, mean=[0.485], std=[0.229])
+            else:
+                tensor = preprocess_synapse_2d(data_3d, pre_mask_3d, post_mask_3d,
+                                               input_size=input_size, augment=False)
+            tensor = tensor.unsqueeze(0).to(device)  # (1,C,H,W)
         else:
-            tensor = preprocess_synapse_2d(data_3d, pre_mask_3d, post_mask_3d,
-                                           input_size=input_size, augment=False)
+            base = build_synapseclr_input(
+                data_3d, pre_mask_3d, post_mask_3d,
+                crop_size=crop_size, crop_depth=crop_depth
+            )  # (2,D,H,W)
+            tensor = base.unsqueeze(0).to(device)    # (1,2,D,H,W)
 
-        tensor = tensor.unsqueeze(0).to(device)
         h = model.encode(tensor)
         embeddings.append(h.cpu().numpy().flatten())
 
@@ -636,28 +957,41 @@ def evaluate_representations(embeddings, labels, logger, output_dir=None):
 # ── Training / Test Visualization ─────────────────────────────────────────────
 
 def plot_augmented_pairs(dataset, output_dir, n_pairs=6):
-    """Show n_pairs synapses with their two augmented views side-by-side."""
+    """Show n_pairs synapses with their two augmented views side-by-side.
+
+    Works for both 2D (C,H,W) and 3D (C,D,H,W) datasets. For 3D, we show
+    max-intensity projections over depth for visualization.
+    """
     os.makedirs(output_dir, exist_ok=True)
 
     v1_sample, _, _ = dataset[0]
-    n_ch = v1_sample.shape[0]  # 1 (EM-only) or 3
+    # Handle 2D (C,H,W) vs 3D (C,D,H,W)
+    if v1_sample.dim() == 4:
+        v1_disp0 = v1_sample.max(dim=1).values  # (C,H,W)
+        n_ch = v1_disp0.shape[0]
+        is_3d = True
+    else:
+        n_ch = v1_sample.shape[0]
+        is_3d = False
 
     n_cols = n_ch * 2  # view1 channels + view2 channels
     fig, axes = plt.subplots(n_pairs, n_cols, figsize=(3 * n_cols, 3 * n_pairs))
     if n_pairs == 1:
         axes = axes[np.newaxis, :]
-    if n_cols == 2:
-        # Ensure 2D axes array
-        pass
 
-    channel_names = ['EM', 'Pre mask', 'Post mask'][:n_ch]
+    channel_names = ['Seg', 'EM'] if is_3d else ['EM', 'Pre mask', 'Post mask'][:n_ch]
     for row in range(n_pairs):
         v1, v2, label = dataset[row]
+        if is_3d:
+            v1_disp = v1.max(dim=1).values
+            v2_disp = v2.max(dim=1).values
+        else:
+            v1_disp, v2_disp = v1, v2
         label_str = 'I' if label == 1 else 'E'
         for ch in range(n_ch):
             # View 1
             ax = axes[row, ch]
-            ax.imshow(v1[ch].numpy(), cmap='gray')
+            ax.imshow(v1_disp[ch].numpy(), cmap='gray')
             ax.set_xticks([]); ax.set_yticks([])
             if row == 0:
                 ax.set_title(f'View 1: {channel_names[ch]}', fontsize=10)
@@ -666,7 +1000,7 @@ def plot_augmented_pairs(dataset, output_dir, n_pairs=6):
 
             # View 2
             ax = axes[row, ch + n_ch]
-            ax.imshow(v2[ch].numpy(), cmap='gray')
+            ax.imshow(v2_disp[ch].numpy(), cmap='gray')
             ax.set_xticks([]); ax.set_yticks([])
             if row == 0:
                 ax.set_title(f'View 2: {channel_names[ch]}', fontsize=10)
@@ -957,7 +1291,7 @@ def main():
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--temperature', type=float, default=0.5)
-    parser.add_argument('--proj_dim', type=int, default=64)
+    parser.add_argument('--proj_dim', type=int, default=128)
     parser.add_argument('--cnn_depth', type=int, default=3)
     parser.add_argument('--input_size', type=int, default=224)
     parser.add_argument('--weight_decay', type=float, default=1e-4)
@@ -975,15 +1309,30 @@ def main():
                         help='Use all 3 channels (EM + pre + post masks)')
     parser.add_argument('--multi_slice', action='store_true', default=False,
                         help='Use different Z-slices from same synapse as view pair (instead of same slice + augmentation)')
+    parser.add_argument('--use_2d', action='store_true', default=False,
+                        help='Use legacy 2D SimCLR pipeline instead of 3D SynapseCLR')
+    parser.add_argument('--crop_size', type=int, default=64,
+                        help='Spatial crop size (HxW) for 3D SynapseCLR')
+    parser.add_argument('--crop_depth', type=int, default=32,
+                        help='Depth (Z) for 3D SynapseCLR crops')
 
     args = parser.parse_args()
-    em_only = not args.multichannel  # --multichannel overrides default em_only
-    in_channels = 1 if em_only else 3
+    use_2d = args.use_2d
+    em_only = not args.multichannel  # only used for 2D pipeline
+    if use_2d:
+        in_channels = 1 if em_only else 3
+    else:
+        in_channels = 2  # (seg, EM) for 3D SynapseCLR
 
     model_name = 'contrastive'
     logger = setup_logging(model_name)
-    logger.info(f"Starting SimCLR Contrastive Learning ({'EM-only' if em_only else '3-channel'}, "
-                f"{'multi_slice' if args.multi_slice else 'single-slice+augment'})")
+    if use_2d:
+        logger.info(f"Starting 2D SimCLR Contrastive Learning "
+                    f"({'EM-only' if em_only else '3-channel'}, "
+                    f"{'multi_slice' if args.multi_slice else 'single-slice+augment'})")
+    else:
+        logger.info(f"Starting 3D SynapseCLR (seg+EM) "
+                    f"crop={args.crop_size}x{args.crop_size}x{args.crop_depth}")
 
     set_random_seeds(42)
     device = get_device(prefer_gpu=not args.cpu)
@@ -1002,19 +1351,29 @@ def main():
         f.endswith('.npy') for f in os.listdir(DATA_DIR)[:5])
     logger.info(f"Data source: {'disk' if data_on_disk else '7z archive'}")
 
-    dataset = ContrastiveSynapseDataset(
-        all_files, synapse_map, input_size=args.input_size,
-        archive_path=None if data_on_disk else DATA_ARCHIVE,
-        em_only=em_only, use_multi_slice=args.multi_slice)
+    if use_2d:
+        dataset = ContrastiveSynapseDataset(
+            all_files, synapse_map, input_size=args.input_size,
+            archive_path=None if data_on_disk else DATA_ARCHIVE,
+            em_only=em_only, use_multi_slice=args.multi_slice)
+    else:
+        dataset = SynapseCLR3DDataset(
+            all_files, synapse_map,
+            crop_size=args.crop_size, crop_depth=args.crop_depth,
+            archive_path=None if data_on_disk else DATA_ARCHIVE)
     dataloader = DataLoader(
         dataset, batch_size=args.batch_size, shuffle=True,
         num_workers=0, pin_memory=True, drop_last=True,
     )
 
     # ── Model ──
-    model = SimCLRModel(cnn_depth=args.cnn_depth,
-                        proj_dim=args.proj_dim,
-                        in_channels=in_channels).to(device)
+    if use_2d:
+        model = SimCLRModel(cnn_depth=args.cnn_depth,
+                            proj_dim=args.proj_dim,
+                            in_channels=in_channels).to(device)
+    else:
+        model = SynapseCLRModel3D(proj_dim=args.proj_dim,
+                                  in_channels=in_channels).to(device)
     print_model_summary(model, logger=logger)
 
     # ── Optimiser, scheduler, loss ──
@@ -1079,7 +1438,8 @@ def main():
         # Classification metrics
         embs, labs = extract_embeddings(
             mdl, eval_files, synapse_map, args.input_size, device,
-            em_only=em_only)
+            em_only=em_only, use_2d=use_2d,
+            crop_size=args.crop_size, crop_depth=args.crop_depth)
         results = evaluate_representations(embs, labs, logger, CONTRASTIVE_EVAL_DIR)
         lp = results['linear_probe_mean']
         knn = results['knn_mean']
@@ -1116,7 +1476,8 @@ def main():
     logger.info("Extracting embeddings for full evaluation ...")
     embeddings, labels = extract_embeddings(
         model, all_files, synapse_map, args.input_size, device,
-        em_only=em_only)
+        em_only=em_only, use_2d=use_2d,
+        crop_size=args.crop_size, crop_depth=args.crop_depth)
     logger.info(f"Embeddings shape: {embeddings.shape}")
 
     results = evaluate_representations(embeddings, labels, logger, CONTRASTIVE_EVAL_DIR)

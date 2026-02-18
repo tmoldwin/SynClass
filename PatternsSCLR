@@ -1,0 +1,276 @@
+# SynapseCLR Methods
+
+This document summarizes the full experimental methods of:
+
+Wilson & Babadi (2023)  
+"SynapseCLR: Uncovering features of synapses in primary visual cortex through contrastive representation learning"
+
+Adapted into reproducible steps suitable for implementation.
+
+---
+
+# 1. Data Sources
+
+## 1.1 EM Dataset
+
+- Source: MICrONS Phase-1 dataset (mouse V1, L2/3).
+- Animal: Young adult male mouse, postnatal day 36.
+- Volume:
+  - ~2,250 serial EM sections
+  - Section thickness: 40 nm
+  - Resolution: 3.58 × 3.58 nm² / pixel
+  - Volume size: 240 × 140 × 90 µm³ :contentReference[oaicite:0]{index=0}
+
+## 1.2 Segmentation Layers
+
+Three segmentation layers were used:
+
+1. Cell segmentation
+2. Synaptic cleft segmentation
+3. Mitochondria segmentation :contentReference[oaicite:1]{index=1}
+
+Additionally:
+
+- Skeleton reconstructions of ~397 neurons with somas in volume were used for distance calculations. :contentReference[oaicite:2]{index=2}
+
+## 1.3 Synapse Dataset Construction
+
+- Starting list: ~3.2 million putative synapses.
+- Subset of ~6,761 synapses proofread by experts.
+- Target training set: 100,000 synapses sampled uniformly. :contentReference[oaicite:3]{index=3}
+
+Final training dataset used:
+
+- 97,658 synapses total. :contentReference[oaicite:4]{index=4}
+
+Includes:
+
+- ~5,664 annotated synapses
+- ~91,994 unannotated synapses
+
+---
+
+# 2. Input Tensor Construction
+
+## 2.1 Image Channels
+
+Each input example is a **two-channel 3D tensor**:
+
+Channel 1:
+- Integer encoding of segmentation labels:
+  - presynaptic process
+  - postsynaptic process
+  - synaptic cleft
+
+Channel 2:
+- Raw EM image chunk. :contentReference[oaicite:5]{index=5}
+
+## 2.2 Image Size
+
+Initial chunk:
+
+- 256³ voxels
+- Resolution: 7.16 × 7.16 × 40 nm³ per voxel :contentReference[oaicite:6]{index=6}
+
+After preprocessing:
+
+- 96³ voxels
+- Resolution: 14.33 nm³ per voxel :contentReference[oaicite:7]{index=7}
+
+## 2.3 Masking Strategy
+
+EM images are masked to include only:
+
+- Presynaptic process
+- Postsynaptic process
+- Synaptic cleft
+
+Purpose:
+
+- Learn synapse-intrinsic structure without surrounding neuropil noise. :contentReference[oaicite:8]{index=8}
+
+---
+
+# 3. SynapseCLR Architecture
+
+## 3.1 Backbone
+
+- 3D-ResNet18 CNN backbone. :contentReference[oaicite:9]{index=9}
+
+Motivation:
+
+- Natural extension of ResNet18 for volumetric data.
+- Proven architecture for self-supervised representation learning.
+
+## 3.2 Projection Head
+
+- 2-layer MLP projection head. :contentReference[oaicite:10]{index=10}
+
+Outputs used for contrastive loss.
+
+## 3.3 Representation Dimensions
+
+Explored layers:
+
+- 512-dim backbone last layer
+- 512-dim middle layer
+- 128-dim projection head output :contentReference[oaicite:11]{index=11}
+
+Primary analyses use 512-dim backbone features.
+
+---
+
+# 4. Contrastive Learning Objective
+
+Framework:
+
+- Adaptation of SimCLR to 3D EM.
+
+Pipeline:
+
+1. Two stochastic augmentations per image.
+2. Forward through backbone + projector.
+3. Contrastive NT-Xent loss:
+
+   - Minimize distance between augmentations of same synapse.
+   - Maximize distance between different synapses. :contentReference[oaicite:12]{index=12}
+
+---
+
+# 5. Data Augmentation
+
+SynapseCLR uses domain-specific augmentations:
+
+## 5.1 Mask Distortions
+
+- Peripheral cutouts
+- Shell masking
+- Active-zone mask dilation
+
+Encourages learning part-whole relationships.
+
+## 5.2 Intensity Distortions
+
+- Global brightness changes
+- Section-wise brightness changes
+- Additive pixel noise
+- Multiplicative pixel noise
+- Gaussian blur :contentReference[oaicite:13]{index=13}
+
+## 5.3 Geometric Transformations
+
+- Translations
+- Arbitrary 3D rotations
+- X/Y flips
+- XY swaps
+
+No scaling or shearing to preserve biological features. :contentReference[oaicite:14]{index=14}
+
+Hyperparameters for augmentations were sampled stochastically within reasonable ranges. :contentReference[oaicite:15]{index=15}
+
+---
+
+# 6. Training Details
+
+Hardware:
+
+- 4 × NVIDIA A100 GPUs
+- 96 GB VRAM each :contentReference[oaicite:16]{index=16}
+
+Training parameters:
+
+- Batch size: 192
+- Epochs: 200
+- Learning rate restart after 100 epochs
+- Training time: ~2 weeks :contentReference[oaicite:17]{index=17}
+
+Loss converged steadily to stable minimum. :contentReference[oaicite:18]{index=18}
+
+---
+
+# 7. Representation Analysis
+
+After training, representations were used for:
+
+- UMAP manifold embedding
+- Clustering via k-NN graph + Leiden clustering
+- Similarity queries
+- Annotation imputation
+- Defective segmentation detection
+
+---
+
+# 8. Annotation Imputation
+
+Annotations predicted using Gaussian Process models:
+
+- Inputs: SynapseCLR feature vectors
+- Targets: annotated synapse properties
+- Kernel and regularization chosen via cross-validation :contentReference[oaicite:19]{index=19}
+
+Categorical labels balanced via class subsampling. :contentReference[oaicite:20]{index=20}
+
+---
+
+# 9. Consensus Cell Typing
+
+Because many neurites contain multiple synapses:
+
+1. Predict cell type probability per synapse.
+2. Combine across synapses per neurite.
+3. Assign neurite cell type via maximum likelihood.
+4. Propagate back to synapses.
+
+This dramatically improves typing accuracy.
+
+---
+
+# 10. Reproducibility and Resources
+
+Data availability:
+
+- MICrONS dataset publicly available.
+- SynapseCLR models and representations available on Terra.
+- Code released on Zenodo. :contentReference[oaicite:21]{index=21}
+
+---
+
+# 11. Implementation Notes for Reproduction
+
+Recommended pipeline:
+
+1. Download MICrONS EM + segmentation layers.
+2. Extract synapse-centered volumes.
+3. Mask segmentation channels.
+4. Implement augmentations.
+5. Train 3D-ResNet18 SimCLR model.
+6. Extract backbone features.
+7. Run downstream tasks.
+
+---
+
+# 12. Key Hyperparameters Summary
+
+| Parameter | Value |
+|------------|-------|
+| Backbone | 3D-ResNet18 |
+| Projection head | 2-layer MLP |
+| Feature dim | 512 |
+| Batch size | 192 |
+| Epochs | 200 |
+| GPUs | 4 × A100 |
+| Dataset size | ~100k synapses |
+| Input size | 96³ voxels |
+
+---
+
+# 13. Conceptual Notes for Connectomics Work
+
+For connectomics work like yours (synapse classifier, EI balance, etc.):
+
+- The key insight is **contrastive invariance under segmentation distortions**.
+- Representations capture both structure and function-relevant geometry.
+- Small labeled subset (0.2%) suffices for downstream prediction.
+
+---
+

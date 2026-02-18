@@ -1,1 +1,1 @@
-AE in_ch=1 latent=128 | E/I acc=0.610  LP=0.540 5NN=0.510 ARI=0.010 NMI=0.011 Purity=0.560
+AE in_ch=1 latent=128 | E/I acc=0.543  LP=0.556 5NN=0.508 ARI=-0.000 NMI=0.000 Purity=0.505

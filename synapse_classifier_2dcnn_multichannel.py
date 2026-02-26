@@ -138,6 +138,8 @@ def main():
     parser.add_argument('--examples_per_epoch', type=int, default=None, help='Number of training examples per epoch (default: all)')
     parser.add_argument('--cnn_depth', type=int, default=3, help='Number of CNN blocks (1, 3, or 5)')
     parser.add_argument('--run_name', type=str, help='Run name for this experiment')
+    parser.add_argument('--csv_path', type=str, default=None, help='Synapse CSV (id_, pre_clf_type). Use Data/proofread_synapses/synapse_data.csv for MICrONS proofread pipeline.')
+    parser.add_argument('--data_dir', type=str, default=None, help='Directory with *_syn.npy (default: constants.DATA_DIR). Use Data/proofread_synapses for MICrONS download.')
     parser.add_argument('--cpu', action='store_true', help='Force CPU (e.g. for incompatible GPU like RTX 5060)')
     
     args = parser.parse_args()
@@ -151,7 +153,8 @@ def main():
     device = get_device(prefer_gpu=not args.cpu)
     
     # Load data
-    train_files, test_files, synapse_map, data_stats = prepare_synapse_data(logger=logger)
+    train_files, test_files, synapse_map, data_stats = prepare_synapse_data(
+        data_dir=args.data_dir, csv_path=args.csv_path, logger=logger)
     
     # Verify balanced dataset - should be 50/50 E/I for BOTH train and test
     logger.info("CLASS VERIFICATION:")

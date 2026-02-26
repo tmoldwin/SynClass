@@ -1,204 +1,90 @@
-## MICrONS minnie65 synapses and hand-proofread cells
+# MICrONS minnie65 synapses and hand-proofread cells
 
-This repo already contains the key CSVs you need:
+Data sources:
 
-- **Synapse graph (all synapses, v117)**: `data/synapses_pni_2.csv`  
-  - Source: `https://bossdb-open-data.s3.amazonaws.com/iarpa_microns/minnie/minnie65/synapse_graph/synapses_pni_2.csv`  
-  - ~47.5 GB, one row per detected synapse with pre/post cell IDs and positions.
-- **Proofreading status (which cells are hand-proofread)**: `data/proofreading_status_public_release.csv`  
-  - Source: `https://bossdb-open-data.s3.amazonaws.com/iarpa_microns/minnie/proofreading_status/proofreading_status_public_release.csv`
+- **Synapse graph (all synapses)**: `Data/synapses_pni_2.csv`  
+  - https://bossdb-open-data.s3.amazonaws.com/iarpa_microns/minnie/minnie65/synapse_graph/synapses_pni_2.csv  
+  - ~47.5 GB; columns include `id`, `pre_pt_root_id`, `post_pt_root_id`, `ctr_pt_position_*`.
+- **Proofreading status**: `Data/proofreading_status_public_release.csv`  
+  - https://bossdb-open-data.s3.amazonaws.com/iarpa_microns/minnie/proofreading_status/proofreading_status_public_release.csv
+- **EM volume**: streamed via CloudVolume; do not download the full volume.
 
-The electron microscopy (EM) imagery itself lives remotely:
-
-- **EM volume (minnie65)**: `https://bossdb-open-data.s3.amazonaws.com/iarpa_microns/minnie/minnie65/em`  
-  (Multi-resolution precomputed volume; do *not* download the whole thing. Stream cutouts.)
+E/I (excitatory/inhibitory) for the **pre-synaptic** cell comes from CAVE cell-type tables (e.g. `aibs_metamodel_celltypes_v661`), not from the static CSVs.
 
 ---
 
-## 1. Re-download the CSVs if needed
+## 1. Download the two CSVs
 
-From the repo root (`SynClass`), on Windows PowerShell:
+From the repo root (PowerShell):
 
 ```powershell
-# Synapse graph (47.5 GB, long download)
-curl.exe -L "https://bossdb-open-data.s3.amazonaws.com/iarpa_microns/minnie/minnie65/synapse_graph/synapses_pni_2.csv" `
-  -o data/synapses_pni_2.csv
+# Proofreading (small)
+curl.exe -L "https://bossdb-open-data.s3.amazonaws.com/iarpa_microns/minnie/proofreading_status/proofreading_status_public_release.csv" -o Data/proofreading_status_public_release.csv
 
-# Proofreading status table (small)
-curl.exe -L "https://bossdb-open-data.s3.amazonaws.com/iarpa_microns/minnie/proofreading_status/proofreading_status_public_release.csv" `
-  -o data/proofreading_status_public_release.csv
+# Synapse graph (47.5 GB)
+curl.exe -L "https://bossdb-open-data.s3.amazonaws.com/iarpa_microns/minnie/minnie65/synapse_graph/synapses_pni_2.csv" -o Data/synapses_pni_2.csv
 ```
 
 ---
 
-## 2. Python environment for pulling synapse “images”
+## 2. Full pipeline: E/I from CAVE → filter synapses → download images
 
-Install the minimal dependencies (once):
+Use only MICrONS IDs and public data: get E/I from CAVE, stream the synapse CSV to keep synapses where the **pre** has known E/I and at least one partner is proofread, then download EM crops in SynClass format and write `synapse_data.csv`.
+
+### Dependencies
 
 ```powershell
-pip install cloud-volume pandas numpy tqdm
+pip install cloud-volume pandas numpy tqdm caveclient
 ```
 
-Key pieces:
+CAVE token for `fetch_pre_ei_map.py`: [CAVEclient setup](https://tutorial.microns-explorer.org/quickstart_notebooks/em_py_01_caveclient_setup.html).
 
-- **EM volume**: accessed via `cloud-volume` using the precomputed path.  
-- **Synapse table**: `synapses_pni_2.csv`, with:
-  - `ctr_pt_position_x`, `ctr_pt_position_y`, `ctr_pt_position_z` (synapse center, in 4,4,40 nm voxels)
-  - `pre_pt_root_id`, `post_pt_root_id` (cell IDs at v117)
-- **Proofreading table**: `proofreading_status_public_release.csv`, with:
-  - `status_axon`, `status_dendrite` in `{clean, extended, non}`
-  - `pt_root_id` (cell root id at v117)
-
----
-
-## 3. Script: sample EM cutouts around proofread synapses
-
-Use this script to pull small 3D EM cubes (“synapse images”) around synapse centers, **restricted to synapses where at least one partner cell is hand-proofread**.
-
-Save as `scripts/download_synapse_crops.py`:
-
-```python
-import argparse
-import os
-
-import numpy as np
-import pandas as pd
-from cloudvolume import CloudVolume
-from tqdm import tqdm
-
-
-EM_CLOUDPATH = "precomputed://https://bossdb-open-data.s3.amazonaws.com/iarpa_microns/minnie/minnie65/em"
-
-
-def load_proofread_root_ids(proof_csv: str) -> set[int]:
-    df = pd.read_csv(proof_csv)
-    # Cells with hand proofreading (axon and/or dendrite)
-    mask = df["status_axon"].isin(["clean", "extended"]) | df["status_dendrite"].isin(
-        ["clean", "extended"]
-    )
-    roots = df.loc[mask, "pt_root_id"].astype("int64")
-    return set(roots.tolist())
-
-
-def iter_proofread_synapses(syn_csv: str, proof_roots: set[int], max_synapses: int | None):
-    usecols = [
-        "id",
-        "pre_pt_root_id",
-        "post_pt_root_id",
-        "ctr_pt_position_x",
-        "ctr_pt_position_y",
-        "ctr_pt_position_z",
-    ]
-
-    # Stream the huge CSV in chunks to avoid blowing up RAM
-    total = 0
-    for chunk in pd.read_csv(syn_csv, usecols=usecols, chunksize=200_000):
-        # Restrict to synapses where either partner is proofread
-        pre_ok = chunk["pre_pt_root_id"].isin(proof_roots)
-        post_ok = chunk["post_pt_root_id"].isin(proof_roots)
-        sub = chunk[pre_ok | post_ok]
-
-        for _, row in sub.iterrows():
-            yield row
-            total += 1
-            if max_synapses is not None and total >= max_synapses:
-                return
-
-
-def compute_bbox(center_xyz, half_size_xyz):
-    cx, cy, cz = map(int, center_xyz)
-    hx, hy, hz = half_size_xyz
-    # CloudVolume slices are [z, y, x]
-    z0, z1 = max(cz - hz, 0), cz + hz
-    y0, y1 = max(cy - hy, 0), cy + hy
-    x0, x1 = max(cx - hx, 0), cx + hx
-    return (z0, z1), (y0, y1), (x0, x1)
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Download EM cutouts around proofread synapses.")
-    parser.add_argument("--synapse_csv", default="data/synapses_pni_2.csv")
-    parser.add_argument("--proof_csv", default="data/proofreading_status_public_release.csv")
-    parser.add_argument(
-        "--out_dir",
-        default="data/synapse_crops",
-        help="Output directory for .npy volumes.",
-    )
-    parser.add_argument(
-        "--cube_xy",
-        type=int,
-        default=256,
-        help="Cube size in x and y (voxels) around each synapse center.",
-    )
-    parser.add_argument(
-        "--cube_z",
-        type=int,
-        default=64,
-        help="Cube size in z (voxels) around each synapse center.",
-    )
-    parser.add_argument(
-        "--max_synapses",
-        type=int,
-        default=100,
-        help="Maximum number of synapses to download (None for all).",
-    )
-    args = parser.parse_args()
-
-    os.makedirs(args.out_dir, exist_ok=True)
-
-    print("Loading proofread root IDs...")
-    proof_roots = load_proofread_root_ids(args.proof_csv)
-    print(f"Found {len(proof_roots)} proofread cells.")
-
-    print("Opening EM volume via CloudVolume...")
-    vol = CloudVolume(EM_CLOUDPATH, mip=0, cache=False, progress=True, fill_missing=True)
-
-    half_xy = args.cube_xy // 2
-    half_z = args.cube_z // 2
-
-    it = iter_proofread_synapses(args.synapse_csv, proof_roots, args.max_synapses)
-    for row in tqdm(it, desc="Downloading synapse crops"):
-        syn_id = int(row["id"])
-        cx = row["ctr_pt_position_x"]
-        cy = row["ctr_pt_position_y"]
-        cz = row["ctr_pt_position_z"]
-        (z0, z1), (y0, y1), (x0, x1) = compute_bbox(
-            (cx, cy, cz), (half_xy, half_xy, half_z)
-        )
-
-        # Fetch EM subvolume [z, y, x, channel]
-        subvol = vol[z0:z1, y0:y1, x0:x1]
-        arr = np.array(subvol)
-
-        out_path = os.path.join(args.out_dir, f"syn_{syn_id}_z{z0}-{z1}_y{y0}-{y1}_x{x0}-{x1}.npy")
-        np.save(out_path, arr)
-
-
-if __name__ == "__main__":
-    main()
-```
-
----
-
-## 4. How to run the script
-
-From the repo root:
+### Step A: Export pre-synaptic E/I from CAVE
 
 ```powershell
-python scripts/download_synapse_crops.py `
-  --synapse_csv data/synapses_pni_2.csv `
-  --proof_csv data/proofreading_status_public_release.csv `
-  --out_dir data/synapse_crops `
-  --cube_xy 256 `
-  --cube_z 64 `
-  --max_synapses 100
+python scripts/fetch_pre_ei_map.py --out_csv Data/pre_root_id_to_ei.csv
 ```
 
-Notes:
+Creates `Data/pre_root_id_to_ei.csv` (`pt_root_id`, `pre_clf_type` E/I).
 
-- **`--max_synapses`** keeps the run reasonable; increase once you’re happy.  
-- Output volumes are saved as `.npy` arrays under `data/synapse_crops`, one file per synapse.  
-- All synapses are chosen such that *at least one partner neuron* is marked `clean` or `extended` in the proofreading table.
+### Step B: Filter synapse table to proofread + known E/I
 
-This is the minimal, repeatable path from the official MICrONS static data to local, hand-proofread synapse EM cutouts.
+```powershell
+python scripts/filter_synapses_ei.py --out_csv Data/synapses_to_download.csv --max_synapses 5000
+```
 
+Omit `--max_synapses` to keep all matching synapses. Requires `Data/synapses_pni_2.csv`, `Data/proofreading_status_public_release.csv`, `Data/pre_root_id_to_ei.csv`.
+
+### Step C: Download EM crops (SynClass format)
+
+```powershell
+python scripts/download_synapse_crops.py --manifest_csv Data/synapses_to_download.csv --out_dir Data/proofread_synapses --max_synapses 2000
+```
+
+Writes `{id}_syn.npy`, `{id}_pre_syn_n_mask.npy`, `{id}_post_syn_n_mask.npy` (masks zeros) and `Data/proofread_synapses/synapse_data.csv` (`id_`, `pre_clf_type`).
+
+### Step D: Train
+
+```powershell
+python synapse_classifier_2dcnn_multichannel.py --csv_path Data/proofread_synapses/synapse_data.csv --data_dir Data/proofread_synapses --epochs 50 --batch_size 32
+```
+
+Or:
+
+```powershell
+python synapse_classifier_transformer.py --csv_path Data/proofread_synapses/synapse_data.csv --data_dir Data/proofread_synapses --epochs 50 --batch_size 32
+```
+
+---
+
+## 3. Alternative: filter your existing CSV by proofread partners
+
+If you already have `synapse_data.csv` with `id_`, `pre_clf_type`, `pre_id`, `post_id` and want to train only on proofread synapses (same volumes, subset of labels):
+
+```powershell
+curl.exe -L "https://bossdb-open-data.s3.amazonaws.com/iarpa_microns/minnie/proofreading_status/proofreading_status_public_release.csv" -o Data/proofreading_status_public_release.csv
+python scripts/build_proofread_ei_dataset.py
+python synapse_classifier_2dcnn_multichannel.py --csv_path Data/synpase_raw_em/proofread_synapse_data.csv --epochs 50
+```
+
+This does **not** download new images; it only filters your CSV by proofread root IDs.

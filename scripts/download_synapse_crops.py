@@ -37,23 +37,23 @@ def compute_bbox(cx, cy, cz, half_xy, half_z):
 
 
 def download_via_imageryclient(df, args):
-    """Use CAVE + ImageryClient so every synapse gets an image (full volume)."""
+    """Use CAVE + ImageryClient so every synapse gets an image + real segmentation masks."""
     from caveclient import CAVEclient
     import imageryclient as ic
 
     client = CAVEclient("minnie65_public")
     img_client = ic.ImageryClient(client=client)
-    # Manifest is 4,4,40; ImageryClient uses Neuroglancer default (4,4,40). bbox_size in voxels.
     bbox_xy = args.cube_xy
     bbox_z = args.cube_z
+    has_root_ids = "pre_pt_root_id" in df.columns and "post_pt_root_id" in df.columns
     done = []
     for _, row in tqdm(df.iterrows(), total=len(df), desc="Downloading"):
         sid = int(row["id_"])
         ctr = [int(row["ctr_x"]), int(row["ctr_y"]), int(row["ctr_z"])]
         try:
-            image, _ = img_client.image_and_segmentation_cutout(
+            image, seg_dict = img_client.image_and_segmentation_cutout(
                 ctr,
-                split_segmentations=False,
+                split_segmentations=True,
                 bbox_size=(bbox_xy, bbox_xy, bbox_z),
             )
             arr = np.squeeze(np.array(image))
@@ -61,16 +61,26 @@ def download_via_imageryclient(df, args):
                 arr = arr[np.newaxis, :, :]
             arr = arr.astype(np.float32)
             shape = arr.shape
-            syn_path = os.path.join(args.out_dir, f"{sid}_syn.npy")
-            np.save(syn_path, arr)
-            np.save(
-                os.path.join(args.out_dir, f"{sid}_pre_syn_n_mask.npy"),
-                np.zeros(shape, dtype=np.float32),
-            )
-            np.save(
-                os.path.join(args.out_dir, f"{sid}_post_syn_n_mask.npy"),
-                np.zeros(shape, dtype=np.float32),
-            )
+
+            # Build pre/post masks from segmentation using root IDs
+            if has_root_ids:
+                pre_root = int(row["pre_pt_root_id"])
+                post_root = int(row["post_pt_root_id"])
+                pre_mask_raw = seg_dict.get(pre_root)
+                post_mask_raw = seg_dict.get(post_root)
+                pre_mask = np.squeeze(np.array(pre_mask_raw)).astype(np.float32) if pre_mask_raw is not None else np.zeros(shape, dtype=np.float32)
+                post_mask = np.squeeze(np.array(post_mask_raw)).astype(np.float32) if post_mask_raw is not None else np.zeros(shape, dtype=np.float32)
+                if pre_mask.ndim == 2:
+                    pre_mask = pre_mask[np.newaxis, :, :]
+                if post_mask.ndim == 2:
+                    post_mask = post_mask[np.newaxis, :, :]
+            else:
+                pre_mask = np.zeros(shape, dtype=np.float32)
+                post_mask = np.zeros(shape, dtype=np.float32)
+
+            np.save(os.path.join(args.out_dir, f"{sid}_syn.npy"), arr)
+            np.save(os.path.join(args.out_dir, f"{sid}_pre_syn_n_mask.npy"), pre_mask)
+            np.save(os.path.join(args.out_dir, f"{sid}_post_syn_n_mask.npy"), post_mask)
             done.append({"id_": sid, "pre_clf_type": row["pre_clf_type"]})
         except Exception as e:
             tqdm.write(f"Skip {sid}: {e}")

@@ -198,6 +198,8 @@ def main():
                         "id_": int(r["id"]),
                         "pre_clf_type": pre_clf if args.slab_demo else ei_map[pre_rid],
                         "ctr_x": cx, "ctr_y": cy, "ctr_z": cz,
+                        "pre_pt_root_id": int(r["pre_pt_root_id"]),
+                        "post_pt_root_id": int(r["post_pt_root_id"]),
                     })
                     if args.max_synapses is not None and len(rows) >= args.max_synapses:
                         break
@@ -249,7 +251,8 @@ def main():
                             continue
                         if not in_bounds(cx, cy, cz):
                             continue
-                        rows.append({"id_": sid, "pre_clf_type": pre_clf, "ctr_x": cx, "ctr_y": cy, "ctr_z": cz})
+                        rows.append({"id_": sid, "pre_clf_type": pre_clf, "ctr_x": cx, "ctr_y": cy, "ctr_z": cz,
+                                     "pre_pt_root_id": int(r["pre_pt_root_id"]), "post_pt_root_id": int(r["post_pt_root_id"])})
                         if args.max_synapses is not None and len(rows) >= args.max_synapses:
                             break
                     if args.max_synapses is not None and len(rows) >= args.max_synapses:
@@ -288,7 +291,8 @@ def main():
                     cx, cy, cz = pos[0], pos[1], pos[2]
                 if not in_bounds(cx, cy, cz):
                     continue
-                rows.append({"id_": sid, "pre_clf_type": pre_clf, "ctr_x": cx, "ctr_y": cy, "ctr_z": cz})
+                rows.append({"id_": sid, "pre_clf_type": pre_clf, "ctr_x": cx, "ctr_y": cy, "ctr_z": cz,
+                             "pre_pt_root_id": int(r["pre_pt_root_id"]), "post_pt_root_id": int(r["post_pt_root_id"])})
                 total += 1
                 if args.max_synapses is not None and total >= args.max_synapses:
                     break

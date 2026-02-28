@@ -7,7 +7,7 @@ Data sources:
   - ~47.5 GB; columns include `id`, `pre_pt_root_id`, `post_pt_root_id`, `ctr_pt_position_*`.
 - **Proofreading status**: `Data/proofreading_status_public_release.csv`  
   - https://bossdb-open-data.s3.amazonaws.com/iarpa_microns/minnie/proofreading_status/proofreading_status_public_release.csv
-- **EM volume**: streamed via CloudVolume; do not download the full volume.
+- **EM volume**: Fetched via **ImageryClient + CAVE** (default in download script) so every synapse gets an image. Manifest/CAVE positions are **4,4,40 nm voxels**. Fallback: CloudVolume direct (bossdb) for a single slab only.
 
 E/I (excitatory/inhibitory) for the **pre-synaptic** cell comes from CAVE cell-type tables (e.g. `aibs_metamodel_celltypes_v661`), not from the static CSVs.
 
@@ -34,34 +34,60 @@ Use only MICrONS IDs and public data: get E/I from CAVE, stream the synapse CSV 
 ### Dependencies
 
 ```powershell
-pip install cloud-volume pandas numpy tqdm caveclient
+pip install cloud-volume pandas numpy tqdm caveclient imageryclient
 ```
 
-CAVE token for `fetch_pre_ei_map.py`: [CAVEclient setup](https://tutorial.microns-explorer.org/quickstart_notebooks/em_py_01_caveclient_setup.html).
+CAVE token for `fetch_pre_ei_map.py` and for **download (ImageryClient)**: [CAVEclient setup](https://tutorial.microns-explorer.org/quickstart_notebooks/em_py_01_caveclient_setup.html). ImageryClient uses CAVE to fetch imagery so **every synapse gets an image** (full volume); without it, only the bossdb slab is used.
 
 ### Step A: Export pre-synaptic E/I from CAVE
 
+**Full E/I (for scale: ~65k E, ~8k I):**
 ```powershell
-python scripts/fetch_pre_ei_map.py --out_csv Data/pre_root_id_to_ei.csv
+python scripts/fetch_pre_ei_map.py --no_balance
 ```
+Creates `Data/pre_root_id_to_ei.csv` with all E/I cells (~64k E, 7892 I).
 
-Creates `Data/pre_root_id_to_ei.csv` (`pt_root_id`, `pre_clf_type` E/I).
+**Balanced (7892 E + 7892 I):**
+```powershell
+python scripts/fetch_pre_ei_map.py
+```
+Creates `Data/pre_root_id_to_ei.csv` (pt_root_id, pre_clf_type).
 
 ### Step B: Filter synapse table to proofread + known E/I
 
+**At scale (65k E, 8k I synapses):** use all E/I cells and cap synapse counts per class:
 ```powershell
-python scripts/filter_synapses_ei.py --out_csv Data/synapses_to_download.csv --max_synapses 5000
+python scripts/filter_synapses_ei.py --use_cave --no_proofread --max_e 65000 --max_i 7892
 ```
 
-Omit `--max_synapses` to keep all matching synapses. Requires `Data/synapses_pni_2.csv`, `Data/proofreading_status_public_release.csv`, `Data/pre_root_id_to_ei.csv`.
+**Balanced (7.5k E + 7.5k I, randomized):** same number of E and I synapses for training:
+```powershell
+python scripts/filter_synapses_ei.py --use_cave --no_proofread --max_e 7500 --max_i 7500
+```
+Then download all (~15k); every synapse gets an image (ImageryClient):
+```powershell
+python scripts/download_synapse_crops.py
+```
+
+**Without bounds (recommended):** every synapse in the manifest gets an image when using the default download (ImageryClient).
+
+```powershell
+python scripts/filter_synapses_ei.py --use_cave --out_csv Data/synapses_to_download.csv --max_synapses 5000
+```
+Requires `Data/proofreading_status_public_release.csv`, `Data/pre_root_id_to_ei.csv`.
+
+**Optional: restrict to a volume slab** (e.g. for CloudVolume fallback): use `--bounds x_min,x_max,y_min,y_max,z_min,z_max` in 4,4,40 voxels. For the bossdb slab: `--bounds 29632,55808,27648,388096,13824,226816`. With `--slab_demo` the filter uses CAVE `bounding_box` and assigns dummy E/I (pipeline test).
 
 ### Step C: Download EM crops (SynClass format)
 
+Use **ImageryClient + CAVE** (default) so every synapse gets an image (full volume). Requires `caveclient` and `imageryclient`; CAVE token must be set up.
+
 ```powershell
+pip install caveclient imageryclient
 python scripts/download_synapse_crops.py --manifest_csv Data/synapses_to_download.csv --out_dir Data/proofread_synapses --max_synapses 2000
 ```
 
-Writes `{id}_syn.npy`, `{id}_pre_syn_n_mask.npy`, `{id}_post_syn_n_mask.npy` (masks zeros) and `Data/proofread_synapses/synapse_data.csv` (`id_`, `pre_clf_type`).
+Writes `{id}_syn.npy`, `{id}_pre_syn_n_mask.npy`, `{id}_post_syn_n_mask.npy` (masks zeros) and `Data/proofread_synapses/synapse_data.csv` (`id_`, `pre_clf_type`). With ImageryClient, **every synapse in the manifest gets an image** (no bounds filtering). Use `--no_imagery_client` to fall back to CloudVolume direct (then only synapses inside the bossdb slab are downloaded).
 
 ### Step D: Train
 

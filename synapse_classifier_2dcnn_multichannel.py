@@ -190,7 +190,8 @@ def main():
         augment_train=False,  # No augmentation 
         examples_per_epoch=args.examples_per_epoch,
         augment_val=False,  # No validation augmentation
-        val_examples_per_epoch=None  # Use all validation examples
+        val_examples_per_epoch=None,  # Use all validation examples
+        data_dir=args.data_dir
     )
     
     # Initialize model

@@ -203,8 +203,10 @@ class MultiChannelSynapseDataset(torch.utils.data.Dataset):
                 data_3d, pre_mask_3d, post_mask_3d = load_synapse_data(
                     self.data_dir, self.archive_path, filename
                 )
+                if data_3d.size == 0:
+                    raise ValueError("empty array")
                 break
-            except (FileNotFoundError, EOFError, OSError):
+            except (FileNotFoundError, EOFError, OSError, ValueError):
                 if attempt < 2:
                     synapse_idx = (synapse_idx + 1) % len(self.file_list)
                     filename = self.file_list[synapse_idx]
@@ -227,19 +229,24 @@ class MultiChannelSynapseDataset(torch.utils.data.Dataset):
 def create_multichannel_dataloaders(train_files, test_files, synapse_map,
                                    batch_size=16, num_workers=4, pin_memory=True,
                                    input_size=224, augment_train=True, examples_per_epoch=None,
-                                   augment_val=False, val_examples_per_epoch=None):
-    """Create dataloaders for multi-channel training. Generic for any model."""
+                                   augment_val=False, val_examples_per_epoch=None,
+                                   data_dir=None):
+    """Create dataloaders for multi-channel training. Generic for any model.
+    If data_dir is set (e.g. Data/proofread_synapses), archive is not used."""
     from torch.utils.data import DataLoader
     from constants import DATA_ARCHIVE
-    archive_path = DATA_ARCHIVE if os.path.isfile(DATA_ARCHIVE) else None
+    if data_dir:
+        archive_path = None
+    else:
+        archive_path = DATA_ARCHIVE if os.path.isfile(DATA_ARCHIVE) else None
     if archive_path and num_workers > 0:
         num_workers = 0
     train_dataset = MultiChannelSynapseDataset(
-        train_files, synapse_map, archive_path=archive_path, augment=augment_train,
+        train_files, synapse_map, data_dir=data_dir, archive_path=archive_path, augment=augment_train,
         input_size=input_size, examples_per_epoch=examples_per_epoch
     )
     val_dataset = MultiChannelSynapseDataset(
-        test_files, synapse_map, archive_path=archive_path, augment=augment_val,
+        test_files, synapse_map, data_dir=data_dir, archive_path=archive_path, augment=augment_val,
         input_size=input_size, examples_per_epoch=val_examples_per_epoch
     )
     print(f"TRAINING CONFIGURATION:")

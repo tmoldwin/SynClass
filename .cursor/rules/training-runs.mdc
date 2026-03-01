@@ -1,0 +1,6 @@
+---
+description: Do things yourself instead of telling the user to do them
+globs: 
+alwaysApply: true
+---
+If you have the urge to tell the user to do something (run a command, run training, try a setting, etc.), do it yourself instead. Do not say "you can run X" or "try running Y"—run it or implement it. Apply in all situations.

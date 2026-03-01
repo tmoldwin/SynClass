@@ -140,7 +140,7 @@ def validate_epoch(model, val_loader, criterion, device, logger=None, return_pre
 
 def train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs, 
                 device, scheduler=None, save_path=None, early_stopping_patience=None,
-                logger=None, save_best=True):
+                logger=None, save_best=True, figures_dir=None):
     """Complete training loop with validation and optional early stopping.
     
     Args:
@@ -236,7 +236,8 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
                 train_losses, val_losses, train_accuracies, val_accuracies,
                 train_predictions, train_targets, val_predictions, val_targets, 
                 model_name, epoch + 1,
-                optimizer.param_groups[0]['lr'] if optimizer else None
+                optimizer.param_groups[0]['lr'] if optimizer else None,
+                figures_dir=figures_dir
             )
         
         # Log to sweep CSV for analysis
@@ -311,7 +312,7 @@ def setup_training(model, train_files, device, learning_rate=0.001, weight_decay
 
 def _update_comprehensive_training_plots(train_losses, val_losses, train_accuracies, val_accuracies,
                                         train_predictions, train_targets, val_predictions, val_targets, 
-                                        model_name, current_epoch, learning_rate):
+                                        model_name, current_epoch, learning_rate, figures_dir=None):
     """Generate comprehensive plots EVERY epoch including all analysis panels."""
     import os
     import glob
@@ -324,14 +325,14 @@ def _update_comprehensive_training_plots(train_losses, val_losses, train_accurac
     current_train_acc = train_accuracies[-1] if train_accuracies else 0
     current_val_acc = val_accuracies[-1] if val_accuracies else 0
     
-    # Check if we're in a sweep (SWEEP_MASTER_DIR env variable)
-    sweep_dir = os.environ.get('SWEEP_MASTER_DIR')
-    if sweep_dir is None:
-        figures_dir = 'figures'
-        os.makedirs(figures_dir, exist_ok=True)
-    else:
-        figures_dir = os.path.join(sweep_dir, 'figures')
-        os.makedirs(figures_dir, exist_ok=True)
+    if figures_dir is None:
+        # Check if we're in a sweep (SWEEP_MASTER_DIR env variable)
+        sweep_dir = os.environ.get('SWEEP_MASTER_DIR')
+        if sweep_dir is None:
+            figures_dir = 'figures'
+        else:
+            figures_dir = os.path.join(sweep_dir, 'figures')
+    os.makedirs(figures_dir, exist_ok=True)
     
     # Create comprehensive figure with multiple panels
     fig = plt.figure(figsize=(20, 12))
@@ -525,8 +526,8 @@ Training Status:
             except OSError as e:
                 print(f"Could not delete {old_file}: {e}")
     
-    plt.savefig(save_path, dpi=300, bbox_inches='tight')
-    plt.close()  # Close to save memory
+    plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    plt.close()
     
     print(f"PLOTS SAVED: {save_path}")
     print(f"Panels: Loss, Accuracy, Confusion Matrix, E/I Over Time, Overfitting, LR, Summary, Correlation")
